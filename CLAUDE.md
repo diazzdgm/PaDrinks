@@ -46,9 +46,9 @@ Redux store with three main slices:
 - `connectionSlice`: Network connectivity status
 
 ### Navigation Flow
-1. SplashScreen: Animated loading with shot-pouring sound effect
-2. AgeVerificationScreen: Legal compliance screen
-3. MainMenu: Temporary implementation with game mode selection
+1. **SplashScreen**: Enhanced with dramatic falling logo animation, haptic feedback, circular text with dancing letters, notebook paper background with parallax effect, and audio with fade out (6-second duration)
+2. **AgeVerificationScreen**: Legal compliance screen
+3. **MainMenu**: Temporary implementation with game mode selection
 
 ### Key Dependencies
 - **Expo SDK 53**: Core framework
@@ -59,6 +59,8 @@ Redux store with three main slices:
 - **react-native-ble-manager**: Bluetooth connectivity
 - **react-native-wifi-p2p**: WiFi Direct support
 - **expo-av**: Audio playback for sound effects
+- **expo-haptics**: Haptic feedback system
+- **framer-motion**: Animation library (installed but may not be actively used)
 
 ## Development Notes
 
@@ -72,7 +74,20 @@ App forces landscape orientation on mount and unlocks on unmount via expo-screen
 Uses expo-av with configuration for silent mode playback. Sound effects are preloaded and managed with proper cleanup.
 
 ### Animation Patterns
-Extensive use of Animated.Value refs with complex sequence animations, particularly in SplashScreen for shot-pouring effects.
+- **SplashScreen**: Complex sequence with logo falling from above, haptic feedback, parallax background effects, and audio fade out
+- **CircularText Component**: Custom circular text animation with optional "dancing" letters effect using individual letter animations
+- **Audio Integration**: Sound starts from specific timestamp (4 seconds into file) with smooth fade out
+- Extensive use of Animated.Value refs with spring and timing animations
+
+### Special Components
+- **CircularText**: Reusable component for animated circular text with configurable radius, font size, and dancing letter effects
+- **SplashScreen**: 6-second animated sequence with notebook paper background, falling logo, haptic feedback, and audio
 
 ### Temporary Components
 AppNavigator contains a temporary MainMenu component that should be replaced with proper screen implementation.
+
+### Important Technical Notes
+- Audio files should be accessed with `require()` paths relative to component location
+- Haptic feedback requires error handling for platforms that don't support it
+- Animation values should not be mixed with static values in transform arrays to avoid "[object Object]" errors
+- Font loading is asynchronous and gates app rendering
