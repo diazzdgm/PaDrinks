@@ -16,7 +16,20 @@ expo start
 expo start --android
 expo start --ios  
 expo start --web
+
+# Clear cache if needed
+expo start --clear
+
+# Install dependencies
+npm install
 ```
+
+## Project Configuration
+
+- **Expo SDK**: Version 53 with new architecture enabled
+- **Expo Config**: Portrait orientation in app.json but overridden to landscape at runtime
+- **No Testing Setup**: No Jest, ESLint, or other testing/linting tools configured
+- **No Build Scripts**: Uses default Expo build system
 
 ## Architecture
 
@@ -91,3 +104,14 @@ AppNavigator contains a temporary MainMenu component that should be replaced wit
 - Haptic feedback requires error handling for platforms that don't support it
 - Animation values should not be mixed with static values in transform arrays to avoid "[object Object]" errors
 - Font loading is asynchronous and gates app rendering
+
+### Configuration Discrepancies
+- **Orientation**: app.json specifies "portrait" but App.js forces landscape mode at runtime
+- **New Architecture**: Enabled in app.json for React Native's new architecture
+- **Redux Middleware**: Store configured with persistence middleware but persistence not implemented
+- **Missing Dev Tools**: No ESLint, Prettier, Jest, or TypeScript configuration files
+
+### Audio Integration Details
+- **File Locations**: Audio files in assets/sounds/ (pouring.shot.mp3, beer.can.sound.mp3)
+- **Expo AV Configuration**: Silent mode playback enabled, preloading used for performance
+- **SplashScreen Audio**: Starts from 4-second timestamp with fade-out effect

@@ -46,13 +46,13 @@ const AgeVerificationScreen = ({ navigation }) => {
         return true; // Prevenir ir hacia atrás
       };
 
-      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
       
       // Iniciar animaciones
       startAnimations();
 
       return () => {
-        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        backHandler.remove();
         // Limpiar sonido al salir
         cleanupSound();
       };
