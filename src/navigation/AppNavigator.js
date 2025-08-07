@@ -6,6 +6,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import SplashScreen from '../screens/auth/SplashScreen';
 import AgeVerificationScreen from '../screens/auth/AgeVerificationScreen';
 import MainMenuScreen from '../screens/MainMenuScreen';
+import CreateGameScreen from '../screens/game/CreateGameScreen';
 
 const Stack = createStackNavigator();
 
@@ -37,6 +38,13 @@ const AppNavigator = () => {
         <Stack.Screen 
           name="MainMenu" 
           component={MainMenuScreen}
+          options={{
+            animationTypeForReplace: 'push',
+          }}
+        />
+        <Stack.Screen 
+          name="CreateGame" 
+          component={CreateGameScreen}
           options={{
             animationTypeForReplace: 'push',
           }}

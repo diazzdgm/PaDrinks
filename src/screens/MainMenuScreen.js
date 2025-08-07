@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
+import audioService from '../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../styles/theme';
 
@@ -76,10 +77,9 @@ const MainMenuScreen = ({ navigation }) => {
   
   // Referencias para sonidos
   const beerSound = useRef(null);
-  const backgroundMusic = useRef(null);
   
   // Estado para controlar el mute
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
   
   // Animación para el botón de mute
   const muteButtonScale = useRef(new Animated.Value(1)).current;
@@ -88,12 +88,12 @@ const MainMenuScreen = ({ navigation }) => {
   useFocusEffect(
     React.useCallback(() => {
       startEntranceAnimations();
-      startBackgroundMusic();
+      // Inicializar y reproducir música solo desde MainMenu
+      audioService.initializeBackgroundMusic();
       
       // Limpiar sonidos al salir
       return () => {
         cleanupSound();
-        cleanupBackgroundMusic();
       };
     }, [])
   );
@@ -108,57 +108,12 @@ const MainMenuScreen = ({ navigation }) => {
     }
   };
 
-  const cleanupBackgroundMusic = async () => {
-    if (backgroundMusic.current) {
-      try {
-        await backgroundMusic.current.unloadAsync();
-      } catch (error) {
-        console.log('Error cleaning up background music:', error);
-      }
-    }
-  };
 
-  const startBackgroundMusic = async () => {
-    try {
-      // Configurar audio
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: true,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: false,
-        playThroughEarpieceAndroid: false,
-      });
-
-      // Cargar música de fondo
-      const { sound: musicObject } = await Audio.Sound.createAsync(
-        require('../../assets/sounds/PADRINKS.backround.music.mp3'),
-        {
-          shouldPlay: !isMuted,
-          isLooping: true,
-          volume: 0.15, // Volumen más bajo (15%)
-        }
-      );
-      
-      backgroundMusic.current = musicObject;
-      console.log('🎵 Música de fondo iniciada...');
-      
-    } catch (error) {
-      console.log('Error loading background music:', error);
-    }
-  };
 
   const toggleMute = async () => {
     try {
-      if (backgroundMusic.current) {
-        if (isMuted) {
-          await backgroundMusic.current.playAsync();
-          console.log('🔊 Música activada');
-        } else {
-          await backgroundMusic.current.pauseAsync();
-          console.log('🔇 Música pausada');
-        }
-      }
-      setIsMuted(!isMuted);
+      const newMuteState = await audioService.toggleMute();
+      setIsMuted(newMuteState);
       
       // Animación del botón mute
       Animated.sequence([
@@ -401,8 +356,7 @@ const MainMenuScreen = ({ navigation }) => {
   const handleCreateGame = () => {
     pressButton(createGameScale, createGameGlow, createGameParticles, () => {
       setTimeout(() => {
-        // TODO: navigation.navigate('CreateGameScreen');
-        Alert.alert('🎯 Crear Partida', 'Funcionalidad próximamente disponible');
+        navigation.navigate('CreateGame');
       }, 200);
     });
   };

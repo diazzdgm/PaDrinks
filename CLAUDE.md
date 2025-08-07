@@ -27,91 +27,117 @@ npm install
 ## Project Configuration
 
 - **Expo SDK**: Version 53 with new architecture enabled
-- **Expo Config**: Portrait orientation in app.json but overridden to landscape at runtime
+- **Orientation**: app.json specifies "portrait" but App.js forces landscape mode at runtime
 - **No Testing Setup**: No Jest, ESLint, or other testing/linting tools configured
 - **No Build Scripts**: Uses default Expo build system
+- **Firebase Integration**: React Native Firebase SDK with Auth and Realtime Database modules
+- **Connectivity Stack**: Multiple networking options - Bluetooth (BLE Manager), WiFi P2P, and Firebase backend
 
 ## Architecture
 
-### Core Structure
-- **App.js**: Main entry point with Redux Provider, font loading (Kalam fonts), and forced landscape orientation
-- **src/navigation/AppNavigator.js**: Stack navigator managing app flow (Splash → Age Verification → Main Menu)
-- **src/store/**: Redux Toolkit setup with slices for game state, players, and connections
-- **src/styles/theme.js**: Centralized theme with post-it colors, Kalam fonts, and paper-like design system
+### Core Application Flow
+App.js → AppNavigator → [SplashScreen → AgeVerificationScreen → MainMenuScreen]
 
-### Key Directories
-- **src/screens/**: Screen components organized by feature (auth, game, lobby, results)
-- **src/components/**: Reusable UI components (common, connectivity, game-specific)
-- **src/services/**: External service integrations (bluetooth, firebase, wifi)
-- **src/game/**: Game logic (dynamics, engine, modes)
-- **assets/**: Images, fonts (Kalam), sounds (pouring.shot.mp3), and icons
+The app uses a stack-based navigation where each screen replaces the previous one. The landscape orientation is enforced at the App.js level, overriding the portrait setting in app.json.
 
-### Design System
-- **Theme**: Post-it aesthetic with colors like postItYellow (#FFE082), postItGreen (#C8E6C9)
-- **Typography**: Kalam font family (Regular/Bold) for handwritten feel
-- **Layout**: Forced landscape mode with notebook paper styling
-- **Animations**: Heavy use of React Native Animated API for shot-pouring effects
-
-### State Management
-Redux store with three main slices:
+### State Management Architecture
+Redux store with three main slices, configured with middleware for persistence (though persistence is not actually implemented):
 - `gameSlice`: Game state and mechanics
-- `playersSlice`: Player management and data
+- `playersSlice`: Player management and data  
 - `connectionSlice`: Network connectivity status
 
-### Navigation Flow
-1. **SplashScreen**: Enhanced with dramatic falling logo animation, haptic feedback, circular text with dancing letters, notebook paper background with parallax effect, and audio with fade out (6-second duration)
-2. **AgeVerificationScreen**: Legal compliance screen
-3. **MainMenu**: Temporary implementation with game mode selection
+### Screen Architecture Patterns
+All main screens follow similar patterns:
+- **Animation System**: Heavy use of `useRef` with `Animated.Value` for complex entrance animations
+- **Audio Integration**: `expo-av` with cleanup patterns in `useFocusEffect`
+- **Haptic Feedback**: Wrapped in try-catch blocks for platform compatibility
+- **Theme Integration**: Consistent use of post-it aesthetic with notebook paper backgrounds
 
-### Key Dependencies
-- **Expo SDK 53**: Core framework
-- **React Navigation**: Navigation management
-- **Redux Toolkit**: State management
-- **React Native Paper**: UI components
-- **Firebase**: Backend services
-- **react-native-ble-manager**: Bluetooth connectivity
-- **react-native-wifi-p2p**: WiFi Direct support
-- **expo-av**: Audio playback for sound effects
-- **expo-haptics**: Haptic feedback system
-- **framer-motion**: Animation library (installed but may not be actively used)
+### Key Implementation Patterns
 
-## Development Notes
+#### MainMenuScreen Architecture
+- **Horizontal Split Layout**: Logo on left (40% width), navigation buttons on right (60% width)
+- **Complex Animation System**: Staggered entrance animations with logo floating, button scaling, and particle effects
+- **Audio System**: Background music with mute functionality using PNG icon (Megaphone.MUTE.png)
+- **Post-it Button Design**: Rotated buttons with shadows, glow effects, and particle animations on press
 
-### Font Loading
-Kalam fonts are loaded asynchronously in App.js. Font loading completion gates the main app rendering.
+#### Font Loading System
+Kalam fonts (Regular/Bold) are loaded asynchronously in App.js. Font loading completion gates the entire app rendering with a loading screen.
 
-### Orientation Lock
-App forces landscape orientation on mount and unlocks on unmount via expo-screen-orientation.
+#### Audio System Architecture
+- **Configuration**: Silent mode playback enabled, duck audio on Android
+- **Cleanup Pattern**: All screens implement sound cleanup in `useFocusEffect` return function
+- **File Organization**: Audio files in `assets/sounds/` (PADRINKS.backround.music.mp3, beer.can.sound.mp3)
+- **Background Music**: Looping background music with volume control and mute functionality
 
-### Audio System
-Uses expo-av with configuration for silent mode playback. Sound effects are preloaded and managed with proper cleanup.
+### Design System Implementation
+- **Theme File**: Centralized in `src/styles/theme.js` with post-it colors and Kalam fonts
+- **Color Palette**: postItYellow (#FFE082), postItGreen (#C8E6C9), postItPink, postItBlue
+- **Visual Style**: Notebook paper backgrounds with holes, red margin lines, and horizontal blue lines
+- **Typography**: Handwritten feel using Kalam font family throughout
 
-### Animation Patterns
-- **SplashScreen**: Complex sequence with logo falling from above, haptic feedback, parallax background effects, and audio fade out
-- **CircularText Component**: Custom circular text animation with optional "dancing" letters effect using individual letter animations
-- **Audio Integration**: Sound starts from specific timestamp (4 seconds into file) with smooth fade out
-- Extensive use of Animated.Value refs with spring and timing animations
+### Navigation and State Flow
+```
+App.js (Redux Provider + Font Loading)
+└── AppNavigator (Stack Navigator)
+    ├── SplashScreen (6-second animation sequence)
+    ├── AgeVerificationScreen (Legal compliance with exit prevention)
+    └── MainMenuScreen (Game mode selection hub)
+```
 
-### Special Components
-- **CircularText**: Reusable component for animated circular text with configurable radius, font size, and dancing letter effects
-- **SplashScreen**: 6-second animated sequence with notebook paper background, falling logo, haptic feedback, and audio
+### Key Dependencies Architecture
+- **React Navigation**: Stack navigator with gesture disabling and custom animations
+- **Redux Toolkit**: State management with non-serializable action ignoring for persistence
+- **Expo AV**: Audio playback with complex configuration for cross-platform compatibility
+- **Expo Haptics**: Feedback system with error handling for unsupported platforms
+- **react-native-svg**: SVG support (installed but MainMenu uses PNG for megaphone icon)
+- **Firebase**: Backend integration with Auth and Realtime Database (@react-native-firebase/*)
+- **Connectivity Suite**: BLE Manager, WiFi P2P, Framer Motion for advanced animations
+- **UI Components**: React Native Paper for material design elements, Vector Icons, Super Grid
 
-### Temporary Components
-AppNavigator contains a temporary MainMenu component that should be replaced with proper screen implementation.
+## Important Technical Notes
 
-### Important Technical Notes
-- Audio files should be accessed with `require()` paths relative to component location
-- Haptic feedback requires error handling for platforms that don't support it
-- Animation values should not be mixed with static values in transform arrays to avoid "[object Object]" errors
-- Font loading is asynchronous and gates app rendering
+### Animation System
+- Use `Animated.Value` refs, never mix with static values in transform arrays
+- Complex sequences use `Animated.sequence` and `Animated.parallel`
+- Particle effects implemented with arrays of animated values for individual particles
 
-### Configuration Discrepancies
-- **Orientation**: app.json specifies "portrait" but App.js forces landscape mode at runtime
-- **New Architecture**: Enabled in app.json for React Native's new architecture
-- **Redux Middleware**: Store configured with persistence middleware but persistence not implemented
-- **Missing Dev Tools**: No ESLint, Prettier, Jest, or TypeScript configuration files
+### Audio Management
+- All audio requires cleanup in `useFocusEffect` return functions
+- Audio configuration must be set before each playback
+- Background music uses looping with volume control (15% for background music)
 
-### Audio Integration Details
-- **File Locations**: Audio files in assets/sounds/ (pouring.shot.mp3, beer.can.sound.mp3)
-- **Expo AV Configuration**: Silent mode playback enabled, preloading used for performance
-- **SplashScreen Audio**: Starts from 4-second timestamp with fade-out effect
+### Image Asset Requirements
+- PNG images preferred over SVG for icons (better performance and centering)
+- Use `require()` paths relative to component location
+- `resizeMode="contain"` for proper scaling within containers
+
+### Platform Compatibility
+- Haptic feedback requires try-catch error handling
+- Audio configuration differs between iOS and Android
+- Orientation locking/unlocking must be handled in App.js lifecycle
+
+### Redux Configuration Discrepancies  
+- Store configured for persistence middleware but persistence not implemented
+- Serializable check ignores 'persist/PERSIST' actions despite no actual persistence
+
+### Screen-Specific Implementation Details
+
+#### SplashScreen Architecture
+- **6-Second Animation Sequence**: Logo drop, scaling, and continuous rotation with haptic feedback
+- **Audio Timing**: Pouring sound starts at second 1, plays from 4-second mark in file, gradual fade-out at 5s
+- **CircularText Component**: Animated rotating text around logo with dancing effects and 20s rotation cycle
+- **Complex Animation Cleanup**: Automatic navigation to AgeVerification after sequence completion
+
+#### AgeVerificationScreen Architecture  
+- **Legal Compliance**: Hard-blocks Android back button, forces app exit on underage selection
+- **Modal System**: Custom animated modal with notebook paper styling for underage users
+- **Dramatic Entrance**: Icon falling animation, question sliding, micro-animations with pulse and blinking
+- **Haptic Differentiation**: Medium impact for "Yes", heavy impact for "No" selections
+
+#### Folder Structure Insights
+The project uses a feature-based organization:
+- **Services Layer**: Dedicated folders for bluetooth/, firebase/, wifi/ connectivity options
+- **Game Engine**: Separate game/, dynamics/, engine/, modes/ for game logic architecture  
+- **Future Expansion**: Pre-created folders for lobby/, results/, game/ screens indicating planned multiplayer features
+- **Component Organization**: Common components separated from feature-specific ones

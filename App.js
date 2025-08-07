@@ -7,6 +7,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { store } from './src/store';
 import { theme } from './src/styles/theme';
 import AppNavigator from './src/navigation/AppNavigator';
+import audioService from './src/services/AudioService';
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -18,9 +19,12 @@ export default function App() {
     // Cargar fuentes Kalam
     loadFonts();
     
+    // No inicializar música aquí - se iniciará desde MainMenuScreen
+    
     return () => {
       // Limpiar al cerrar app
       ScreenOrientation.unlockAsync();
+      audioService.cleanup();
     };
   }, []);
 
