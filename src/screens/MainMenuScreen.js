@@ -91,6 +91,9 @@ const MainMenuScreen = ({ navigation }) => {
       // Inicializar y reproducir música solo desde MainMenu
       audioService.initializeBackgroundMusic();
       
+      // Sincronizar estado de mute cuando regresamos a la pantalla
+      setIsMuted(audioService.isMusicMuted);
+      
       // Limpiar sonidos al salir
       return () => {
         cleanupSound();

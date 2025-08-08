@@ -7,6 +7,8 @@ import SplashScreen from '../screens/auth/SplashScreen';
 import AgeVerificationScreen from '../screens/auth/AgeVerificationScreen';
 import MainMenuScreen from '../screens/MainMenuScreen';
 import CreateGameScreen from '../screens/game/CreateGameScreen';
+import LobbyConfigScreen from '../screens/game/LobbyConfigScreen';
+import PlayerRegistrationScreen from '../screens/game/PlayerRegistrationScreen';
 
 const Stack = createStackNavigator();
 
@@ -45,6 +47,20 @@ const AppNavigator = () => {
         <Stack.Screen 
           name="CreateGame" 
           component={CreateGameScreen}
+          options={{
+            animationTypeForReplace: 'push',
+          }}
+        />
+        <Stack.Screen 
+          name="LobbyConfig" 
+          component={LobbyConfigScreen}
+          options={{
+            animationTypeForReplace: 'push',
+          }}
+        />
+        <Stack.Screen 
+          name="PlayerRegistration" 
+          component={PlayerRegistrationScreen}
           options={{
             animationTypeForReplace: 'push',
           }}

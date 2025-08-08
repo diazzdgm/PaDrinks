@@ -221,10 +221,16 @@ const AgeVerificationScreen = ({ navigation }) => {
     // Efecto bounce en el botón
     bounceButton(yesButtonScale);
 
-    // Navegar al menú principal después de una pausa
+    // Animar transición de salida antes de navegar
     setTimeout(() => {
-      navigation.replace('MainMenu');
-    }, 800);
+      Animated.timing(scaleAnim, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }).start(() => {
+        navigation.replace('MainMenu');
+      });
+    }, 600);
   };
 
   const handleNoPress = () => {

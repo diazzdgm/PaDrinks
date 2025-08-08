@@ -82,7 +82,10 @@ App.js (Redux Provider + Font Loading)
 └── AppNavigator (Stack Navigator)
     ├── SplashScreen (6-second animation sequence)
     ├── AgeVerificationScreen (Legal compliance with exit prevention)
-    └── MainMenuScreen (Game mode selection hub)
+    ├── MainMenuScreen (Game mode selection hub)
+    ├── CreateGameScreen (Game mode carousel with swipe navigation)
+    ├── LobbyConfigScreen (Game lobby settings and configuration)
+    └── PlayerRegistrationScreen (Player name input and management)
 ```
 
 ### Key Dependencies Architecture
@@ -98,8 +101,9 @@ App.js (Redux Provider + Font Loading)
 ## Important Technical Notes
 
 ### Animation System
-- Use `Animated.Value` refs, never mix with static values in transform arrays
-- Complex sequences use `Animated.sequence` and `Animated.parallel`
+- Use `Animated.Value` refs, never mix with static values in transform arrays  
+- **Complex Animation Warning**: Avoid `Animated.sequence` and `Animated.parallel` in `useFocusEffect` as they cause `useInsertionEffect` warnings with React Navigation
+- **Safe Pattern**: Use simple `Animated.timing` calls with `setTimeout` for staggered effects
 - Particle effects implemented with arrays of animated values for individual particles
 
 ### Audio Management
@@ -116,6 +120,12 @@ App.js (Redux Provider + Font Loading)
 - Haptic feedback requires try-catch error handling
 - Audio configuration differs between iOS and Android
 - Orientation locking/unlocking must be handled in App.js lifecycle
+
+### Touch Gesture Implementation
+- **Custom Touch Handlers**: Use `onTouchStart`, `onTouchMove`, `onTouchEnd` instead of PanResponder for better React Navigation compatibility
+- **Swipe Threshold**: 50px minimum movement for valid swipes, 20px for swipe detection
+- **Click Prevention**: Track `isSwipeInProgress` state to prevent button clicks during swipe gestures
+- **Reset Timing**: 300ms delay after successful swipe, 100ms for non-swipes to allow normal clicks
 
 ### Redux Configuration Discrepancies  
 - Store configured for persistence middleware but persistence not implemented
@@ -135,9 +145,33 @@ App.js (Redux Provider + Font Loading)
 - **Dramatic Entrance**: Icon falling animation, question sliding, micro-animations with pulse and blinking
 - **Haptic Differentiation**: Medium impact for "Yes", heavy impact for "No" selections
 
+#### CreateGameScreen Architecture
+- **Touch-Based Swipe System**: Custom touch handlers (`onTouchStart`, `onTouchMove`, `onTouchEnd`) for horizontal swipe navigation
+- **Swipe Conflict Prevention**: `isSwipeInProgress` state prevents accidental button clicks during swipe gestures
+- **Simplified Animation System**: Single `fadeAnim` to avoid `useInsertionEffect` warnings with React Navigation
+- **Carousel Implementation**: Single mode display with swipe navigation, bottom indicators show mode icons
+- **AudioService Integration**: Singleton service manages background music state across screens
+
+#### AudioService Singleton Pattern
+Global audio management service that persists across screen navigation:
+- **Background Music**: Auto-initialized on MainMenuScreen, continues playing across navigation
+- **Volume Control**: 15% volume for background music, 80% for sound effects
+- **Mute State**: Persisted singleton state accessible from all screens
+- **Cleanup Pattern**: Each screen handles individual sound cleanup, service manages global music
+
 #### Folder Structure Insights
 The project uses a feature-based organization:
-- **Services Layer**: Dedicated folders for bluetooth/, firebase/, wifi/ connectivity options
-- **Game Engine**: Separate game/, dynamics/, engine/, modes/ for game logic architecture  
-- **Future Expansion**: Pre-created folders for lobby/, results/, game/ screens indicating planned multiplayer features
-- **Component Organization**: Common components separated from feature-specific ones
+- **Services Layer**: Singleton services like `AudioService.js` for cross-screen functionality
+- **Game Screens**: `src/screens/game/` contains game-specific screens (CreateGameScreen, LobbyConfigScreen, PlayerRegistrationScreen)
+- **Redux Store**: Organized by domain - `gameSlice.js`, `playersSlice.js`, `connectionSlice.js`
+- **Theme System**: Centralized styling in `src/styles/theme.js`
+- **Component Architecture**: Common components in `src/components/common/`, specialized components organized by feature
+- **Game Engine**: Separated game logic in `src/game/` with dynamics, engine, and modes subdirectories
+- **Multi-Protocol Connectivity**: Separate service directories for Bluetooth, Firebase, and WiFi implementations
+
+#### New Screen Patterns (LobbyConfigScreen & PlayerRegistrationScreen)
+Recently added screens follow established patterns:
+- **Custom Mute Icon Component**: Reusable PNG-based megaphone icon with muted state indicator
+- **AudioService Integration**: Consistent singleton audio service usage across all screens
+- **Haptic Feedback**: Try-catch wrapped haptic responses for platform compatibility
+- **Animation Consistency**: `useRef` with `Animated.Value` following the established animation patterns

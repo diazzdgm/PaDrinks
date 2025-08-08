@@ -8,6 +8,7 @@ import {
   Dimensions,
   Alert,
   Image,
+  Modal,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
@@ -49,8 +50,14 @@ const CreateGameScreen = ({ navigation }) => {
   // Redux
   const dispatch = useDispatch();
   
-  // Estado para el modo seleccionado
+  // Estado para el modo seleccionado y modal
   const [selectedMode, setSelectedMode] = useState(null);
+  const [showComingSoonModal, setShowComingSoonModal] = useState(false);
+  const [modalModeInfo, setModalModeInfo] = useState(null);
+  
+  // Animaciones del modal
+  const modalScale = useRef(new Animated.Value(0)).current;
+  const modalOpacity = useRef(new Animated.Value(0)).current;
   
   // SOLO animaciones básicas necesarias
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -163,6 +170,9 @@ const CreateGameScreen = ({ navigation }) => {
   // Simplificar useFocusEffect completamente
   useFocusEffect(
     React.useCallback(() => {
+      // Sincronizar estado de mute cuando regresamos a la pantalla
+      setIsMuted(audioService.isMusicMuted);
+      
       // Solo animación de fade básica
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -235,16 +245,27 @@ const CreateGameScreen = ({ navigation }) => {
       dispatch(setGameMode(gameMode.id));
       
       setTimeout(() => {
-        Alert.alert('🎯 ¡Perfecto!', `Modo ${gameMode.title} seleccionado.\n\n¡Iniciando partida!`);
+        navigation.navigate('LobbyConfig', { gameMode: gameMode.id });
       }, 500);
     } else {
-      setTimeout(() => {
-        Alert.alert(
-          `🔥 Modo ${gameMode.title}`,
-          'Este modo estará disponible próximamente.\n¡Mantente atento a las actualizaciones!',
-          [{ text: 'Entendido', style: 'default' }]
-        );
-      }, 200);
+      // Mostrar modal personalizado estilo AgeVerification
+      setModalModeInfo(gameMode);
+      setShowComingSoonModal(true);
+      
+      // Animar entrada del modal
+      Animated.parallel([
+        Animated.spring(modalScale, {
+          toValue: 1,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.timing(modalOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
   };
 
@@ -278,6 +299,25 @@ const CreateGameScreen = ({ navigation }) => {
       console.log('Haptics not available:', error);
     }
     navigation.goBack();
+  };
+  
+  const handleCloseModal = () => {
+    // Animar salida del modal
+    Animated.parallel([
+      Animated.timing(modalScale, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(modalOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowComingSoonModal(false);
+      setModalModeInfo(null);
+    });
   };
 
   return (
@@ -404,6 +444,68 @@ const CreateGameScreen = ({ navigation }) => {
           </TouchableOpacity>
         ))}
       </View>
+      
+      {/* Modal personalizado estilo AgeVerification para modos no disponibles */}
+      <Modal
+        visible={showComingSoonModal}
+        transparent={true}
+        animationType="none"
+        statusBarTranslucent={true}
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View
+            style={[
+              styles.modalContainer,
+              {
+                transform: [{ scale: modalScale }],
+                opacity: modalOpacity,
+              },
+            ]}
+          >
+            {/* Fondo con patrón de libreta */}
+            <View style={styles.modalPaper}>
+              {/* Líneas de libreta en el modal */}
+              {[...Array(8)].map((_, index) => (
+                <View 
+                  key={index} 
+                  style={[styles.modalLine, { top: 20 + (index * 25) }]} 
+                />
+              ))}
+              
+              {/* Línea vertical roja (margen) */}
+              <View style={styles.modalRedLine} />
+              
+              {/* Agujeros de perforación */}
+              <View style={styles.modalHoles}>
+                {[...Array(3)].map((_, index) => (
+                  <View key={index} style={styles.modalHole} />
+                ))}
+              </View>
+              
+              {/* Contenido del modal */}
+              <View style={styles.modalContent}>
+                <Text style={styles.modalIcon}>{modalModeInfo?.icon}</Text>
+                <Text style={styles.modalTitle}>Modo {modalModeInfo?.title}</Text>
+                <Text style={styles.modalMessage}>
+                  Este modo estará disponible próximamente.
+                </Text>
+                <Text style={styles.modalSubMessage}>
+                  ¡Mantente atento a las actualizaciones!
+                </Text>
+                
+                {/* Botón de cerrar */}
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={handleCloseModal}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.modalButtonText}>Entendido</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
     </Animated.View>
   );
 };
@@ -732,6 +834,154 @@ const styles = StyleSheet.create({
     height: 3,
     borderRadius: 2,
     transform: [{ rotate: '45deg' }],
+  },
+  
+  // Estilos del modal personalizado
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  
+  modalContainer: {
+    backgroundColor: '#F8F6F0',
+    borderRadius: 25,
+    padding: 25,
+    maxWidth: 380,
+    width: '85%',
+    minHeight: 300,
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 15,
+    },
+    shadowOpacity: 0.4,
+    shadowRadius: 25,
+    elevation: 20,
+    borderWidth: 3,
+    borderColor: '#000000',
+  },
+  
+  modalPaper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 22, // Ligeramente menor que el container
+    backgroundColor: '#F8F6F0', // Asegurar fondo sólido
+    zIndex: -1,
+  },
+  
+  modalLine: {
+    position: 'absolute',
+    left: 65,
+    right: 15,
+    height: 1,
+    backgroundColor: '#A8C8EC',
+    opacity: 0.4,
+  },
+  
+  modalRedLine: {
+    position: 'absolute',
+    left: 60,
+    top: 15,
+    bottom: 15,
+    width: 2,
+    backgroundColor: '#FF6B6B',
+    opacity: 0.4,
+  },
+  
+  modalHoles: {
+    position: 'absolute',
+    left: 25,
+    top: 40,
+    bottom: 40,
+    width: 20,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  
+  modalHole: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#CCCCCC',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  
+  modalContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 50, // Espacio para los agujeros y línea roja
+    paddingRight: 15,
+    paddingTop: 20,
+    paddingBottom: 10,
+    flex: 1,
+    minHeight: 250,
+  },
+  
+  modalIcon: {
+    fontSize: 60,
+    marginBottom: 15,
+  },
+  
+  modalTitle: {
+    fontSize: 24,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#000000',
+    textAlign: 'center',
+    marginBottom: 15,
+    transform: [{ rotate: '0.5deg' }],
+  },
+  
+  modalMessage: {
+    fontSize: 18,
+    fontFamily: theme.fonts.primary,
+    color: '#333333',
+    textAlign: 'center',
+    marginBottom: 10,
+    lineHeight: 24,
+  },
+  
+  modalSubMessage: {
+    fontSize: 16,
+    fontFamily: theme.fonts.primary,
+    color: '#666666',
+    textAlign: 'center',
+    marginBottom: 25,
+    fontStyle: 'italic',
+  },
+  
+  modalButton: {
+    backgroundColor: '#FFE082',
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 15,
+    borderTopLeftRadius: 5,
+    borderWidth: 2,
+    borderColor: '#000000',
+    shadowColor: '#000',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+    transform: [{ rotate: '-1deg' }],
+  },
+  
+  modalButtonText: {
+    fontSize: 16,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#000000',
   },
 });
 
