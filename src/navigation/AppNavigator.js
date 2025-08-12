@@ -9,6 +9,9 @@ import MainMenuScreen from '../screens/MainMenuScreen';
 import CreateGameScreen from '../screens/game/CreateGameScreen';
 import LobbyConfigScreen from '../screens/game/LobbyConfigScreen';
 import PlayerRegistrationScreen from '../screens/game/PlayerRegistrationScreen';
+import SingleDeviceSetupScreen from '../screens/game/SingleDeviceSetupScreen';
+import MultiPlayerRegistrationScreen from '../screens/game/MultiPlayerRegistrationScreen';
+import CreateLobbyScreen from '../screens/game/CreateLobbyScreen';
 
 const Stack = createStackNavigator();
 
@@ -61,6 +64,27 @@ const AppNavigator = () => {
         <Stack.Screen 
           name="PlayerRegistration" 
           component={PlayerRegistrationScreen}
+          options={{
+            animationTypeForReplace: 'push',
+          }}
+        />
+        <Stack.Screen 
+          name="SingleDeviceSetup" 
+          component={SingleDeviceSetupScreen}
+          options={{
+            animationTypeForReplace: 'push',
+          }}
+        />
+        <Stack.Screen 
+          name="MultiPlayerRegistration" 
+          component={MultiPlayerRegistrationScreen}
+          options={{
+            animationTypeForReplace: 'push',
+          }}
+        />
+        <Stack.Screen 
+          name="CreateLobby" 
+          component={CreateLobbyScreen}
           options={{
             animationTypeForReplace: 'push',
           }}

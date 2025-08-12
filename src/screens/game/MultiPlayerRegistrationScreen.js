@@ -48,12 +48,12 @@ const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
   );
 };
 
-const PlayerRegistrationScreen = ({ navigation, route }) => {
+const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   // Redux
   const dispatch = useDispatch();
   
   // Parámetros de navegación
-  const { gameMode, playMethod, connectionType } = route.params;
+  const { gameMode, playerCount, currentPlayer = 1, registeredPlayers = [] } = route.params;
   
   // Estados para el formulario
   const [nickname, setNickname] = useState('');
@@ -83,13 +83,21 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
       // Sincronizar estado de mute cuando regresamos a la pantalla
       setIsMuted(audioService.isMusicMuted);
       
+      // Limpiar formulario para cada jugador nuevo
+      setNickname('');
+      setGender('');
+      setOrientation('');
+      setPlayerPhoto(null);
+      setSelectedEmoji('');
+      setPhotoUri(null);
+      
       // Animaciones de entrada
       startEntranceAnimations();
       
       return () => {
         cleanupSound();
       };
-    }, [])
+    }, [currentPlayer])
   );
 
   const cleanupSound = async () => {
@@ -315,7 +323,22 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    navigation.goBack();
+    
+    if (currentPlayer === 1) {
+      // Si es el primer jugador, regresar a SingleDeviceSetup
+      navigation.goBack();
+    } else {
+      // Si no es el primer jugador, regresar al jugador anterior
+      const updatedPlayers = [...registeredPlayers];
+      updatedPlayers.pop(); // Remover el último jugador registrado
+      
+      navigation.replace('MultiPlayerRegistration', {
+        gameMode,
+        playerCount,
+        currentPlayer: currentPlayer - 1,
+        registeredPlayers: updatedPlayers
+      });
+    }
   };
 
   const handleContinue = () => {
@@ -343,26 +366,42 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
     
     playBeerSound();
     
-    // Datos del jugador
-    const playerData = {
+    // Datos del jugador actual
+    const currentPlayerData = {
+      playerId: currentPlayer,
       nickname: nickname.trim(),
       gender,
       orientation,
       photo: playerPhoto,
       emoji: selectedEmoji,
       photoUri: photoUri,
-      gameMode,
-      playMethod,
-      connectionType
     };
     
-    console.log('Datos del jugador:', playerData);
+    // Agregar jugador actual a la lista
+    const updatedPlayers = [...registeredPlayers, currentPlayerData];
     
-    // Navegar a CreateLobbyScreen
-    navigation.navigate('CreateLobby', { 
-      ...route.params,
-      playerData 
-    });
+    console.log(`Jugador ${currentPlayer} registrado:`, currentPlayerData);
+    
+    if (currentPlayer < playerCount) {
+      // Si no es el último jugador, continuar con el siguiente
+      navigation.replace('MultiPlayerRegistration', {
+        gameMode,
+        playerCount,
+        currentPlayer: currentPlayer + 1,
+        registeredPlayers: updatedPlayers
+      });
+    } else {
+      // Si es el último jugador, finalizar registro
+      console.log('Todos los jugadores registrados:', updatedPlayers);
+      
+      // Navegar a CreateLobbyScreen con todos los jugadores registrados
+      navigation.navigate('CreateLobby', {
+        gameMode,
+        playMethod: 'single',
+        playerCount,
+        registeredPlayers: updatedPlayers
+      });
+    }
   };
 
   return (
@@ -417,8 +456,8 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
 
       {/* Título */}
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>REGISTRO DEL JUGADOR</Text>
-        <Text style={styles.subtitle}>Personaliza tu perfil</Text>
+        <Text style={styles.title}>REGISTRA LOS JUGADORES</Text>
+        <Text style={styles.subtitle}>({currentPlayer}/{playerCount})</Text>
       </View>
 
       {/* Contenido principal dividido 35/65 */}
@@ -786,9 +825,9 @@ const styles = StyleSheet.create({
   },
   
   subtitle: {
-    fontSize: 14,
+    fontSize: 18,
     fontFamily: theme.fonts.primary,
-    color: '#666666',
+    color: '#000000',
     textAlign: 'center',
     transform: [{ rotate: '-0.3deg' }],
   },
@@ -914,12 +953,12 @@ const styles = StyleSheet.create({
     marginTop: -12,
   },
   
-  orientationFieldContainer: {
-    marginTop: -5,
-  },
-  
   genderFieldContainer: {
     marginTop: -25,
+  },
+  
+  orientationFieldContainer: {
+    marginTop: -5,
   },
   
   fieldLabel: {
@@ -1304,4 +1343,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PlayerRegistrationScreen;
+export default MultiPlayerRegistrationScreen;

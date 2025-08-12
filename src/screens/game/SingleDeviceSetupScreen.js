@@ -7,6 +7,7 @@ import {
   Animated,
   Dimensions,
   Image,
+  Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
@@ -43,21 +44,18 @@ const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
   );
 };
 
-const LobbyConfigScreen = ({ navigation, route }) => {
+const SingleDeviceSetupScreen = ({ navigation, route }) => {
   // Redux
   const dispatch = useDispatch();
   
-  // Parámetros de navegación
-  const { gameMode } = route.params;
-  
-  // Estados para las selecciones
-  const [playMethod, setPlayMethod] = useState('multiple'); // 'multiple' o 'single'
-  const [connectionType, setConnectionType] = useState('wifi'); // 'wifi' o 'bluetooth'
+  // Estados
+  const [playerCount, setPlayerCount] = useState(4); // Default 4 jugadores
   
   // Animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const leftSideAnim = useRef(new Animated.Value(-300)).current;
-  const rightSideAnim = useRef(new Animated.Value(300)).current;
+  const titleAnim = useRef(new Animated.Value(-50)).current;
+  const selectorAnim = useRef(new Animated.Value(50)).current;
+  const buttonAnim = useRef(new Animated.Value(100)).current;
   
   // Referencias para sonidos
   const beerSound = useRef(null);
@@ -93,27 +91,40 @@ const LobbyConfigScreen = ({ navigation, route }) => {
   const startEntranceAnimations = () => {
     // Resetear valores
     fadeAnim.setValue(0);
-    leftSideAnim.setValue(-300);
-    rightSideAnim.setValue(300);
+    titleAnim.setValue(-50);
+    selectorAnim.setValue(50);
+    buttonAnim.setValue(100);
 
-    // Animación de entrada
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(leftSideAnim, {
+    // Animaciones escalonadas
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+
+    setTimeout(() => {
+      Animated.timing(titleAnim, {
         toValue: 0,
         duration: 600,
         useNativeDriver: true,
-      }),
-      Animated.timing(rightSideAnim, {
+      }).start();
+    }, 200);
+
+    setTimeout(() => {
+      Animated.timing(selectorAnim, {
         toValue: 0,
         duration: 600,
         useNativeDriver: true,
-      }),
-    ]).start();
+      }).start();
+    }, 400);
+
+    setTimeout(() => {
+      Animated.timing(buttonAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    }, 600);
   };
 
   const playBeerSound = async () => {
@@ -143,7 +154,7 @@ const LobbyConfigScreen = ({ navigation, route }) => {
     }
   };
 
-  const handlePlayMethodSelect = (method) => {
+  const handlePlayerCountChange = (newCount) => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
@@ -151,21 +162,7 @@ const LobbyConfigScreen = ({ navigation, route }) => {
     }
     
     playBeerSound();
-    setPlayMethod(method);
-  };
-
-  const handleConnectionSelect = (connection) => {
-    // No permitir selección si está en modo un dispositivo
-    if (playMethod === 'single') return;
-    
-    try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    } catch (error) {
-      console.log('Haptics not available:', error);
-    }
-    
-    playBeerSound();
-    setConnectionType(connection);
+    setPlayerCount(newCount);
   };
 
   const toggleMute = async () => {
@@ -200,7 +197,7 @@ const LobbyConfigScreen = ({ navigation, route }) => {
     navigation.goBack();
   };
 
-  const handleContinue = () => {
+  const handleStartGame = () => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (error) {
@@ -209,17 +206,23 @@ const LobbyConfigScreen = ({ navigation, route }) => {
     
     playBeerSound();
     
-    // Navegar según el método de juego seleccionado
-    console.log('Configuración:', { gameMode, playMethod, connectionType });
+    // Datos del juego
+    const gameData = {
+      mode: 'single-device',
+      playerCount,
+    };
     
-    if (playMethod === 'single') {
-      // Si seleccionó "Un Dispositivo", ir a SingleDeviceSetupScreen
-      navigation.navigate('SingleDeviceSetup', { gameMode });
-    } else {
-      // Si seleccionó "Múltiples Dispositivos", ir a PlayerRegistration
-      navigation.navigate('PlayerRegistration', { gameMode, playMethod, connectionType });
-    }
+    console.log('Iniciando juego:', gameData);
+    
+    // Navegar a MultiPlayerRegistrationScreen para registrar jugadores
+    navigation.navigate('MultiPlayerRegistration', { 
+      gameMode: 'single-device',
+      playerCount 
+    });
   };
+
+  // Generar números de jugadores (3-16)
+  const playerNumbers = Array.from({ length: 14 }, (_, i) => i + 3);
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
@@ -271,135 +274,76 @@ const LobbyConfigScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       </Animated.View>
 
-      {/* Contenido principal dividido 50/50 */}
-      <View style={styles.mainContent}>
-        
-        {/* LADO IZQUIERDO - Manera de Jugar */}
+      {/* Contenido principal */}
+      <View style={styles.content}>
+        {/* Título */}
         <Animated.View 
           style={[
-            styles.leftSide,
-            { transform: [{ translateX: leftSideAnim }] }
+            styles.titleContainer,
+            { transform: [{ translateY: titleAnim }] }
           ]}
         >
-          <Text style={styles.sectionTitle}>Manera de Jugar</Text>
-          
-          <View style={styles.optionsContainer}>
-            {/* Múltiples Dispositivos */}
-            <TouchableOpacity
-              style={[
-                styles.optionButton,
-                playMethod === 'multiple' && styles.selectedOption,
-              ]}
-              onPress={() => handlePlayMethodSelect('multiple')}
-              activeOpacity={0.8}
-            >
-              <View style={styles.radioButton}>
-                {playMethod === 'multiple' && <View style={styles.radioButtonSelected} />}
-              </View>
-              <View style={styles.optionContent}>
-                <Text style={styles.optionTitle}>Múltiples Dispositivos</Text>
-                <Text style={styles.optionSubtitle}>(Recomendable)</Text>
-              </View>
-            </TouchableOpacity>
-            
-            {/* Un Dispositivo */}
-            <TouchableOpacity
-              style={[
-                styles.optionButton,
-                playMethod === 'single' && styles.selectedOption,
-              ]}
-              onPress={() => handlePlayMethodSelect('single')}
-              activeOpacity={0.8}
-            >
-              <View style={styles.radioButton}>
-                {playMethod === 'single' && <View style={styles.radioButtonSelected} />}
-              </View>
-              <View style={styles.optionContent}>
-                <Text style={styles.optionTitle}>Un Dispositivo</Text>
-                <Text style={styles.optionDescription}>El host menciona las dinámicas</Text>
-              </View>
-            </TouchableOpacity>
+          <Text style={styles.title}>UN SOLO DISPOSITIVO</Text>
+          <Text style={styles.subtitle}>¿Cuántos van a jugar?</Text>
+        </Animated.View>
+
+        {/* Selector de jugadores */}
+        <Animated.View 
+          style={[
+            styles.selectorContainer,
+            { transform: [{ translateY: selectorAnim }] }
+          ]}
+        >
+          <View style={styles.playerCountDisplay}>
+            <Text style={styles.playerCountNumber}>{playerCount}</Text>
+            <Text style={styles.playerCountLabel}>
+              {playerCount === 1 ? 'Jugador' : 'Jugadores'}
+            </Text>
+          </View>
+
+          {/* Grid de números */}
+          <View style={styles.numbersGrid}>
+            {playerNumbers.map((number) => (
+              <TouchableOpacity
+                key={number}
+                style={[
+                  styles.numberButton,
+                  playerCount === number && styles.selectedNumberButton,
+                ]}
+                onPress={() => handlePlayerCountChange(number)}
+                activeOpacity={0.8}
+              >
+                <Text style={[
+                  styles.numberButtonText,
+                  playerCount === number && styles.selectedNumberButtonText,
+                ]}>
+                  {number}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </Animated.View>
 
-        {/* LADO DERECHO - Tipo de Conexión */}
+        {/* Botón de iniciar - Flecha circular en esquina inferior derecha */}
         <Animated.View 
           style={[
-            styles.rightSide,
-            { transform: [{ translateX: rightSideAnim }] }
+            styles.startButtonContainer,
+            { transform: [{ translateY: buttonAnim }] }
           ]}
         >
-          <Text style={[
-            styles.sectionTitle,
-            playMethod === 'single' && styles.disabledTitle
-          ]}>
-            Tipo de Conexión
-          </Text>
-          
-          <View style={[
-            styles.optionsContainer,
-            playMethod === 'single' && styles.disabledContainer
-          ]}>
-            {/* WiFi */}
-            <TouchableOpacity
-              style={[
-                styles.optionButton,
-                connectionType === 'wifi' && styles.selectedOption,
-                playMethod === 'single' && styles.disabledOption,
-              ]}
-              onPress={() => handleConnectionSelect('wifi')}
-              activeOpacity={playMethod === 'single' ? 1 : 0.8}
-            >
-              <View style={styles.radioButton}>
-                {connectionType === 'wifi' && playMethod !== 'single' && 
-                  <View style={styles.radioButtonSelected} />
-                }
-              </View>
-              <View style={styles.optionContent}>
-                <View style={styles.optionWithIcon}>
-                  <Text style={styles.wifiIcon}>🛜</Text>
-                  <Text style={styles.optionTitle}>WiFi</Text>
-                </View>
-                <Text style={styles.optionDescription}>Conexión por red WiFi</Text>
-              </View>
-            </TouchableOpacity>
-            
-            {/* Bluetooth */}
-            <TouchableOpacity
-              style={[
-                styles.optionButton,
-                connectionType === 'bluetooth' && styles.selectedOption,
-                playMethod === 'single' && styles.disabledOption,
-              ]}
-              onPress={() => handleConnectionSelect('bluetooth')}
-              activeOpacity={playMethod === 'single' ? 1 : 0.8}
-            >
-              <View style={styles.radioButton}>
-                {connectionType === 'bluetooth' && playMethod !== 'single' && 
-                  <View style={styles.radioButtonSelected} />
-                }
-              </View>
-              <View style={styles.optionContent}>
-                <View style={styles.optionWithIcon}>
-                  <Text style={styles.bluetoothIcon}>📱</Text>
-                  <Text style={styles.optionTitle}>Bluetooth</Text>
-                </View>
-                <Text style={styles.optionDescription}>Conexión directa entre dispositivos</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.startArrowButton}
+            onPress={handleStartGame}
+            activeOpacity={0.8}
+          >
+            <Image 
+              source={require('../../../assets/images/Arrow.Sketch.png')}
+              style={styles.startArrowImage}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
         </Animated.View>
       </View>
-
-      {/* Botón continuar */}
-      <TouchableOpacity
-        style={styles.continueButton}
-        onPress={handleContinue}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.continueButtonText}>Continuar</Text>
-        <Text style={styles.continueButtonIcon}>→</Text>
-      </TouchableOpacity>
     </Animated.View>
   );
 };
@@ -501,177 +445,147 @@ const styles = StyleSheet.create({
   },
   
   // Contenido principal
-  mainContent: {
+  content: {
     flex: 1,
-    flexDirection: 'row',
-    paddingTop: 60,
-    paddingBottom: 160,
-    paddingHorizontal: 120, // Espacio para agujeros y margen
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 120,
+    paddingVertical: 20,
+    paddingTop: 80,
   },
   
-  // Lado izquierdo - 50% del ancho
-  leftSide: {
-    flex: 1,
-    paddingRight: 20,
-    paddingLeft: 20,
+  // Título
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+    marginTop: -60,
   },
   
-  // Lado derecho - 50% del ancho
-  rightSide: {
-    flex: 1,
-    paddingLeft: 20,
-    borderLeftWidth: 2,
-    borderLeftColor: '#A8C8EC',
-    borderLeftStyle: 'dashed',
-  },
-  
-  sectionTitle: {
-    fontSize: 28,
+  title: {
+    fontSize: 26,
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: 5,
     transform: [{ rotate: '0.5deg' }],
   },
   
-  disabledTitle: {
-    color: '#999999',
-    opacity: 0.6,
+  subtitle: {
+    fontSize: 24,
+    fontFamily: theme.fonts.primary,
+    color: '#000000',
+    textAlign: 'center',
+    transform: [{ rotate: '-0.3deg' }],
   },
   
-  optionsContainer: {
-    gap: 20,
-  },
-  
-  disabledContainer: {
-    opacity: 0.4,
-  },
-  
-  optionButton: {
-    flexDirection: 'row',
+  // Selector de jugadores
+  selectorContainer: {
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 15,
+    marginBottom: 20,
+    marginTop: -40,
+  },
+  
+  playerCountDisplay: {
+    backgroundColor: theme.colors.postItYellow,
+    borderWidth: 3,
+    borderColor: '#000000',
+    borderRadius: 20,
     borderTopLeftRadius: 5,
+    paddingVertical: 20,
+    paddingHorizontal: 30,
+    alignItems: 'center',
+    marginBottom: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
+    transform: [{ rotate: '-1deg' }],
+  },
+  
+  playerCountNumber: {
+    fontSize: 48,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#2E2E2E',
+  },
+  
+  playerCountLabel: {
+    fontSize: 18,
+    fontFamily: theme.fonts.primary,
+    color: '#2E2E2E',
+    marginTop: 5,
+  },
+  
+  // Grid de números
+  numbersGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+    maxWidth: 400,
+  },
+  
+  numberButton: {
+    width: 42,
+    height: 42,
+    backgroundColor: '#FFFFFF',
     borderWidth: 2,
-    borderColor: '#CCCCCC',
+    borderColor: '#000000',
+    borderRadius: 21,
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 3,
-    transform: [{ rotate: '-0.3deg' }],
+    transform: [{ rotate: '-1deg' }],
   },
   
-  selectedOption: {
-    borderColor: '#000000',
+  selectedNumberButton: {
+    backgroundColor: theme.colors.postItGreen,
+    transform: [{ rotate: '0deg' }, { scale: 1.1 }],
     borderWidth: 3,
-    backgroundColor: '#FFE082',
-    transform: [{ rotate: '0deg' }],
-    shadowOpacity: 0.25,
-    elevation: 6,
   },
   
-  disabledOption: {
-    opacity: 0.5,
-    backgroundColor: '#F5F5F5',
-  },
-  
-  radioButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#666666',
-    marginRight: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  
-  radioButtonSelected: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#000000',
-  },
-  
-  optionContent: {
-    flex: 1,
-  },
-  
-  optionWithIcon: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  
-  optionTitle: {
-    fontSize: 18,
+  numberButtonText: {
+    fontSize: 16,
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
-    marginBottom: 4,
   },
   
-  optionSubtitle: {
-    fontSize: 14,
-    fontFamily: theme.fonts.primary,
-    color: '#666666',
-    fontStyle: 'italic',
+  selectedNumberButtonText: {
+    color: '#2E2E2E',
   },
   
-  optionDescription: {
-    fontSize: 14,
-    fontFamily: theme.fonts.primary,
-    color: '#666666',
-  },
-  
-  wifiIcon: {
-    fontSize: 20,
-    marginRight: 8,
-  },
-  
-  bluetoothIcon: {
-    fontSize: 20,
-    marginRight: 8,
-  },
-  
-  // Botón continuar
-  continueButton: {
+  // Botón de iniciar - Flecha circular
+  startButtonContainer: {
     position: 'absolute',
     bottom: 30,
-    alignSelf: 'center',
-    left: '30%',
-    right: '30%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 30,
+    right: 30,
+  },
+  
+  startArrowButton: {
+    width: 60,
+    height: 60,
     backgroundColor: theme.colors.postItGreen,
-    borderRadius: 18,
-    borderTopLeftRadius: 5,
+    borderRadius: 30,
     borderWidth: 3,
     borderColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
-    transform: [{ rotate: '1deg' }],
+    transform: [{ rotate: '5deg' }],
+    zIndex: 10,
   },
   
-  continueButtonText: {
-    fontSize: 20,
-    fontFamily: theme.fonts.primaryBold,
-    color: '#2E2E2E',
-    flex: 1,
-    textAlign: 'center',
-  },
-  
-  continueButtonIcon: {
-    fontSize: 24,
-    color: '#2E2E2E',
-    marginLeft: 10,
+  startArrowImage: {
+    width: 35,
+    height: 35,
   },
   
   // Estilos para el botón de mute
@@ -730,4 +644,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LobbyConfigScreen;
+export default SingleDeviceSetupScreen;
