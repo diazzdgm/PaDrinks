@@ -8,20 +8,45 @@ PaDrinks is a React Native drinking game app built with Expo. It's designed for 
 
 ## Development Commands
 
+### Frontend (React Native)
 ```bash
 # Start development server
-expo start
+npx expo start
 
 # Run on specific platforms
-expo start --android
-expo start --ios  
-expo start --web
+npx expo start --android
+npx expo start --ios  
+npx expo start --web
 
 # Clear cache if needed
-expo start --clear
+npx expo start --clear
 
 # Install dependencies
 npm install
+
+# Clean build (if Metro bundler issues)
+npx expo start -c
+```
+
+### Backend (Node.js + Socket.IO)
+```bash
+# Navigate to backend directory
+cd backend
+
+# Install backend dependencies
+npm install
+
+# Start backend development server (with auto-reload)
+npm run dev
+
+# Start backend production server
+npm start
+
+# Test backend connectivity
+curl http://localhost:3001/health
+
+# Run comprehensive backend API tests
+node test-api.js
 ```
 
 ## Project Configuration
@@ -31,7 +56,8 @@ npm install
 - **No Testing Setup**: No Jest, ESLint, or other testing/linting tools configured
 - **No Build Scripts**: Uses default Expo build system
 - **Firebase Integration**: React Native Firebase SDK with Auth and Realtime Database modules
-- **Connectivity Stack**: Multiple networking options - Bluetooth (BLE Manager), WiFi P2P, and Firebase backend
+- **Connectivity Stack**: Multiple networking options - Bluetooth (BLE Manager), WiFi P2P, Firebase backend, and Socket.IO real-time communication
+- **Backend Integration**: Node.js + Express + Socket.IO backend server for multiplayer functionality
 
 ## Architecture
 
@@ -44,7 +70,7 @@ The app uses a stack-based navigation where each screen replaces the previous on
 Redux store with three main slices, configured with middleware for persistence (though persistence is not actually implemented):
 - `gameSlice`: Game state and mechanics
 - `playersSlice`: Player management and data  
-- `connectionSlice`: Network connectivity status
+- `connectionSlice`: Network connectivity status, Socket.IO connection state, and room data
 
 ### Screen Architecture Patterns
 All main screens follow similar patterns:
@@ -97,6 +123,7 @@ App.js (Redux Provider + Font Loading)
 - **Firebase**: Backend integration with Auth and Realtime Database (@react-native-firebase/*)
 - **Connectivity Suite**: BLE Manager, WiFi P2P, Framer Motion for advanced animations
 - **UI Components**: React Native Paper for material design elements, Vector Icons, Super Grid
+- **Socket.IO Client**: Real-time communication with backend server for multiplayer functionality
 
 ## Important Technical Notes
 
@@ -175,3 +202,62 @@ Recently added screens follow established patterns:
 - **AudioService Integration**: Consistent singleton audio service usage across all screens
 - **Haptic Feedback**: Try-catch wrapped haptic responses for platform compatibility
 - **Animation Consistency**: `useRef` with `Animated.Value` following the established animation patterns
+
+## Backend Infrastructure
+
+### Socket.IO Server Architecture
+The Node.js backend provides real-time multiplayer functionality:
+- **Express Server**: RESTful API endpoints and static file serving
+- **Socket.IO Integration**: Real-time bidirectional communication 
+- **Room Management**: 6-digit room codes with automatic generation and validation
+- **Player System**: UUID-based player identification with reconnection support
+- **Rate Limiting**: Protection against connection abuse using rate-limiter-flexible
+- **CORS Configuration**: Configured for development with wildcard origins
+- **Connection State Recovery**: 2-minute disconnection tolerance with automatic reconnection
+
+### Backend Directory Structure
+```
+backend/
+├── src/
+│   ├── server.js              # Main Express + Socket.IO server
+│   ├── socket/
+│   │   ├── socketHandler.js   # Primary Socket.IO event handlers
+│   │   └── gameEvents.js      # Game-specific event logic
+│   ├── models/
+│   │   ├── Room.js           # Room model with player management
+│   │   └── Player.js         # Player model with UUID and status tracking
+│   ├── utils/
+│   │   ├── roomManager.js    # In-memory room storage with NodeCache
+│   │   └── codeGenerator.js  # 6-digit room code generation
+│   └── routes/
+│       └── api.js            # REST API endpoints for validation
+├── test-api.js               # Comprehensive integration testing script
+└── package.json              # Backend dependencies and scripts
+```
+
+### Network Configuration for Mobile Development
+- **Server Binding**: Backend listens on `'0.0.0.0'` for mobile device access
+- **IP Configuration**: Frontend configured for local network IP (src/config/server.js:54)
+- **Metro Config**: React Native Metro bundler configured to ignore backend directory (metro.config.js:7-11)
+- **Mobile Testing**: Successfully tested on physical Android devices over WiFi
+
+### Socket.IO Service Integration
+- **SocketService Singleton**: Manages connection state across app navigation (src/services/SocketService.js)
+- **Automatic Connection**: CreateGameScreen auto-connects to backend on screen load
+- **Session Persistence**: AsyncStorage integration for reconnection data
+- **Event Management**: Comprehensive event listener system with cleanup patterns
+- **Error Handling**: Robust connection error handling with exponential backoff reconnection
+
+### Backend Development Workflow
+1. **Start Backend**: `cd backend && npm run dev` for development with auto-reload
+2. **Test Integration**: `node test-api.js` validates all endpoints and Socket.IO events
+3. **Monitor Connections**: Backend logs show real-time connection events
+4. **Mobile Testing**: Configure IP address in src/config/server.js for device testing
+5. **Room Management**: 6-digit codes auto-expire after 2 hours of inactivity
+
+### Socket.IO Events Architecture
+Key events for game functionality:
+- **Room Events**: createRoom, joinRoom, leaveRoom, reconnectToRoom
+- **Player Events**: playerJoined, playerLeft, playerDisconnected, playerReconnected
+- **Game Events**: startGame, pauseGame, resumeGame, gameAction, syncGameState
+- **Admin Events**: kickPlayer, getServerInfo, heartbeat ping/pong

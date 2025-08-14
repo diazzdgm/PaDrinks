@@ -2,23 +2,29 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   // Tipo de conexión
-  connectionType: null, // 'bluetooth', 'wifi', 'offline'
+  connectionType: 'socket', // 'bluetooth', 'wifi', 'socket', 'offline'
   
-  // Estado de conexión
+  // Estado de conexión Socket.IO
   isConnected: false,
+  isConnecting: false,
+  socketId: null,
+  serverUrl: 'http://localhost:3001',
+  
+  // Estado de sala
   isHost: false,
   roomCode: null,
+  currentRoom: null,
+  currentPlayer: null,
   
-  // Dispositivos
+  // Dispositivos (para futuras implementaciones Bluetooth/WiFi)
   availableDevices: [],
   connectedDevices: [],
   
   // Datos de red
   networkInfo: null,
   
-  // Estados
+  // Estados de UI
   isScanning: false,
-  isConnecting: false,
   connectionError: null,
   
   // Configuración
@@ -26,7 +32,13 @@ const initialState = {
     autoReconnect: true,
     connectionTimeout: 30000, // 30 segundos
     maxRetries: 3,
+    heartbeatInterval: 30000, // 30 segundos
   },
+  
+  // Estadísticas de conexión
+  reconnectAttempts: 0,
+  lastConnectedAt: null,
+  lastDisconnectedAt: null,
 };
 
 const connectionSlice = createSlice({
@@ -35,6 +47,59 @@ const connectionSlice = createSlice({
   reducers: {
     setConnectionType: (state, action) => {
       state.connectionType = action.payload;
+    },
+    
+    // Socket.IO connection actions
+    setSocketConnected: (state, action) => {
+      state.isConnected = action.payload.connected;
+      state.socketId = action.payload.socketId || null;
+      state.isConnecting = false;
+      state.connectionError = null;
+      
+      if (action.payload.connected) {
+        state.lastConnectedAt = new Date().toISOString();
+        state.reconnectAttempts = 0;
+      } else {
+        state.lastDisconnectedAt = new Date().toISOString();
+        state.socketId = null;
+      }
+    },
+    
+    setSocketConnecting: (state, action) => {
+      state.isConnecting = action.payload;
+      if (action.payload) {
+        state.connectionError = null;
+      }
+    },
+    
+    setSocketId: (state, action) => {
+      state.socketId = action.payload;
+    },
+    
+    setServerUrl: (state, action) => {
+      state.serverUrl = action.payload;
+    },
+    
+    // Room actions
+    setRoomData: (state, action) => {
+      const { room, player, isHost } = action.payload;
+      state.currentRoom = room;
+      state.currentPlayer = player;
+      state.isHost = isHost;
+      state.roomCode = room?.id || null;
+    },
+    
+    clearRoomData: (state) => {
+      state.currentRoom = null;
+      state.currentPlayer = null;
+      state.isHost = false;
+      state.roomCode = null;
+    },
+    
+    updateRoomState: (state, action) => {
+      if (state.currentRoom) {
+        state.currentRoom = { ...state.currentRoom, ...action.payload };
+      }
     },
     
     setConnectionStatus: (state, action) => {
@@ -99,6 +164,14 @@ const connectionSlice = createSlice({
       state.isConnecting = false;
     },
     
+    incrementReconnectAttempts: (state) => {
+      state.reconnectAttempts += 1;
+    },
+    
+    resetReconnectAttempts: (state) => {
+      state.reconnectAttempts = 0;
+    },
+    
     setNetworkInfo: (state, action) => {
       state.networkInfo = action.payload;
     },
@@ -110,10 +183,24 @@ const connectionSlice = createSlice({
 });
 
 export const {
+  // General connection
   setConnectionType,
   setConnectionStatus,
   setIsHost,
   setRoomCode,
+  
+  // Socket.IO specific
+  setSocketConnected,
+  setSocketConnecting,
+  setSocketId,
+  setServerUrl,
+  
+  // Room management
+  setRoomData,
+  clearRoomData,
+  updateRoomState,
+  
+  // Device management (for future use)
   startScanning,
   stopScanning,
   setAvailableDevices,
@@ -122,8 +209,14 @@ export const {
   addConnectedDevice,
   removeConnectedDevice,
   setConnecting,
+  
+  // Error and network
   setConnectionError,
   setNetworkInfo,
+  incrementReconnectAttempts,
+  resetReconnectAttempts,
+  
+  // Reset
   resetConnection,
 } = connectionSlice.actions;
 

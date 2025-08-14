@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PaDrinks Backend Test</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 3px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>🎮 PaDrinks Backend Test Client</h1>
+    
+    <div class="section">
+        <h3>🔌 Conexión</h3>
+        <button onclick="connect()">Conectar</button>
+        <button onclick="disconnect()">Desconectar</button>
+        <p>Estado: <span id="connectionStatus">Desconectado</span></p>
+    </div>
+    
+    <div class="section">
+        <h3>🏠 Gestión de Salas</h3>
+        <button onclick="createRoom()">Crear Sala</button>
+        <button onclick="joinRoom()">Unirse a Sala</button>
+        <button onclick="leaveRoom()">Salir de Sala</button>
+        <br>
+        <input type="text" id="roomCodeInput" placeholder="Código de sala (6 dígitos)" maxlength="6">
+        <input type="text" id="nicknameInput" placeholder="Tu nickname" value="TestPlayer">
+    </div>
+    
+    <div class="section">
+        <h3>🎮 Controles de Juego</h3>
+        <button onclick="startGame()">Iniciar Juego</button>
+        <button onclick="pauseGame()">Pausar Juego</button>
+        <button onclick="resumeGame()">Reanudar Juego</button>
+        <button onclick="sendGameAction()">Enviar Acción</button>
+    </div>
+    
+    <div class="section">
+        <h3>📊 Información</h3>
+        <button onclick="getServerInfo()">Info del Servidor</button>
+        <button onclick="ping()">Ping</button>
+        <button onclick="syncGameState()">Sincronizar Estado</button>
+    </div>
+    
+    <div class="section">
+        <h3>📝 Log de Eventos</h3>
+        <button onclick="clearLog()">Limpiar Log</button>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        let socket = null;
+        let currentRoomCode = null;
+        let currentPlayerId = null;
+        let isHost = false;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function updateConnectionStatus(status) {
+            document.getElementById('connectionStatus').textContent = status;
+        }
+
+        function connect() {
+            if (socket && socket.connected) {
+                log('Ya estás conectado', 'error');
+                return;
+            }
+
+            socket = io('http://localhost:3001');
+            
+            socket.on('connect', () => {
+                updateConnectionStatus(`Conectado (${socket.id})`);
+                log(`✅ Conectado con ID: ${socket.id}`, 'success');
+            });
+            
+            socket.on('disconnect', (reason) => {
+                updateConnectionStatus('Desconectado');
+                log(`🔌 Desconectado: ${reason}`, 'info');
+            });
+            
+            socket.on('error', (error) => {
+                log(`❌ Error: ${error.error || error}`, 'error');
+            });
+            
+            // Eventos de sala
+            socket.on('roomCreated', (data) => {
+                log(`🏠 Sala creada: ${data.room.id}`, 'success');
+            });
+            
+            socket.on('playerJoined', (data) => {
+                log(`👤 Jugador se unió: ${data.player.nickname}`, 'info');
+            });
+            
+            socket.on('playerLeft', (data) => {
+                log(`👋 Jugador salió: ${data.player.nickname}`, 'info');
+            });
+            
+            socket.on('playerDisconnected', (data) => {
+                log(`🔌 Jugador desconectado: ${data.player.nickname}`, 'info');
+            });
+            
+            socket.on('playerReconnected', (data) => {
+                log(`🔄 Jugador reconectado: ${data.player.nickname}`, 'success');
+            });
+            
+            // Eventos de juego
+            socket.on('gameStarted', (data) => {
+                log(`🎮 Juego iniciado por ${data.startedBy.nickname}`, 'success');
+            });
+            
+            socket.on('gamePaused', (data) => {
+                log(`⏸️ Juego pausado: ${data.reason}`, 'info');
+            });
+            
+            socket.on('gameResumed', (data) => {
+                log(`▶️ Juego reanudado`, 'success');
+            });
+            
+            socket.on('gameActionReceived', (data) => {
+                log(`🎯 Acción recibida: ${data.action} de ${data.player.nickname}`, 'info');
+            });
+            
+            socket.on('playerKicked', (data) => {
+                log(`👟 Jugador expulsado: ${data.kickedPlayer.nickname}`, 'info');
+            });
+            
+            socket.on('kicked', (data) => {
+                log(`❌ Has sido expulsado: ${data.reason}`, 'error');
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+                currentRoomCode = null;
+                currentPlayerId = null;
+                isHost = false;
+            }
+        }
+
+        function createRoom() {
+            if (!socket || !socket.connected) {
+                log('Debes conectarte primero', 'error');
+                return;
+            }
+
+            const nickname = document.getElementById('nicknameInput').value || 'TestHost';
+            
+            socket.emit('createRoom', {
+                settings: { maxPlayers: 8 },
+                playerData: { nickname: nickname }
+            }, (response) => {
+                if (response.success) {
+                    currentRoomCode = response.room.id;
+                    currentPlayerId = response.player.id;
+                    isHost = response.isHost;
+                    log(`✅ Sala creada: ${currentRoomCode} (Host: ${isHost})`, 'success');
+                } else {
+                    log(`❌ Error creando sala: ${response.error}`, 'error');
+                }
+            });
+        }
+
+        function joinRoom() {
+            if (!socket || !socket.connected) {
+                log('Debes conectarte primero', 'error');
+                return;
+            }
+
+            const roomCode = document.getElementById('roomCodeInput').value;
+            const nickname = document.getElementById('nicknameInput').value || 'TestPlayer';
+            
+            if (!roomCode || roomCode.length !== 6) {
+                log('Ingresa un código de sala válido (6 dígitos)', 'error');
+                return;
+            }
+
+            socket.emit('joinRoom', {
+                roomCode: roomCode,
+                playerData: { nickname: nickname }
+            }, (response) => {
+                if (response.success) {
+                    currentRoomCode = response.room.id;
+                    currentPlayerId = response.player.id;
+                    isHost = response.isHost;
+                    log(`✅ Te uniste a sala: ${currentRoomCode} (Host: ${isHost})`, 'success');
+                } else {
+                    log(`❌ Error uniéndose: ${response.error}`, 'error');
+                }
+            });
+        }
+
+        function leaveRoom() {
+            if (!socket || !socket.connected) {
+                log('Debes conectarte primero', 'error');
+                return;
+            }
+
+            socket.emit('leaveRoom', {}, (response) => {
+                if (response.success) {
+                    log(`✅ Saliste de la sala`, 'success');
+                    currentRoomCode = null;
+                    currentPlayerId = null;
+                    isHost = false;
+                } else {
+                    log(`❌ Error saliendo: ${response.error}`, 'error');
+                }
+            });
+        }
+
+        function startGame() {
+            if (!socket || !socket.connected) {
+                log('Debes conectarte primero', 'error');
+                return;
+            }
+
+            socket.emit('startGame', {}, (response) => {
+                if (response.success) {
+                    log(`✅ Juego iniciado`, 'success');
+                } else {
+                    log(`❌ Error iniciando juego: ${response.error}`, 'error');
+                }
+            });
+        }
+
+        function pauseGame() {
+            if (!socket || !socket.connected) {
+                log('Debes conectarte primero', 'error');
+                return;
+            }
+
+            socket.emit('pauseGame', { reason: 'Pausa manual' }, (response) => {
+                if (response.success) {
+                    log(`✅ Juego pausado`, 'success');
+                } else {
+                    log(`❌ Error pausando: ${response.error}`, 'error');
+                }
+            });
+        }
+
+        function resumeGame() {
+            if (!socket || !socket.connected) {
+                log('Debes conectarte primero', 'error');
+                return;
+            }
+
+            socket.emit('resumeGame', {}, (response) => {
+                if (response.success) {
+                    log(`✅ Juego reanudado`, 'success');
+                } else {
+                    log(`❌ Error reanudando: ${response.error}`, 'error');
+                }
+            });
+        }
+
+        function sendGameAction() {
+            if (!socket || !socket.connected) {
+                log('Debes conectarte primero', 'error');
+                return;
+            }
+
+            socket.emit('gameAction', {
+                action: 'test_action',
+                data: { timestamp: Date.now(), message: 'Test action from web client' }
+            }, (response) => {
+                if (response.success) {
+                    log(`✅ Acción enviada`, 'success');
+                } else {
+                    log(`❌ Error enviando acción: ${response.error}`, 'error');
+                }
+            });
+        }
+
+        function getServerInfo() {
+            if (!socket || !socket.connected) {
+                log('Debes conectarte primero', 'error');
+                return;
+            }
+
+            socket.emit('getServerInfo', (serverInfo) => {
+                log(`📊 Server Info - Version: ${serverInfo.version}, Uptime: ${Math.floor(serverInfo.uptime)}s`, 'info');
+                log(`📊 Stats - Rooms: ${serverInfo.stats.totalRooms}, Players: ${serverInfo.stats.totalPlayers}`, 'info');
+            });
+        }
+
+        function ping() {
+            if (!socket || !socket.connected) {
+                log('Debes conectarte primero', 'error');
+                return;
+            }
+
+            const startTime = Date.now();
+            socket.emit('ping', (response) => {
+                const pingTime = Date.now() - startTime;
+                log(`🏓 Ping: ${response} (${pingTime}ms)`, 'success');
+            });
+        }
+
+        function syncGameState() {
+            if (!socket || !socket.connected) {
+                log('Debes conectarte primero', 'error');
+                return;
+            }
+
+            socket.emit('syncGameState', (response) => {
+                if (response.success) {
+                    log(`🔄 Estado sincronizado - Room: ${response.room.id}, State: ${response.room.gameState}`, 'success');
+                } else {
+                    log(`❌ Error sincronizando: ${response.error}`, 'error');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

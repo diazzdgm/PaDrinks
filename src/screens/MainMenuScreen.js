@@ -373,6 +373,21 @@ const MainMenuScreen = ({ navigation }) => {
     });
   };
 
+  // Función temporal para test de backend
+  const handleBackendTest = () => {
+    Alert.alert(
+      '🧪 Test Backend',
+      '¿Quieres probar la conexión con el backend?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Test', 
+          onPress: () => navigation.navigate('BackendTest')
+        }
+      ]
+    );
+  };
+
 
 
   return (
@@ -623,6 +638,15 @@ const MainMenuScreen = ({ navigation }) => {
         <Text style={styles.footerText}>
           PaDrinks • Bebe responsablemente • No conduzcas
         </Text>
+        
+        {/* Botón de test temporal - desarrollo */}
+        <TouchableOpacity 
+          style={styles.testButton}
+          onPress={handleBackendTest}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.testButtonText}>🧪 Test Backend</Text>
+        </TouchableOpacity>
       </View>
 
     </View>
@@ -1086,6 +1110,24 @@ const styles = StyleSheet.create({
     color: '#666666',
     textAlign: 'center',
     opacity: 0.7,
+  },
+  
+  testButton: {
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#2196F3',
+    marginTop: 10,
+    alignSelf: 'center',
+  },
+  
+  testButtonText: {
+    fontSize: 10,
+    fontFamily: theme.fonts.primary,
+    color: '#1976D2',
+    textAlign: 'center',
   },
 });
 

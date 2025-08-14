@@ -1,0 +1,285 @@
+const roomManager = require('../utils/roomManager');
+const gameEvents = require('./gameEvents');
+
+/**
+ * Manejador principal de conexiones Socket.IO
+ */
+function socketHandler(io) {
+  console.log('🔌 Socket.IO handler initialized');
+
+  io.on('connection', (socket) => {
+    console.log(`🔗 New connection: ${socket.id}`);
+
+    // Eventos de gestión de salas
+    setupRoomEvents(socket, io);
+    
+    // Eventos de juego
+    setupGameEvents(socket, io);
+    
+    // Eventos de sistema
+    setupSystemEvents(socket, io);
+    
+    // Heartbeat
+    setupHeartbeat(socket);
+  });
+}
+
+/**
+ * Configurar eventos relacionados con salas
+ */
+function setupRoomEvents(socket, io) {
+  
+  // Crear nueva sala
+  socket.on('createRoom', (data, callback) => {
+    try {
+      const { settings, playerData } = data || {};
+      
+      // Crear sala
+      const room = roomManager.createRoom(socket.id, settings);
+      
+      // Crear y agregar jugador host
+      const Player = require('../models/Player');
+      const hostPlayer = new Player(socket.id, playerData?.nickname, playerData?.avatar);
+      room.addPlayer(hostPlayer);
+      
+      // Unir socket a la sala
+      socket.join(room.id);
+      
+      // Responder con información de la sala
+      const response = {
+        success: true,
+        room: room.toClientObject(),
+        player: hostPlayer.toClientObject(),
+        isHost: true
+      };
+      
+      if (callback) callback(response);
+      
+      // Notificar a otros servicios si es necesario
+      socket.emit('roomCreated', response);
+      
+      console.log(`✅ Room ${room.id} created by ${socket.id}`);
+      
+    } catch (error) {
+      console.error(`❌ Error creating room:`, error.message);
+      
+      const errorResponse = {
+        success: false,
+        error: error.message
+      };
+      
+      if (callback) callback(errorResponse);
+      socket.emit('error', errorResponse);
+    }
+  });
+
+  // Unirse a sala existente
+  socket.on('joinRoom', (data, callback) => {
+    try {
+      const { roomCode, playerData } = data;
+      
+      if (!roomCode) {
+        throw new Error('Room code is required');
+      }
+      
+      // Intentar unirse a la sala
+      const result = roomManager.joinRoom(roomCode, socket.id, playerData);
+      
+      // Unir socket a la sala
+      socket.join(roomCode);
+      
+      // Responder al jugador que se unió
+      const response = {
+        success: true,
+        room: result.room.toClientObject(),
+        player: result.player.toClientObject(),
+        isHost: result.player.isHost
+      };
+      
+      if (callback) callback(response);
+      
+      // Notificar a otros jugadores en la sala
+      socket.to(roomCode).emit('playerJoined', {
+        player: result.player.toClientObject(),
+        room: result.room.toClientObject()
+      });
+      
+      console.log(`✅ Player ${result.player.id} joined room ${roomCode}`);
+      
+    } catch (error) {
+      console.error(`❌ Error joining room:`, error.message);
+      
+      const errorResponse = {
+        success: false,
+        error: error.message
+      };
+      
+      if (callback) callback(errorResponse);
+      socket.emit('error', errorResponse);
+    }
+  });
+
+  // Salir de sala
+  socket.on('leaveRoom', (data, callback) => {
+    try {
+      const result = roomManager.leaveRoom(socket.id, true);
+      
+      if (result.success) {
+        // Salir del room de socket.io
+        socket.leave(result.room.id);
+        
+        // Responder al jugador
+        const response = {
+          success: true,
+          message: 'Left room successfully'
+        };
+        
+        if (callback) callback(response);
+        
+        // Notificar a otros jugadores
+        socket.to(result.room.id).emit('playerLeft', {
+          player: result.player.toClientObject(),
+          room: result.room.toClientObject(),
+          wasHost: result.wasHost
+        });
+        
+        console.log(`✅ Player left room ${result.room.id} voluntarily`);
+      } else {
+        throw new Error(result.reason);
+      }
+      
+    } catch (error) {
+      console.error(`❌ Error leaving room:`, error.message);
+      
+      const errorResponse = {
+        success: false,
+        error: error.message
+      };
+      
+      if (callback) callback(errorResponse);
+      socket.emit('error', errorResponse);
+    }
+  });
+
+  // Reconectar a sala
+  socket.on('reconnectToRoom', (data, callback) => {
+    try {
+      const { roomCode, playerId } = data;
+      
+      if (!roomCode || !playerId) {
+        throw new Error('Room code and player ID are required');
+      }
+      
+      // Intentar reconexión
+      const result = roomManager.reconnectToRoom(roomCode, playerId, socket.id);
+      
+      // Unir socket a la sala
+      socket.join(roomCode);
+      
+      // Responder al jugador reconectado
+      const response = {
+        success: true,
+        room: result.room.toClientObject(),
+        player: result.player.toClientObject(),
+        isReconnection: true
+      };
+      
+      if (callback) callback(response);
+      
+      // Notificar a otros jugadores
+      socket.to(roomCode).emit('playerReconnected', {
+        player: result.player.toClientObject(),
+        room: result.room.toClientObject()
+      });
+      
+      console.log(`✅ Player ${playerId} reconnected to room ${roomCode}`);
+      
+    } catch (error) {
+      console.error(`❌ Error reconnecting:`, error.message);
+      
+      const errorResponse = {
+        success: false,
+        error: error.message
+      };
+      
+      if (callback) callback(errorResponse);
+      socket.emit('error', errorResponse);
+    }
+  });
+}
+
+/**
+ * Configurar eventos de juego
+ */
+function setupGameEvents(socket, io) {
+  // Delegar eventos de juego al módulo especializado
+  gameEvents.setupGameEvents(socket, io, roomManager);
+}
+
+/**
+ * Configurar eventos de sistema
+ */
+function setupSystemEvents(socket, io) {
+  
+  // Desconexión
+  socket.on('disconnect', (reason) => {
+    console.log(`🔌 Disconnection: ${socket.id} (${reason})`);
+    
+    // Manejar salida de sala (no voluntaria)
+    const result = roomManager.leaveRoom(socket.id, false);
+    
+    if (result.success) {
+      // Notificar a otros jugadores sobre la desconexión
+      socket.to(result.room.id).emit('playerDisconnected', {
+        player: result.player.toClientObject(),
+        room: result.room.toClientObject(),
+        reason: reason
+      });
+      
+      console.log(`🔌 Player disconnected from room ${result.room.id}`);
+    }
+  });
+
+  // Ping/Pong para heartbeat
+  socket.on('ping', (callback) => {
+    if (callback) callback('pong');
+  });
+
+  // Obtener información del servidor
+  socket.on('getServerInfo', (callback) => {
+    const stats = roomManager.getStats();
+    
+    const serverInfo = {
+      version: '1.0.0',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      stats: stats
+    };
+    
+    if (callback) callback(serverInfo);
+  });
+}
+
+/**
+ * Configurar sistema de heartbeat
+ */
+function setupHeartbeat(socket) {
+  const heartbeatInterval = 30000; // 30 segundos
+  
+  const heartbeat = setInterval(() => {
+    const room = roomManager.getRoomBySocketId(socket.id);
+    if (room) {
+      const player = room.getPlayerBySocketId(socket.id);
+      if (player) {
+        player.updateLastSeen();
+      }
+    }
+  }, heartbeatInterval);
+  
+  // Limpiar intervalo al desconectar
+  socket.on('disconnect', () => {
+    clearInterval(heartbeat);
+  });
+}
+
+module.exports = socketHandler;

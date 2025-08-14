@@ -12,6 +12,7 @@ import PlayerRegistrationScreen from '../screens/game/PlayerRegistrationScreen';
 import SingleDeviceSetupScreen from '../screens/game/SingleDeviceSetupScreen';
 import MultiPlayerRegistrationScreen from '../screens/game/MultiPlayerRegistrationScreen';
 import CreateLobbyScreen from '../screens/game/CreateLobbyScreen';
+import ConnectionTest from '../components/ConnectionTest';
 
 const Stack = createStackNavigator();
 
@@ -85,6 +86,13 @@ const AppNavigator = () => {
         <Stack.Screen 
           name="CreateLobby" 
           component={CreateLobbyScreen}
+          options={{
+            animationTypeForReplace: 'push',
+          }}
+        />
+        <Stack.Screen 
+          name="BackendTest" 
+          component={ConnectionTest}
           options={{
             animationTypeForReplace: 'push',
           }}

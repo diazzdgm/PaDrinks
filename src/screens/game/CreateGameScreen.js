@@ -14,9 +14,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../../styles/theme';
 import { setGameMode } from '../../store/gameSlice';
+import { useSocket, useRoom } from '../../hooks/useSocket';
+import { setSocketConnected, setRoomData } from '../../store/connectionSlice';
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG
 const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
@@ -49,11 +51,17 @@ const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
 const CreateGameScreen = ({ navigation }) => {
   // Redux
   const dispatch = useDispatch();
+  const { isConnected, isConnecting } = useSelector(state => state.connection);
+  
+  // Socket hooks
+  const { connect, disconnect, connected } = useSocket();
+  const { createRoom, loading: roomLoading, error: roomError } = useRoom();
   
   // Estado para el modo seleccionado y modal
   const [selectedMode, setSelectedMode] = useState(null);
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [modalModeInfo, setModalModeInfo] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState('disconnected'); // disconnected, connecting, connected
   
   // Animaciones del modal
   const modalScale = useRef(new Animated.Value(0)).current;
@@ -223,6 +231,90 @@ const CreateGameScreen = ({ navigation }) => {
     }
   };
 
+  // Conectar al backend automáticamente al cargar la pantalla
+  useEffect(() => {
+    const initializeConnection = async () => {
+      if (!connected && !isConnecting) {
+        try {
+          setConnectionStatus('connecting');
+          await connect();
+          setConnectionStatus('connected');
+          dispatch(setSocketConnected({ connected: true, socketId: connected }));
+        } catch (error) {
+          console.error('❌ Error conectando al backend:', error.message);
+          setConnectionStatus('disconnected');
+          // No bloquear la funcionalidad, permitir modo offline
+        }
+      }
+    };
+
+    initializeConnection();
+  }, []);
+
+  // Función para crear sala con backend
+  const handleCreateRoom = async (gameMode) => {
+    try {
+      // Intentar crear sala en el backend
+      if (connected) {
+        console.log('🏠 Creando sala en backend...');
+        
+        const roomData = await createRoom({
+          maxPlayers: 8,
+          nickname: 'Host',
+          gameType: gameMode.id,
+          settings: {
+            gameMode: gameMode.id,
+            title: gameMode.title
+          }
+        });
+
+        // Actualizar Redux con datos de la sala
+        dispatch(setRoomData({
+          room: roomData.room,
+          player: roomData.player,
+          isHost: roomData.isHost
+        }));
+
+        console.log(`✅ Sala creada: ${roomData.roomCode}`);
+        
+        // Navegar a configuración de lobby con datos del backend
+        navigation.navigate('LobbyConfig', { 
+          gameMode: gameMode.id,
+          roomCode: roomData.roomCode,
+          isHost: roomData.isHost,
+          useBackend: true
+        });
+        
+      } else {
+        // Modo offline - usar navegación original
+        console.log('⚠️ Modo offline - creando sala local');
+        navigation.navigate('LobbyConfig', { 
+          gameMode: gameMode.id,
+          useBackend: false
+        });
+      }
+      
+    } catch (error) {
+      console.error('❌ Error creando sala:', error.message);
+      
+      // Fallback a modo offline si falla el backend
+      Alert.alert(
+        'Error de Conexión',
+        'No se pudo crear la sala online. ¿Continuar en modo offline?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { 
+            text: 'Modo Offline', 
+            onPress: () => navigation.navigate('LobbyConfig', { 
+              gameMode: gameMode.id,
+              useBackend: false
+            })
+          }
+        ]
+      );
+    }
+  };
+
   const handleModeSelect = (mode, index) => {
     // Prevenir click si acabamos de hacer un swipe
     if (isSwipeInProgress) {
@@ -244,8 +336,9 @@ const CreateGameScreen = ({ navigation }) => {
       setSelectedMode(gameMode.id);
       dispatch(setGameMode(gameMode.id));
       
+      // Usar nueva función de creación de sala
       setTimeout(() => {
-        navigation.navigate('LobbyConfig', { gameMode: gameMode.id });
+        handleCreateRoom(gameMode);
       }, 500);
     } else {
       // Mostrar modal personalizado estilo AgeVerification
@@ -338,6 +431,17 @@ const CreateGameScreen = ({ navigation }) => {
             <View key={index} style={styles.hole} />
           ))}
         </View>
+      </View>
+
+      {/* Indicador de conexión */}
+      <View style={styles.connectionIndicator}>
+        <View style={[
+          styles.connectionDot,
+          { backgroundColor: connected ? '#4CAF50' : connectionStatus === 'connecting' ? '#FF9800' : '#F44336' }
+        ]} />
+        <Text style={styles.connectionText}>
+          {connected ? 'Online' : connectionStatus === 'connecting' ? 'Conectando...' : 'Offline'}
+        </Text>
       </View>
 
       {/* Botón de regreso */}
@@ -516,6 +620,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8F6F0',
+  },
+  
+  // Indicador de conexión
+  connectionIndicator: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    zIndex: 1000,
+  },
+  
+  connectionDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  
+  connectionText: {
+    fontSize: 12,
+    fontFamily: theme.fonts.primary,
+    color: '#333',
   },
   
   // Fondo de papel
