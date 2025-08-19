@@ -39,7 +39,7 @@ function setupRoomEvents(socket, io) {
       
       // Crear y agregar jugador host
       const Player = require('../models/Player');
-      const hostPlayer = new Player(socket.id, playerData?.nickname, playerData?.avatar);
+      const hostPlayer = new Player(socket.id, playerData?.nickname, playerData);
       room.addPlayer(hostPlayer);
       
       // Unir socket a la sala
@@ -70,6 +70,73 @@ function setupRoomEvents(socket, io) {
       
       if (callback) callback(errorResponse);
       socket.emit('error', errorResponse);
+    }
+  });
+
+  // Validar si una sala existe (sin unirse)
+  socket.on('validateRoom', (data, callback) => {
+    console.log(`🔍 validateRoom event received from ${socket.id}:`, data);
+    
+    try {
+      const { roomCode } = data;
+      
+      if (!roomCode) {
+        throw new Error('Room code is required');
+      }
+      
+      console.log(`🔍 Looking for room: ${roomCode}`);
+      
+      // Verificar si la sala existe
+      const room = roomManager.getRoom(roomCode);
+      
+      if (!room) {
+        console.log(`❌ Room ${roomCode} not found`);
+        throw new Error('Room not found');
+      }
+      
+      console.log(`✅ Room found: ${roomCode}, players: ${room.players.size}/${room.settings.maxPlayers}`);
+      
+      if (room.isFull()) {
+        console.log(`❌ Room ${roomCode} is full`);
+        throw new Error('Room is full');
+      }
+      
+      // Responder con información básica de la sala (sin unirse)
+      const response = {
+        success: true,
+        room: {
+          id: room.id,
+          playersCount: room.players.size,
+          maxPlayers: room.settings.maxPlayers,
+          settings: room.settings
+        }
+      };
+      
+      console.log(`✅ Sending validation response:`, response);
+      
+      if (callback) {
+        callback(response);
+      } else {
+        console.log('❌ No callback provided for validateRoom');
+      }
+      
+      console.log(`✅ Room ${roomCode} validated successfully`);
+      
+    } catch (error) {
+      console.error(`❌ Error validating room:`, error.message);
+      
+      const errorResponse = {
+        success: false,
+        error: error.message
+      };
+      
+      console.log(`❌ Sending error response:`, errorResponse);
+      
+      if (callback) {
+        callback(errorResponse);
+      } else {
+        console.log('❌ No callback provided for error response');
+      }
     }
   });
 
@@ -204,6 +271,39 @@ function setupRoomEvents(socket, io) {
       
       if (callback) callback(errorResponse);
       socket.emit('error', errorResponse);
+    }
+  });
+
+  // Sincronizar información de la sala
+  socket.on('syncRoom', (callback) => {
+    try {
+      const room = roomManager.getRoomBySocketId(socket.id);
+      
+      if (!room) {
+        throw new Error('Player is not in any room');
+      }
+      
+      const roomData = {
+        success: true,
+        room: room.toClientObject()
+      };
+      
+      if (callback) callback(roomData);
+      
+      // También emitir a todos los jugadores en la sala para sincronización
+      io.to(room.id).emit('roomSync', roomData);
+      
+      console.log(`🔄 Room ${room.id} synchronized for ${socket.id}`);
+      
+    } catch (error) {
+      console.error(`❌ Error syncing room:`, error.message);
+      
+      const errorResponse = {
+        success: false,
+        error: error.message
+      };
+      
+      if (callback) callback(errorResponse);
     }
   });
 }

@@ -19,7 +19,12 @@ const io = socketIo(server, {
   connectionStateRecovery: {
     maxDisconnectionDuration: 2 * 60 * 1000, // 2 minutos
     skipMiddlewares: true,
-  }
+  },
+  // AGREGAR ESTAS LÍNEAS:
+  pingTimeout: 60000,     // 60 segundos
+  pingInterval: 25000,    // 25 segundos
+  upgradeTimeout: 30000,  // 30 segundos
+  transports: ['websocket', 'polling']
 });
 
 // Rate limiting
@@ -67,7 +72,7 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`📍 Server running on port ${PORT}`);
   console.log(`🌐 Health check: http://localhost:${PORT}/health`);
   console.log(`🔗 API endpoint: http://localhost:${PORT}/api`);
-  console.log(`📱 Mobile access: http://192.168.100.13:${PORT}/health`);
+  console.log(`📱 Mobile access: http://192.168.100.18:${PORT}/health`);
 });
 
 // Manejo de errores

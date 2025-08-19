@@ -94,7 +94,14 @@ class RoomManager {
     
     // Crear nuevo jugador
     const Player = require('../models/Player');
-    const player = new Player(socketId, playerData.nickname, playerData.avatar);
+    const player = new Player(socketId, playerData.nickname, playerData);
+    
+    console.log('👤 Creating player with data:', {
+      nickname: playerData.nickname,
+      photoUri: playerData.photoUri,
+      avatar: playerData.avatar,
+      emoji: playerData.emoji
+    });
     
     // Agregar a la sala
     room.addPlayer(player);

@@ -231,89 +231,16 @@ const CreateGameScreen = ({ navigation }) => {
     }
   };
 
-  // Conectar al backend automáticamente al cargar la pantalla
+  // Verificar estado de conexión (la conexión se hace desde MainMenu)
   useEffect(() => {
-    const initializeConnection = async () => {
-      if (!connected && !isConnecting) {
-        try {
-          setConnectionStatus('connecting');
-          await connect();
-          setConnectionStatus('connected');
-          dispatch(setSocketConnected({ connected: true, socketId: connected }));
-        } catch (error) {
-          console.error('❌ Error conectando al backend:', error.message);
-          setConnectionStatus('disconnected');
-          // No bloquear la funcionalidad, permitir modo offline
-        }
-      }
-    };
-
-    initializeConnection();
-  }, []);
-
-  // Función para crear sala con backend
-  const handleCreateRoom = async (gameMode) => {
-    try {
-      // Intentar crear sala en el backend
-      if (connected) {
-        console.log('🏠 Creando sala en backend...');
-        
-        const roomData = await createRoom({
-          maxPlayers: 8,
-          nickname: 'Host',
-          gameType: gameMode.id,
-          settings: {
-            gameMode: gameMode.id,
-            title: gameMode.title
-          }
-        });
-
-        // Actualizar Redux con datos de la sala
-        dispatch(setRoomData({
-          room: roomData.room,
-          player: roomData.player,
-          isHost: roomData.isHost
-        }));
-
-        console.log(`✅ Sala creada: ${roomData.roomCode}`);
-        
-        // Navegar a configuración de lobby con datos del backend
-        navigation.navigate('LobbyConfig', { 
-          gameMode: gameMode.id,
-          roomCode: roomData.roomCode,
-          isHost: roomData.isHost,
-          useBackend: true
-        });
-        
-      } else {
-        // Modo offline - usar navegación original
-        console.log('⚠️ Modo offline - creando sala local');
-        navigation.navigate('LobbyConfig', { 
-          gameMode: gameMode.id,
-          useBackend: false
-        });
-      }
-      
-    } catch (error) {
-      console.error('❌ Error creando sala:', error.message);
-      
-      // Fallback a modo offline si falla el backend
-      Alert.alert(
-        'Error de Conexión',
-        'No se pudo crear la sala online. ¿Continuar en modo offline?',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          { 
-            text: 'Modo Offline', 
-            onPress: () => navigation.navigate('LobbyConfig', { 
-              gameMode: gameMode.id,
-              useBackend: false
-            })
-          }
-        ]
-      );
+    if (connected) {
+      setConnectionStatus('connected');
+    } else if (isConnecting) {
+      setConnectionStatus('connecting');
+    } else {
+      setConnectionStatus('disconnected');
     }
-  };
+  }, [connected, isConnecting]);
 
   const handleModeSelect = (mode, index) => {
     // Prevenir click si acabamos de hacer un swipe
@@ -336,9 +263,11 @@ const CreateGameScreen = ({ navigation }) => {
       setSelectedMode(gameMode.id);
       dispatch(setGameMode(gameMode.id));
       
-      // Usar nueva función de creación de sala
+      // Navegar a configuración de lobby (la sala se crea allí)
       setTimeout(() => {
-        handleCreateRoom(gameMode);
+        navigation.navigate('LobbyConfig', { 
+          gameMode: gameMode.id
+        });
       }, 500);
     } else {
       // Mostrar modal personalizado estilo AgeVerification

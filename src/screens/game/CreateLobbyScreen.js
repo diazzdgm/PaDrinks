@@ -16,6 +16,9 @@ import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../../styles/theme';
+import { useSocket, useRoom } from '../../hooks/useSocket';
+import { setRoomData } from '../../store/connectionSlice';
+import SocketService from '../../services/SocketService';
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG
 const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
@@ -48,15 +51,34 @@ const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
 const CreateLobbyScreen = ({ navigation, route }) => {
   // Redux
   const dispatch = useDispatch();
+  const { isConnected } = useSelector(state => state.connection);
+  
+  // Socket hooks
+  const { connected } = useSocket();
+  const { createRoom, loading: roomLoading, error: roomError } = useRoom();
   
   // Parámetros de navegación
-  const { gameMode, playMethod, connectionType, playerCount, registeredPlayers, playerData } = route.params;
+  const { 
+    gameMode, 
+    playMethod, 
+    connectionType: routeConnectionType, 
+    playerCount, 
+    registeredPlayers, 
+    playerData,
+    isJoining, 
+    roomData,
+    roomCode: initialRoomCode
+  } = route.params;
+  
+  // connectionType puede venir de route.params directamente o de playerData
+  const connectionType = routeConnectionType || playerData?.connectionType;
   
   // Estados
-  const [roomCode, setRoomCode] = useState('');
+  const [roomCode, setRoomCode] = useState(initialRoomCode || '');
   const [connectedPlayers, setConnectedPlayers] = useState([]);
-  const [isHost, setIsHost] = useState(true);
+  const [isHost, setIsHost] = useState(route.params.isHost !== false); // Por defecto true, excepto si viene false
   const [currentUserId] = useState('user123'); // Mock user ID
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   
   // Animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -71,68 +93,199 @@ const CreateLobbyScreen = ({ navigation, route }) => {
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
   const muteButtonScale = useRef(new Animated.Value(1)).current;
 
+  // Función para crear sala en el backend
+  const handleCreateRoom = async () => {
+    // Si se está uniendo a una sala existente, no crear sala nueva
+    if (isJoining) {
+      console.log('🔗 Jugador se unió a sala existente:', roomCode);
+      console.log('🔍 DEBUG CreateLobby - roomData recibido:', JSON.stringify(roomData, null, 2));
+      console.log('🔍 DEBUG CreateLobby - playerData recibido:', JSON.stringify(playerData, null, 2));
+      
+      // Si hay datos de la sala del backend, usar esos datos
+      if (roomData && roomData.room && roomData.room.players) {
+        console.log('📋 Usando datos de la sala del backend:', roomData.room.players.length, 'jugadores');
+        console.log('🔍 Socket ID actual:', SocketService.socket?.id);
+        console.log('🔍 isHost desde roomData:', roomData.isHost);
+        
+        const allPlayers = roomData.room.players.map(player => {
+          const isCurrentUser = player.socketId === SocketService.socket?.id;
+          console.log(`👤 Jugador: ${player.nickname}, socketId: ${player.socketId}, isHost: ${player.isHost}, isCurrentUser: ${isCurrentUser}`);
+          
+          return {
+            id: player.id,
+            name: player.nickname,
+            nickname: player.nickname,
+            emoji: player.emoji || '😄',
+            avatar: player.photoUri || player.avatar,
+            photoUri: player.photoUri,
+            photo: player.photo,
+            isHost: player.isHost, // Usar directamente del backend
+            isCurrentUser: isCurrentUser,
+            gender: player.gender,
+            orientation: player.orientation
+          };
+        });
+        
+        setConnectedPlayers(allPlayers);
+        setIsHost(roomData.isHost || false);
+        
+        console.log('🔄 Jugadores configurados:', allPlayers.map(p => `${p.nickname}(${p.isHost ? 'HOST' : 'PLAYER'}, current: ${p.isCurrentUser})`));
+        
+        // Solicitar sincronización adicional por si falta información
+        if (SocketService.connected) {
+          // Sincronización inmediata para jugadores que se unen
+          console.log('📡 Solicitando sincronización inmediata...');
+          SocketService.socket.emit('syncRoom');
+          
+          // Sincronización adicional para asegurar
+          setTimeout(() => {
+            console.log('📡 Solicitando sincronización adicional...');
+            SocketService.socket.emit('syncRoom');
+          }, 2000);
+          
+          // Una más por si acaso
+          setTimeout(() => {
+            console.log('📡 Solicitando sincronización final...');
+            SocketService.socket.emit('syncRoom');
+          }, 5000);
+        }
+      } else {
+        // NO usar fallback local - siempre esperar datos del backend
+        console.log('⏳ Esperando datos del backend...');
+        setConnectedPlayers([]); // Limpiar lista mientras carga
+        
+        // Solicitar lista completa de jugadores en la sala inmediatamente
+        if (SocketService.connected) {
+          console.log('📡 Solicitando lista completa de jugadores de la sala...');
+          SocketService.socket.emit('syncRoom');
+          
+          // Solicitar sincronización adicional después de 2 segundos
+          setTimeout(() => {
+            console.log('📡 Solicitando sincronización adicional...');
+            SocketService.socket.emit('syncRoom');
+          }, 2000);
+        }
+      }
+      return;
+    }
+    
+    // Solo crear sala en backend si la conexión es WiFi y está conectado
+    if (connectionType === 'wifi' && (connected || isConnected)) {
+      try {
+        setIsCreatingRoom(true);
+        console.log('🏠 Creando sala en backend...');
+        
+        const roomData = await createRoom({
+          maxPlayers: 8,
+          nickname: playerData.nickname,
+          avatar: playerData.photoUri,
+          emoji: playerData.emoji,
+          photo: playerData.photo,
+          photoUri: playerData.photoUri,
+          gender: playerData.gender,
+          orientation: playerData.orientation,
+          gameType: gameMode,
+          settings: {
+            gameMode: gameMode,
+            playMethod: playMethod,
+            connectionType: connectionType
+          }
+        });
+
+        // Actualizar Redux con datos de la sala
+        dispatch(setRoomData({
+          room: roomData.room,
+          player: roomData.player,
+          isHost: roomData.isHost
+        }));
+
+        console.log(`🏠 Sala creada exitosamente: ${roomData.roomCode}`);
+        console.log(`✅ Sala creada: ${roomData.roomCode}`);
+        setRoomCode(roomData.roomCode);
+        
+      } catch (error) {
+        console.error('❌ Error creando sala en backend:', error.message);
+        Alert.alert('Error', 'No se pudo crear la sala online. Continuando en modo local.');
+        // Continuar con código local si falla el backend
+        generateRoomCode();
+      } finally {
+        setIsCreatingRoom(false);
+      }
+    } else {
+      // Modo local para otras conexiones o sin backend
+      console.log('⚠️ Creando sala local');
+      generateRoomCode();
+    }
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       // Sincronizar estado de mute cuando regresamos a la pantalla
       setIsMuted(audioService.isMusicMuted);
       
-      // Generar código de sala
-      generateRoomCode();
+      // Crear sala (backend o local según configuración)
+      handleCreateRoom();
       
-      // Configurar jugadores
-      if (playMethod === 'single' && registeredPlayers) {
-        // Para modo single device, usar los jugadores registrados
-        const players = registeredPlayers.map((player, index) => ({
-          id: player.playerId,
-          name: player.nickname,
-          avatar: player.photoUri,
-          emoji: player.emoji,
-          isHost: index === 0,
-          isCurrentUser: index === 0,
-          gender: player.gender,
-          orientation: player.orientation,
-        }));
-        setConnectedPlayers(players);
-        console.log('🎮 Single device players loaded:', players);
-      } else if (playMethod === 'single') {
-        // Fallback para modo single device sin registeredPlayers
-        const mockPlayers = [];
-        for (let i = 1; i <= playerCount; i++) {
-          mockPlayers.push({
-            id: i === 1 ? currentUserId : `player${i}`,
-            name: i === 1 ? 'Tú' : `Jugador ${i}`,
-            avatar: null,
-            emoji: '😄',
-            isHost: i === 1,
-            isCurrentUser: i === 1,
-          });
-        }
-        setConnectedPlayers(mockPlayers);
-      } else {
-        // Para modo multiplayer, usar datos del jugador registrado si están disponibles
-        if (playerData) {
-          setConnectedPlayers([{
-            id: currentUserId,
-            name: playerData.nickname,
-            avatar: playerData.photoUri,
-            emoji: playerData.emoji,
-            isHost: true,
-            isCurrentUser: true,
-            gender: playerData.gender,
-            orientation: playerData.orientation,
-          }]);
-          console.log('🎮 Multiplayer player loaded:', playerData);
+      // SOLO configurar jugadores si NO se está uniendo a una sala existente
+      if (!isJoining) {
+        // Configurar jugadores para modo single device
+        if (playMethod === 'single' && registeredPlayers) {
+          // Para modo single device, usar los jugadores registrados
+          const players = registeredPlayers.map((player, index) => ({
+            id: player.playerId,
+            name: player.nickname,
+            avatar: player.photoUri,
+            emoji: player.emoji,
+            isHost: index === 0,
+            isCurrentUser: index === 0,
+            gender: player.gender,
+            orientation: player.orientation,
+          }));
+          setConnectedPlayers(players);
+          console.log('🎮 Single device players loaded:', players);
+        } else if (playMethod === 'single') {
+          // Fallback para modo single device sin registeredPlayers
+          const mockPlayers = [];
+          for (let i = 1; i <= playerCount; i++) {
+            mockPlayers.push({
+              id: i === 1 ? currentUserId : `player${i}`,
+              name: i === 1 ? 'Tú' : `Jugador ${i}`,
+              avatar: null,
+              emoji: '😄',
+              isHost: i === 1,
+              isCurrentUser: i === 1,
+            });
+          }
+          setConnectedPlayers(mockPlayers);
         } else {
-          // Fallback para modo multiplayer sin playerData
-          setConnectedPlayers([{
-            id: currentUserId,
-            name: 'Tú',
-            avatar: null,
-            emoji: '😄',
-            isHost: true,
-            isCurrentUser: true,
-          }]);
+          // Para modo multiplayer creando sala nueva, usar datos del jugador registrado
+          if (playerData) {
+            setConnectedPlayers([{
+              id: currentUserId,
+              name: playerData.nickname,
+              avatar: playerData.photoUri,
+              emoji: playerData.emoji,
+              isHost: true,
+              isCurrentUser: true,
+              gender: playerData.gender,
+              orientation: playerData.orientation,
+            }]);
+            console.log('🎮 Multiplayer player loaded:', playerData);
+          } else {
+            // Fallback para modo multiplayer sin playerData
+            setConnectedPlayers([{
+              id: currentUserId,
+              name: 'Tú',
+              avatar: null,
+              emoji: '😄',
+              isHost: true,
+              isCurrentUser: true,
+            }]);
+          }
         }
+      } else {
+        // Si se está uniendo, los jugadores se configuran en handleCreateRoom()
+        console.log('🔗 Jugador uniéndose - esperando datos del backend...');
       }
       
       // Animaciones de entrada
@@ -143,6 +296,110 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       };
     }, [])
   );
+
+  // Escuchar eventos de Socket.IO para jugadores que se unen/salen
+  useEffect(() => {
+    if (!connected) return;
+
+    const handlePlayerJoined = (data) => {
+      console.log('👤 Nuevo jugador se unió:', data.player.nickname);
+      const newPlayer = {
+        id: data.player.id,
+        name: data.player.nickname,
+        nickname: data.player.nickname,
+        emoji: data.player.emoji || '😄',
+        avatar: data.player.photoUri,
+        isHost: false,
+        isCurrentUser: false,
+        gender: data.player.gender,
+        orientation: data.player.orientation
+      };
+      
+      setConnectedPlayers(prev => {
+        // Evitar duplicados
+        const exists = prev.find(p => p.id === newPlayer.id);
+        if (exists) return prev;
+        return [...prev, newPlayer];
+      });
+    };
+
+    const handlePlayerLeft = (data) => {
+      console.log('👋 Jugador salió:', data.player.nickname);
+      setConnectedPlayers(prev => prev.filter(p => p.id !== data.player.id));
+    };
+
+    const handlePlayerUpdated = (data) => {
+      console.log('📝 Información de jugador actualizada:', data.player.nickname);
+      setConnectedPlayers(prev => prev.map(player => {
+        if (player.id === data.player.id) {
+          return {
+            ...player,
+            name: data.player.nickname,
+            nickname: data.player.nickname,
+            emoji: data.player.emoji || player.emoji,
+            avatar: data.player.photoUri || player.avatar,
+            gender: data.player.gender || player.gender,
+            orientation: data.player.orientation || player.orientation
+          };
+        }
+        return player;
+      }));
+    };
+
+    const handleRoomSync = (data) => {
+      console.log('🔄 *** EVENTO ROOMSYNC RECIBIDO ***');
+      console.log('🔄 Sincronizando lista de jugadores:', data.room.players?.length || 0);
+      console.log('🔄 Socket ID actual en sync:', SocketService.socket?.id);
+      console.log('🔄 DEBUG - data completo:', JSON.stringify(data, null, 2));
+      
+      if (data.room && data.room.players) {
+        const allPlayers = data.room.players.map(player => {
+          const isCurrentUser = player.socketId === SocketService.socket?.id;
+          console.log(`🔄 Sync - Jugador: ${player.nickname}, socketId: ${player.socketId}, isHost: ${player.isHost}, isCurrentUser: ${isCurrentUser}`);
+          
+          return {
+            id: player.id,
+            name: player.nickname,
+            nickname: player.nickname,
+            emoji: player.emoji || '😄',
+            avatar: player.photoUri || player.avatar,
+            photoUri: player.photoUri,
+            photo: player.photo,
+            isHost: player.isHost, // Usar directamente del backend
+            isCurrentUser: isCurrentUser,
+            gender: player.gender,
+            orientation: player.orientation
+          };
+        });
+        
+        setConnectedPlayers(allPlayers);
+        console.log('🔄 Jugadores sincronizados:', allPlayers.map(p => `${p.nickname}(${p.isHost ? 'HOST' : 'PLAYER'}, current: ${p.isCurrentUser})`));
+        console.log('🔄 Total jugadores mostrados:', allPlayers.length);
+      }
+    };
+
+    // Registrar event listeners
+    console.log('📡 Registrando event listeners de Socket.IO...');
+    SocketService.on('playerJoined', handlePlayerJoined);
+    SocketService.on('playerLeft', handlePlayerLeft);
+    SocketService.on('playerUpdated', handlePlayerUpdated);
+    SocketService.on('roomSync', handleRoomSync);
+    console.log('✅ Event listeners registrados');
+
+    // Solicitar sincronización inicial
+    if (SocketService.connected && !isJoining) {
+      console.log('📡 Solicitando sincronización inicial de la sala...');
+      SocketService.socket.emit('syncRoom');
+    }
+
+    // Cleanup
+    return () => {
+      SocketService.off('playerJoined', handlePlayerJoined);
+      SocketService.off('playerLeft', handlePlayerLeft);
+      SocketService.off('playerUpdated', handlePlayerUpdated);
+      SocketService.off('roomSync', handleRoomSync);
+    };
+  }, [connected, isJoining]);
 
   const generateRoomCode = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -298,8 +555,13 @@ const CreateLobbyScreen = ({ navigation, route }) => {
   };
 
   const handleStartGame = () => {
-    if (connectedPlayers.length < 3) {
-      Alert.alert('⚠️ Jugadores Insuficientes', 'Necesitas al menos 3 jugadores para iniciar el juego.');
+    if (!isHost) {
+      Alert.alert('❌ Sin permisos', 'Solo el host puede iniciar la partida.');
+      return;
+    }
+
+    if (connectedPlayers.length < 2) {
+      Alert.alert('⚠️ Jugadores Insuficientes', 'Necesitas al menos 2 jugadores para iniciar el juego.');
       return;
     }
 
@@ -311,11 +573,11 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     
     playBeerSound();
     
-    // TODO: Navegar a pantalla de juego
+    console.log('🎮 Host iniciando partida con jugadores:', connectedPlayers.map(p => p.nickname));
     Alert.alert('🎮 ¡Iniciando Juego!', `${connectedPlayers.length} jugadores listos para jugar`);
   };
 
-  const canStartGame = connectedPlayers.length >= 3;
+  const canStartGame = isHost && connectedPlayers.length >= 2;
 
   // Generar slots vacíos si es necesario
   const maxSlots = playMethod === 'single' ? playerCount : 10;
@@ -398,25 +660,62 @@ const CreateLobbyScreen = ({ navigation, route }) => {
               showsVerticalScrollIndicator={false}
             >
               {/* Jugadores conectados */}
-              {connectedPlayers.map((player) => (
-                <View key={player.id} style={styles.playerItem}>
+              {connectedPlayers.map((player, index) => (
+                <View key={player.id || `player-${index}`} style={[
+                  styles.playerItem,
+                  player.isCurrentUser && styles.currentUserItem
+                ]}>
                   <View style={[
                     styles.playerAvatar,
-                    player.avatar ? styles.playerAvatarWithPhoto : null
+                    (player.avatar || player.photoUri) ? styles.playerAvatarWithPhoto : styles.playerAvatarEmoji
                   ]}>
-                    {player.avatar ? (
-                      <Image source={{ uri: player.avatar }} style={styles.avatarImage} />
+                    {(player.avatar || player.photoUri) ? (
+                      <Image 
+                        source={{ uri: player.avatar || player.photoUri }} 
+                        style={styles.avatarImage}
+                        onError={(e) => {
+                          console.log('❌ Error cargando imagen:', e.nativeEvent.error);
+                          console.log('🔗 URI de imagen:', player.avatar || player.photoUri);
+                          console.log('🔍 Jugador completo:', JSON.stringify(player, null, 2));
+                        }}
+                        onLoad={() => {
+                          console.log('✅ Imagen cargada correctamente para:', player.nickname || player.name || 'jugador desconocido');
+                        }}
+                      />
                     ) : (
-                      <Text style={styles.avatarEmoji}>{player.emoji || '😄'}</Text>
+                      <Text style={styles.avatarEmoji}>
+                        {player.emoji || player.selectedEmoji || '😄'}
+                      </Text>
                     )}
                   </View>
                   
                   <View style={styles.playerInfo}>
                     <View style={styles.playerNameContainer}>
-                      <Text style={styles.playerName}>{player.name}</Text>
+                      <Text style={styles.playerName}>
+                        {player.name || player.nickname}
+                      </Text>
                       {player.isHost && <Text style={styles.crownEmoji}>👑</Text>}
                       {player.isCurrentUser && <Text style={styles.youIndicator}>(Tú)</Text>}
                     </View>
+                    
+                    {/* Información adicional del jugador */}
+                    <View style={styles.playerDetailsContainer}>
+                      {player.gender && (
+                        <Text style={styles.playerDetail}>
+                          {player.gender === 'man' ? '👨' : player.gender === 'woman' ? '👩' : '🧑'}
+                        </Text>
+                      )}
+                      {player.orientation && (
+                        <Text style={styles.playerDetail}>
+                          {player.orientation === 'men' ? '💙' : player.orientation === 'women' ? '💗' : '💜'}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  
+                  {/* Estado de conexión */}
+                  <View style={styles.connectionStatus}>
+                    <Text style={styles.connectionDot}>🟢</Text>
                   </View>
                   
                   {/* Botón expulsar (solo para host) */}
@@ -483,16 +782,17 @@ const CreateLobbyScreen = ({ navigation, route }) => {
                 Escanea el QR o usa el código
               </Text>
               
-              {/* Botón Iniciar Juego - Movido aquí */}
-              <Animated.View 
-                style={[
-                  styles.startGameButtonContainer,
-                  { 
-                    transform: [{ translateY: startButtonAnim }],
-                    opacity: canStartGame ? 1 : 0.5,
-                  }
-                ]}
-              >
+              {/* Botón Iniciar Juego - Solo para Host */}
+              {isHost && (
+                <Animated.View 
+                  style={[
+                    styles.startGameButtonContainer,
+                    { 
+                      transform: [{ translateY: startButtonAnim }],
+                      opacity: canStartGame ? 1 : 0.5,
+                    }
+                  ]}
+                >
                 <TouchableOpacity
                   style={[
                     styles.startGameButton,
@@ -510,7 +810,8 @@ const CreateLobbyScreen = ({ navigation, route }) => {
                   </Text>
                   <Text style={styles.startGameButtonIcon}>🎮</Text>
                 </TouchableOpacity>
-              </Animated.View>
+                </Animated.View>
+              )}
             </>
           )}
           
@@ -759,6 +1060,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   
+  playerAvatarEmoji: {
+    backgroundColor: theme.colors.postItYellow,
+  },
+  
   avatarImage: {
     width: '100%',
     height: '100%',
@@ -795,6 +1100,33 @@ const styles = StyleSheet.create({
     color: '#666666',
     marginLeft: 5,
     fontStyle: 'italic',
+  },
+  
+  currentUserItem: {
+    borderColor: theme.colors.postItGreen,
+    borderWidth: 3,
+    backgroundColor: '#F0FDF4',
+  },
+  
+  playerDetailsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  
+  playerDetail: {
+    fontSize: 12,
+    marginRight: 5,
+  },
+  
+  connectionStatus: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 5,
+  },
+  
+  connectionDot: {
+    fontSize: 8,
   },
   
   kickButton: {

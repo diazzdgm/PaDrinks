@@ -48,7 +48,7 @@ const LobbyConfigScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   
   // Parámetros de navegación
-  const { gameMode } = route.params;
+  const { gameMode, roomCode, isHost, playerData, roomData } = route.params;
   
   // Estados para las selecciones
   const [playMethod, setPlayMethod] = useState('multiple'); // 'multiple' o 'single'
@@ -391,6 +391,52 @@ const LobbyConfigScreen = ({ navigation, route }) => {
         </Animated.View>
       </View>
 
+      {/* Lista de jugadores conectados - solo si hay playerData o roomData */}
+      {(playerData || roomData) && (
+        <View style={styles.playersSection}>
+          <Text style={styles.playersSectionTitle}>Jugadores en el Lobby</Text>
+          
+          {/* Jugador actual */}
+          {playerData && (
+            <View style={styles.playerCard}>
+              <View style={styles.playerInfo}>
+                {playerData.photoUri ? (
+                  <Image 
+                    source={{ uri: playerData.photoUri }} 
+                    style={styles.playerPhoto}
+                  />
+                ) : (
+                  <View style={styles.playerEmojiContainer}>
+                    <Text style={styles.playerEmoji}>
+                      {playerData.selectedEmoji || playerData.emoji || '👤'}
+                    </Text>
+                  </View>
+                )}
+                
+                <View style={styles.playerDetails}>
+                  <Text style={styles.playerNickname}>
+                    {playerData.nickname}
+                    {isHost === false && ' (Tú)'}
+                  </Text>
+                  <Text style={styles.playerStatus}>
+                    {isHost ? 'Host' : 'Jugador'}
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.playerBadge}>
+                <Text style={styles.playerBadgeText}>✓</Text>
+              </View>
+            </View>
+          )}
+          
+          {/* Mensaje si hay más jugadores esperados */}
+          <Text style={styles.waitingMessage}>
+            {isHost ? 'Esperando que se unan más jugadores...' : 'Esperando que el host inicie la partida...'}
+          </Text>
+        </View>
+      )}
+
       {/* Botón continuar */}
       <TouchableOpacity
         style={styles.continueButton}
@@ -633,6 +679,125 @@ const styles = StyleSheet.create({
   bluetoothIcon: {
     fontSize: 20,
     marginRight: 8,
+  },
+  
+  // Sección de jugadores
+  playersSection: {
+    marginHorizontal: 30,
+    marginVertical: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: '#000000',
+    padding: 20,
+    transform: [{ rotate: '-1deg' }],
+    shadowColor: '#000',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  
+  playersSectionTitle: {
+    fontSize: 20,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#000000',
+    textAlign: 'center',
+    marginBottom: 15,
+    transform: [{ rotate: '1deg' }],
+  },
+  
+  playerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: theme.colors.postItYellow,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#000000',
+    padding: 15,
+    marginVertical: 8,
+    transform: [{ rotate: '0.5deg' }],
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  
+  playerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  
+  playerPhoto: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: '#000000',
+    marginRight: 12,
+  },
+  
+  playerEmojiContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: '#000000',
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  
+  playerEmoji: {
+    fontSize: 28,
+  },
+  
+  playerDetails: {
+    flex: 1,
+  },
+  
+  playerNickname: {
+    fontSize: 18,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#000000',
+    marginBottom: 2,
+  },
+  
+  playerStatus: {
+    fontSize: 14,
+    fontFamily: theme.fonts.primary,
+    color: '#666666',
+  },
+  
+  playerBadge: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#4CAF50',
+    borderWidth: 2,
+    borderColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  playerBadgeText: {
+    fontSize: 16,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#FFFFFF',
+  },
+  
+  waitingMessage: {
+    fontSize: 14,
+    fontFamily: theme.fonts.primary,
+    color: '#666666',
+    textAlign: 'center',
+    marginTop: 10,
+    fontStyle: 'italic',
+    transform: [{ rotate: '-0.5deg' }],
   },
   
   // Botón continuar

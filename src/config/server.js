@@ -51,7 +51,7 @@ export const getServerUrl = () => {
  * Configuración manual para testing
  * Descomenta y modifica según tu red
  */
-export const MANUAL_SERVER_URL = 'http://192.168.100.13:3001'; // Tu IP real
+export const MANUAL_SERVER_URL = 'http://192.168.100.18:3001'; // Tu IP actual (Windows)
 // export const MANUAL_SERVER_URL = null;
 
 /**

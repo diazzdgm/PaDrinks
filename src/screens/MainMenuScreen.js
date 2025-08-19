@@ -13,7 +13,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import audioService from '../services/AudioService';
 import * as Haptics from 'expo-haptics';
+import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../styles/theme';
+import { useSocket } from '../hooks/useSocket';
+import { setSocketConnected } from '../store/connectionSlice';
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG
 const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
@@ -44,6 +47,13 @@ const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
 };
 
 const MainMenuScreen = ({ navigation }) => {
+  // Redux
+  const dispatch = useDispatch();
+  const { isConnected, isConnecting } = useSelector(state => state.connection);
+  
+  // Socket hooks
+  const { connect, disconnect, connected } = useSocket();
+  
   // Referencias para animaciones
   const logoFloat = useRef(new Animated.Value(0)).current;
   const logoFade = useRef(new Animated.Value(0)).current;
@@ -84,6 +94,24 @@ const MainMenuScreen = ({ navigation }) => {
   // Animación para el botón de mute
   const muteButtonScale = useRef(new Animated.Value(1)).current;
   
+  // Función para conectar al backend
+  const initializeBackendConnection = async () => {
+    if (!connected && !isConnecting) {
+      try {
+        console.log('🔌 Iniciando conexión al backend desde MainMenu...');
+        await connect();
+        dispatch(setSocketConnected({ connected: true, socketId: connected }));
+        console.log('✅ Conexión al backend establecida desde MainMenu');
+      } catch (error) {
+        console.error('❌ Error conectando al backend desde MainMenu:', error.message);
+        // No bloquear la funcionalidad, permitir uso offline
+        dispatch(setSocketConnected({ connected: false, socketId: null }));
+      }
+    } else if (connected) {
+      console.log('🔌 Ya conectado al backend desde MainMenu');
+      dispatch(setSocketConnected({ connected: true, socketId: connected }));
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -93,6 +121,9 @@ const MainMenuScreen = ({ navigation }) => {
       
       // Sincronizar estado de mute cuando regresamos a la pantalla
       setIsMuted(audioService.isMusicMuted);
+      
+      // Conectar al backend automáticamente
+      initializeBackendConnection();
       
       // Limpiar sonidos al salir
       return () => {
@@ -367,8 +398,7 @@ const MainMenuScreen = ({ navigation }) => {
   const handleJoinGame = () => {
     pressButton(joinGameScale, joinGameGlow, joinGameParticles, () => {
       setTimeout(() => {
-        // TODO: navigation.navigate('JoinGameScreen');
-        Alert.alert('🚀 Unirse a Partida', 'Funcionalidad próximamente disponible');
+        navigation.navigate('JoinGame');
       }, 200);
     });
   };
@@ -610,6 +640,17 @@ const MainMenuScreen = ({ navigation }) => {
 
         </Animated.View>
 
+      </View>
+
+      {/* Indicador de conexión */}
+      <View style={styles.connectionIndicator}>
+        <View style={[
+          styles.connectionDot,
+          { backgroundColor: connected ? '#4CAF50' : isConnecting ? '#FF9800' : '#F44336' }
+        ]} />
+        <Text style={styles.connectionText}>
+          {connected ? 'Online' : isConnecting ? 'Conectando...' : 'Offline'}
+        </Text>
       </View>
 
       {/* Botón de Mute estilo sketch con SVG */}
@@ -925,6 +966,35 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   
+  // Indicador de conexión
+  connectionIndicator: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    zIndex: 1000,
+  },
+  
+  connectionDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  
+  connectionText: {
+    fontSize: 12,
+    fontFamily: theme.fonts.primary,
+    color: '#333',
+  },
+
   // Botón de Mute estilo sketch
   sketchMuteButton: {
     position: 'absolute',

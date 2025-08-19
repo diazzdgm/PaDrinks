@@ -21,15 +21,16 @@ class SocketService {
       url: this.getServerUrl(), // Detectar automáticamente la URL correcta
       options: {
         transports: ['websocket', 'polling'],
-        timeout: 20000,
+        timeout: 30000,
         forceNew: true,
         reconnection: true,
-        reconnectionAttempts: 3,
+        reconnectionAttempts: 5,
         reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
+        reconnectionDelayMax: 10000,
         maxHttpBufferSize: 1e8,
         pingTimeout: 60000,
-        pingInterval: 25000
+        pingInterval: 25000,
+        upgradeTimeout: 30000
       }
     };
     
@@ -345,19 +346,46 @@ class SocketService {
       throw new Error('No conectado al servidor');
     }
 
+    console.log('🏠 SocketService.joinRoom - Enviando al backend:', {
+      roomCode,
+      playerData: {
+        nickname: playerData.nickname,
+        photoUri: playerData.photoUri,
+        avatar: playerData.avatar,
+        emoji: playerData.emoji,
+        gender: playerData.gender,
+        orientation: playerData.orientation
+      }
+    });
+
     return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Timeout joining room'));
+      }, 30000); // Aumentado a 30 segundos
+      
       this.socket.emit('joinRoom', { roomCode, playerData }, (response) => {
-        if (response.success) {
+        clearTimeout(timeout);
+        
+        console.log('📨 SocketService.joinRoom - Respuesta del backend:', response);
+        
+        if (response && response.success) {
           this.currentRoom = response.room;
           this.currentPlayer = response.player;
           this.isHost = response.isHost;
+          
+          console.log('✅ SocketService - Sala actualizada:', {
+            roomId: response.room.id,
+            playersCount: response.room.players?.length,
+            isHost: response.isHost
+          });
           
           // Guardar para reconexión
           this.savePlayerSession();
           
           resolve(response);
         } else {
-          reject(new Error(response.error));
+          console.error('❌ SocketService - Error del backend:', response?.error);
+          reject(new Error(response?.error || 'Unknown error'));
         }
       });
     });

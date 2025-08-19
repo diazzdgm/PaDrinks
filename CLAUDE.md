@@ -26,6 +26,18 @@ npm install
 
 # Clean build (if Metro bundler issues)
 npx expo start -c
+
+# Full clean and reinstall (for persistent issues)
+npm run clean
+
+# Tunnel mode for external device testing
+npm run start:tunnel
+
+# Run diagnostics
+npm run expo:doctor
+
+# Prebuild for native builds
+npm run prebuild
 ```
 
 ### Backend (Node.js + Socket.IO)
@@ -111,19 +123,23 @@ App.js (Redux Provider + Font Loading)
     ├── MainMenuScreen (Game mode selection hub)
     ├── CreateGameScreen (Game mode carousel with swipe navigation)
     ├── LobbyConfigScreen (Game lobby settings and configuration)
-    └── PlayerRegistrationScreen (Player name input and management)
+    ├── PlayerRegistrationScreen (Player profile input with photo/emoji)
+    ├── CreateLobbyScreen (Real-time multiplayer lobby with Socket.IO)
+    └── JoinGameScreen (Room code input for joining existing games)
 ```
 
 ### Key Dependencies Architecture
 - **React Navigation**: Stack navigator with gesture disabling and custom animations
 - **Redux Toolkit**: State management with non-serializable action ignoring for persistence
-- **Expo AV**: Audio playback with complex configuration for cross-platform compatibility
+- **Expo AV**: Audio playbook with complex configuration for cross-platform compatibility
 - **Expo Haptics**: Feedback system with error handling for unsupported platforms
 - **react-native-svg**: SVG support (installed but MainMenu uses PNG for megaphone icon)
 - **Firebase**: Backend integration with Auth and Realtime Database (@react-native-firebase/*)
 - **Connectivity Suite**: BLE Manager, WiFi P2P, Framer Motion for advanced animations
 - **UI Components**: React Native Paper for material design elements, Vector Icons, Super Grid
 - **Socket.IO Client**: Real-time communication with backend server for multiplayer functionality
+- **Expo Screen Orientation**: Landscape orientation enforcement at app level
+- **AsyncStorage**: Session persistence and reconnection data storage
 
 ## Important Technical Notes
 
@@ -196,26 +212,55 @@ The project uses a feature-based organization:
 - **Game Engine**: Separated game logic in `src/game/` with dynamics, engine, and modes subdirectories
 - **Multi-Protocol Connectivity**: Separate service directories for Bluetooth, Firebase, and WiFi implementations
 
-#### New Screen Patterns (LobbyConfigScreen & PlayerRegistrationScreen)
-Recently added screens follow established patterns:
-- **Custom Mute Icon Component**: Reusable PNG-based megaphone icon with muted state indicator
-- **AudioService Integration**: Consistent singleton audio service usage across all screens
-- **Haptic Feedback**: Try-catch wrapped haptic responses for platform compatibility
-- **Animation Consistency**: `useRef` with `Animated.Value` following the established animation patterns
+#### Advanced Screen Implementations
 
-## Backend Infrastructure
+**PlayerRegistrationScreen Architecture**:
+- **Complete Profile System**: Nickname input, photo capture/selection, emoji picker, gender/orientation selection
+- **Image Processing Pipeline**: expo-image-manipulator integration for photo compression (150x150px, 30% quality)
+- **Socket.IO Integration**: Direct room joining with complete player data transmission
+- **Error Handling**: Validation for required fields, base64 image processing, network failures
 
-### Socket.IO Server Architecture
+**CreateLobbyScreen Architecture**:
+- **Dual Mode Operation**: Host creation (isJoining=false) vs Player joining (isJoining=true) with conditional logic
+- **Real-Time Synchronization**: roomSync events with multiple sync attempts to prevent desynchronization
+- **Player List Management**: Dynamic player display with host crown, "Tú" indicator, avatar/emoji support
+- **Socket Event Management**: Comprehensive event listener system with cleanup on navigation
+
+**JoinGameScreen Integration**:
+- **Room Code Validation**: 6-digit numeric code validation with real-time backend verification
+- **Seamless Navigation**: Direct integration with PlayerRegistrationScreen for profile completion
+- **Error States**: Clear feedback for invalid codes, full rooms, connection failures
+
+## Multiplayer Implementation
+
+### Current Working Multiplayer Flow
+**Complete End-to-End Multiplayer Lobby System**:
+1. **PlayerRegistrationScreen**: Players register with nickname, photo/emoji, gender, orientation
+2. **Image Processing**: Photos compressed to 150x150px, 30% quality via expo-image-manipulator for Socket.IO transmission
+3. **Host Creates Lobby**: CreateLobbyScreen creates backend room with complete player data (including emoji/photo)
+4. **Player Joins Room**: Other players join via room code, all data synchronized in real-time
+5. **CreateLobbyScreen Synchronization**: All devices show complete player list with photos, emojis, host crown, and "Tú" indicator
+
+### Critical Multiplayer Architecture Decisions
+- **SocketService Singleton**: Maintains connection state across navigation with 30s timeouts
+- **Image Compression Pipeline**: Large base64 images caused disconnections - solved with expo-image-manipulator compression
+- **Player Data Consistency**: Backend Player model stores complete profile (emoji, photo, gender, orientation) and transmits via toClientObject()
+- **Room Synchronization**: Multiple sync attempts with roomSync events prevent lobby desynchronization
+- **Host vs Player Logic**: CreateLobbyScreen handles both host creation (isJoining=false) and player joining (isJoining=true) with different initialization logic
+
+### Backend Infrastructure
+
+#### Socket.IO Server Architecture
 The Node.js backend provides real-time multiplayer functionality:
-- **Express Server**: RESTful API endpoints and static file serving
-- **Socket.IO Integration**: Real-time bidirectional communication 
+- **Express Server**: RESTful API endpoints and static file serving (port 3001)
+- **Socket.IO Integration**: Real-time bidirectional communication with 60s ping timeout
 - **Room Management**: 6-digit room codes with automatic generation and validation
-- **Player System**: UUID-based player identification with reconnection support
-- **Rate Limiting**: Protection against connection abuse using rate-limiter-flexible
+- **Player System**: UUID-based player identification with complete profile data and reconnection support
+- **Rate Limiting**: Protection against connection abuse (100 requests/minute per IP) using rate-limiter-flexible
 - **CORS Configuration**: Configured for development with wildcard origins
 - **Connection State Recovery**: 2-minute disconnection tolerance with automatic reconnection
 
-### Backend Directory Structure
+#### Backend Directory Structure
 ```
 backend/
 ├── src/
@@ -225,7 +270,7 @@ backend/
 │   │   └── gameEvents.js      # Game-specific event logic
 │   ├── models/
 │   │   ├── Room.js           # Room model with player management
-│   │   └── Player.js         # Player model with UUID and status tracking
+│   │   └── Player.js         # Player model with UUID, complete profile data
 │   ├── utils/
 │   │   ├── roomManager.js    # In-memory room storage with NodeCache
 │   │   └── codeGenerator.js  # 6-digit room code generation
@@ -235,29 +280,61 @@ backend/
 └── package.json              # Backend dependencies and scripts
 ```
 
-### Network Configuration for Mobile Development
+#### Network Configuration for Mobile Development
 - **Server Binding**: Backend listens on `'0.0.0.0'` for mobile device access
-- **IP Configuration**: Frontend configured for local network IP (src/config/server.js:54)
+- **IP Configuration**: Frontend configured for local network IP (src/config/server.js)
+- **WSL vs Windows**: Run backend from Windows CMD (not WSL) to avoid IP resolution issues
 - **Metro Config**: React Native Metro bundler configured to ignore backend directory (metro.config.js:7-11)
-- **Mobile Testing**: Successfully tested on physical Android devices over WiFi
+- **Mobile Testing**: Successfully tested on physical Android devices over WiFi with manual IP configuration
+- **IP Detection**: Use `ipconfig` (Windows) to find your local IP address for device testing
 
-### Socket.IO Service Integration
+#### Socket.IO Service Integration
 - **SocketService Singleton**: Manages connection state across app navigation (src/services/SocketService.js)
-- **Automatic Connection**: CreateGameScreen auto-connects to backend on screen load
-- **Session Persistence**: AsyncStorage integration for reconnection data
+- **RoomService Wrapper**: High-level API for room operations (src/services/RoomService.js)
+- **Session Persistence**: AsyncStorage integration for reconnection data with 30-minute expiration
 - **Event Management**: Comprehensive event listener system with cleanup patterns
 - **Error Handling**: Robust connection error handling with exponential backoff reconnection
+- **Player Data Flow**: Complete profile transmission (nickname, emoji, photo, gender, orientation)
 
-### Backend Development Workflow
-1. **Start Backend**: `cd backend && npm run dev` for development with auto-reload
+#### Backend Development Workflow
+1. **Start Backend**: `cd backend && npm run dev` for development with auto-reload (run from Windows CMD, not WSL)
 2. **Test Integration**: `node test-api.js` validates all endpoints and Socket.IO events
-3. **Monitor Connections**: Backend logs show real-time connection events
-4. **Mobile Testing**: Configure IP address in src/config/server.js for device testing
+3. **Monitor Connections**: Backend logs show real-time connection events with player details
+4. **Mobile Testing**: Update IP address in src/config/server.js for device testing
 5. **Room Management**: 6-digit codes auto-expire after 2 hours of inactivity
 
-### Socket.IO Events Architecture
+#### Socket.IO Events Architecture
 Key events for game functionality:
-- **Room Events**: createRoom, joinRoom, leaveRoom, reconnectToRoom
+- **Room Events**: createRoom, joinRoom, leaveRoom, reconnectToRoom, syncRoom
 - **Player Events**: playerJoined, playerLeft, playerDisconnected, playerReconnected
 - **Game Events**: startGame, pauseGame, resumeGame, gameAction, syncGameState
 - **Admin Events**: kickPlayer, getServerInfo, heartbeat ping/pong
+- **Sync Events**: roomSync for real-time lobby updates with complete player data
+
+## Important Development Notes
+
+### Multiplayer Development Patterns
+- **Image Compression Required**: Always use expo-image-manipulator for photos before Socket.IO transmission to prevent disconnections
+- **Player Data Consistency**: Ensure all player data (emoji, photo, gender, orientation) flows from registration → backend → lobby synchronization
+- **Room Synchronization**: Use multiple roomSync event calls with delays (immediate, 2s, 5s) for reliable lobby updates
+- **Backend Location**: Run backend from Windows CMD, not WSL, to avoid IP resolution issues with mobile devices
+
+### Metro Bundler Configuration
+The project uses custom Metro configuration (metro.config.js) to prevent conflicts between frontend and backend:
+- Backend directory and node_modules are explicitly blocked from Metro's file resolution
+- Watch folders are restricted to src/, assets/, and frontend node_modules only
+- This prevents React Native from trying to bundle backend dependencies
+
+### Error Handling Patterns
+- **Backend**: Comprehensive error handling with process-level uncaught exception and unhandled rejection handlers
+- **Frontend**: Haptic feedback wrapped in try-catch for cross-platform compatibility
+- **Audio Service**: All audio operations include error handling with fallback behavior
+- **Socket.IO**: 30-second timeouts with exponential backoff reconnection
+- **Image Processing**: Error handling for large base64 strings and compression failures
+
+### Security Considerations
+- CORS configured for development (wildcard origins) - should be restricted in production
+- Rate limiting implemented on backend (100 requests/minute per IP)
+- Helmet middleware for basic security headers
+- Process-level graceful shutdown handlers for clean server termination
+- Session expiration (30 minutes) for reconnection data in AsyncStorage

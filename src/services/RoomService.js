@@ -19,6 +19,11 @@ class RoomService {
       maxPlayers = 8,
       nickname = 'Host',
       avatar = null,
+      emoji = '😄',
+      photo = null,
+      photoUri = null,
+      gender = null,
+      orientation = null,
       gameType = 'classic',
       settings = {}
     } = options;
@@ -36,10 +41,15 @@ class RoomService {
         ...settings
       };
 
-      // Datos del jugador host
+      // Datos completos del jugador host
       const playerData = {
         nickname,
-        avatar
+        avatar,
+        emoji,
+        photo,
+        photoUri,
+        gender,
+        orientation
       };
 
       // Crear sala

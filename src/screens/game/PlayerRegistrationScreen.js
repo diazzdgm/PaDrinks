@@ -17,8 +17,11 @@ import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { useDispatch } from 'react-redux';
 import { theme } from '../../styles/theme';
+import SocketService from '../../services/SocketService';
+import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG
 const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
@@ -53,7 +56,7 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   
   // Parámetros de navegación
-  const { gameMode, playMethod, connectionType } = route.params;
+  const { gameMode, playMethod, connectionType, isJoining, roomCode, roomData } = route.params;
   
   // Estados para el formulario
   const [nickname, setNickname] = useState('');
@@ -73,6 +76,42 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
   
   // Referencias para sonidos
   const beerSound = useRef(null);
+
+  // Función para redimensionar y convertir imagen a base64
+  const processImageForUpload = async (uri) => {
+    try {
+      console.log('🔄 Procesando imagen para reducir tamaño...');
+      
+      // Redimensionar imagen a 150x150 píxeles con calidad reducida
+      const manipulatedImage = await manipulateAsync(
+        uri,
+        [
+          { resize: { width: 150, height: 150 } }
+        ],
+        { 
+          compress: 0.3, // 30% de calidad para reducir tamaño
+          format: SaveFormat.JPEG 
+        }
+      );
+
+      console.log('📏 Imagen original:', uri);
+      console.log('📐 Imagen redimensionada:', manipulatedImage.uri);
+      
+      // Convertir a base64
+      const base64 = await FileSystem.readAsStringAsync(manipulatedImage.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      
+      const base64Uri = `data:image/jpeg;base64,${base64}`;
+      console.log('📁 Imagen procesada - Tamaño aproximado:', Math.round(base64.length / 1024), 'KB');
+      console.log('📁 Base64 (primeros 100 chars):', base64Uri.substring(0, 100) + '...');
+      
+      return base64Uri;
+    } catch (error) {
+      console.error('❌ Error procesando imagen:', error);
+      return uri; // Fallback a URI original
+    }
+  };
   
   // Estado y animación para el botón de mute
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
@@ -204,19 +243,24 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1], // Cuadrado para foto de perfil
-        quality: 0.8,
+        quality: 0.5, // Reducido de 0.8 a 0.5 para menor tamaño
         cameraType: ImagePicker.CameraType.front, // Cámara frontal para selfie
+        exif: false, // No incluir metadatos EXIF
       };
       
       // Abrir cámara
       const result = await ImagePicker.launchCameraAsync(options);
       
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const photoUri = result.assets[0].uri;
-        setPhotoUri(photoUri);
+        const tempUri = result.assets[0].uri;
+        console.log('📸 Foto tomada exitosamente (temporal):', tempUri);
+        
+        // Procesar imagen (redimensionar y convertir a base64)
+        const processedUri = await processImageForUpload(tempUri);
+        setPhotoUri(processedUri);
         setPlayerPhoto('photo');
         setSelectedEmoji(''); // Limpiar emoji si había uno seleccionado
-        console.log('📸 Foto tomada exitosamente:', photoUri);
+        console.log('📸 Foto procesada y guardada:', processedUri ? 'SUCCESS' : 'FAILED');
       }
       
     } catch (error) {
@@ -318,7 +362,7 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
     navigation.goBack();
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     // Validar campos obligatorios
     if (!nickname.trim() || nickname.trim().length < 2) {
       Alert.alert('Error', 'El apodo debe tener al menos 2 caracteres');
@@ -358,11 +402,90 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
     
     console.log('Datos del jugador:', playerData);
     
-    // Navegar a CreateLobbyScreen
-    navigation.navigate('CreateLobby', { 
-      ...route.params,
-      playerData 
-    });
+    if (isJoining) {
+      try {
+        // Si hay conexión Socket.IO, unirse a la sala en el backend
+        if (SocketService.connected) {
+          console.log('🏠 Uniéndose a la sala en el backend con datos completos...');
+          
+          // Unirse a la sala con todos los datos del jugador
+          const joinResult = await SocketService.joinRoom(roomCode, {
+            nickname: playerData.nickname,
+            gender: playerData.gender,
+            orientation: playerData.orientation,
+            emoji: playerData.emoji, // Usar directamente playerData.emoji que ya contiene selectedEmoji
+            photoUri: playerData.photoUri,
+            avatar: playerData.photoUri, // También enviar como avatar para compatibilidad
+            photo: playerData.photo
+          });
+          
+          console.log('✅ Jugador unido exitosamente a la sala:', joinResult.room.id);
+          console.log('🔍 DEBUG - joinResult completo:', JSON.stringify(joinResult, null, 2));
+          console.log('🔍 DEBUG - Jugadores en la respuesta:', joinResult.room.players?.length || 0);
+          console.log('🔍 DEBUG - isHost del jugador:', joinResult.isHost);
+          
+          // Navegar al lobby con la información actualizada
+          navigation.navigate('CreateLobby', { 
+            roomCode: joinResult.room.id,
+            isHost: joinResult.isHost,
+            useBackend: true,
+            playerData: playerData,
+            roomData: joinResult,
+            isJoining: true,
+            gameMode: joinResult.room.settings?.gameMode || gameMode,
+            playMethod: 'multiple',
+            connectionType: 'wifi'
+          });
+          
+        } else {
+          // Si no hay conexión, ir directo al lobby con datos locales
+          console.log('⚠️ Sin conexión backend, uniéndose en modo local');
+          navigation.navigate('CreateLobby', { 
+            roomCode: roomCode,
+            isHost: false,
+            useBackend: false,
+            playerData: playerData,
+            roomData: roomData,
+            isJoining: true,
+            gameMode: roomData?.room?.settings?.gameMode || gameMode,
+            playMethod: 'multiple',
+            connectionType: 'wifi'
+          });
+        }
+        
+      } catch (error) {
+        console.error('❌ Error al unirse a la sala:', error);
+        Alert.alert(
+          'Error de Conexión', 
+          'No se pudo unir a la sala. ¿Deseas intentar en modo local?',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            { 
+              text: 'Modo Local', 
+              onPress: () => {
+                navigation.navigate('CreateLobby', { 
+                  roomCode: roomCode,
+                  isHost: false,
+                  useBackend: false,
+                  playerData: playerData,
+                  roomData: roomData,
+                  isJoining: true,
+                  gameMode: gameMode,
+                  playMethod: 'multiple',
+                  connectionType: 'local'
+                });
+              }
+            }
+          ]
+        );
+      }
+    } else {
+      // Si está creando una sala nueva, ir a CreateLobbyScreen
+      navigation.navigate('CreateLobby', { 
+        ...route.params,
+        playerData 
+      });
+    }
   };
 
   return (
