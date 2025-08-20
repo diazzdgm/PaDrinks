@@ -265,7 +265,12 @@ const JoinGameScreen = ({ navigation }) => {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {}
 
-    navigation.goBack();
+    // Ir al MainMenu en lugar de goBack() para evitar errores de navegación
+    // Esto funciona tanto si se llega desde CreateGame como desde lobby exit
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'MainMenu' }],
+    });
   };
 
   return (

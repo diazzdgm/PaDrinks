@@ -9,6 +9,7 @@ import {
   Image,
   ScrollView,
   Alert,
+  Modal,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
@@ -79,12 +80,21 @@ const CreateLobbyScreen = ({ navigation, route }) => {
   const [isHost, setIsHost] = useState(route.params.isHost !== false); // Por defecto true, excepto si viene false
   const [currentUserId] = useState('user123'); // Mock user ID
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [showHostLeaveModal, setShowHostLeaveModal] = useState(false);
+  const [showKickedModal, setShowKickedModal] = useState(false);
   
   // Animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const leftSideAnim = useRef(new Animated.Value(-300)).current;
   const rightSideAnim = useRef(new Animated.Value(300)).current;
   const startButtonAnim = useRef(new Animated.Value(50)).current;
+  const leaveModalScale = useRef(new Animated.Value(0)).current;
+  const leaveModalOpacity = useRef(new Animated.Value(0)).current;
+  const hostLeaveModalScale = useRef(new Animated.Value(0)).current;
+  const hostLeaveModalOpacity = useRef(new Animated.Value(0)).current;
+  const kickedModalScale = useRef(new Animated.Value(0)).current;
+  const kickedModalOpacity = useRef(new Animated.Value(0)).current;
   
   // Referencias para sonidos
   const beerSound = useRef(null);
@@ -378,12 +388,37 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       }
     };
 
+    const handleKicked = (data) => {
+      console.log('🔔 *** EVENTO KICKED RECIBIDO ***');
+      console.log('❌ Jugador expulsado porque host disolvió la sala:', data);
+      console.log('📱 Mostrando modal de sala disuelta...');
+      
+      // Mostrar modal personalizado al jugador expulsado
+      setShowKickedModal(true);
+      
+      // Animar entrada del modal
+      Animated.parallel([
+        Animated.spring(kickedModalScale, {
+          toValue: 1,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.timing(kickedModalOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    };
+
     // Registrar event listeners
     console.log('📡 Registrando event listeners de Socket.IO...');
     SocketService.on('playerJoined', handlePlayerJoined);
     SocketService.on('playerLeft', handlePlayerLeft);
     SocketService.on('playerUpdated', handlePlayerUpdated);
     SocketService.on('roomSync', handleRoomSync);
+    SocketService.on('kicked', handleKicked);
     console.log('✅ Event listeners registrados');
 
     // Solicitar sincronización inicial
@@ -398,6 +433,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       SocketService.off('playerLeft', handlePlayerLeft);
       SocketService.off('playerUpdated', handlePlayerUpdated);
       SocketService.off('roomSync', handleRoomSync);
+      SocketService.off('kicked', handleKicked);
     };
   }, [connected, isJoining]);
 
@@ -510,7 +546,221 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    navigation.goBack();
+    
+    // Si el jugador se unió a una sala (no es host), mostrar modal de jugador
+    if (isJoining && !isHost) {
+      setShowLeaveModal(true);
+      
+      // Animar entrada del modal
+      Animated.parallel([
+        Animated.spring(leaveModalScale, {
+          toValue: 1,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.timing(leaveModalOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else if (isHost && !isJoining) {
+      // Si es host y creó la sala, mostrar modal de host
+      setShowHostLeaveModal(true);
+      
+      // Animar entrada del modal de host
+      Animated.parallel([
+        Animated.spring(hostLeaveModalScale, {
+          toValue: 1,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.timing(hostLeaveModalOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      // Para otros casos, comportamiento normal
+      navigation.goBack();
+    }
+  };
+
+  const handleCloseLeaveModal = () => {
+    // Animar salida del modal
+    Animated.parallel([
+      Animated.timing(leaveModalScale, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(leaveModalOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowLeaveModal(false);
+    });
+  };
+
+  const handleConfirmLeave = async () => {
+    try {
+      console.log('🚪 Jugador saliendo de la sala...');
+      
+      // Cerrar modal primero
+      handleCloseLeaveModal();
+      
+      // Limpiar listeners de eventos para evitar conflictos
+      SocketService.off('playerJoined');
+      SocketService.off('playerLeft');
+      SocketService.off('roomSync');
+      
+      // Salir de la sala en el backend
+      if (SocketService.connected) {
+        await SocketService.leaveRoom();
+        console.log('✅ Jugador salió de la sala exitosamente');
+      }
+      
+      // Feedback háptico de salida
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        console.log('Haptics not available:', error);
+      }
+      
+      // Navegar a JoinGameScreen y limpiar stack
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'JoinGame' }],
+      });
+      
+    } catch (error) {
+      console.error('❌ Error saliendo de la sala:', error);
+      // Aún así navegar para evitar que el jugador quede atrapado
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'JoinGame' }],
+      });
+    }
+  };
+
+  const handleCloseHostLeaveModal = () => {
+    // Animar salida del modal de host
+    Animated.parallel([
+      Animated.timing(hostLeaveModalScale, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(hostLeaveModalOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowHostLeaveModal(false);
+    });
+  };
+
+  const handleConfirmHostLeave = async () => {
+    try {
+      console.log('👑 Host disolviendo la sala...');
+      
+      // Cerrar modal primero
+      handleCloseHostLeaveModal();
+      
+      // Esperar a que termine la animación del modal
+      setTimeout(async () => {
+        try {
+          // Limpiar listeners de eventos para evitar conflictos
+          SocketService.off('playerJoined');
+          SocketService.off('playerLeft');
+          SocketService.off('roomSync');
+          
+          // Salir de la sala en el backend (esto automáticamente expulsará a todos los jugadores)
+          if (SocketService.connected) {
+            await SocketService.leaveRoom();
+            console.log('✅ Host salió y sala disuelta exitosamente');
+          }
+          
+          // Feedback háptico de confirmación
+          try {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+          } catch (error) {
+            console.log('Haptics not available:', error);
+          }
+          
+          // Navegar a LobbyConfigScreen con parámetros necesarios (sin reset)
+          navigation.navigate('LobbyConfig', {
+            gameMode: gameMode || 'classic',
+            playMethod: playMethod || 'multiple',
+            connectionType: connectionType || 'wifi',
+            playerCount: playerCount || 2
+          });
+          
+        } catch (error) {
+          console.error('❌ Error disolviendo la sala:', error);
+          // Aún así navegar para evitar que el host quede atrapado
+          navigation.navigate('LobbyConfig', {
+            gameMode: gameMode || 'classic',
+            playMethod: playMethod || 'multiple',
+            connectionType: connectionType || 'wifi',
+            playerCount: playerCount || 2
+          });
+        }
+      }, 300); // Esperar 300ms para que termine la animación
+      
+    } catch (error) {
+      console.error('❌ Error en handleConfirmHostLeave:', error);
+    }
+  };
+
+  const handleCloseKickedModal = () => {
+    // Animar salida del modal de kicked
+    Animated.parallel([
+      Animated.timing(kickedModalScale, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(kickedModalOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowKickedModal(false);
+    });
+  };
+
+  const handleConfirmKicked = async () => {
+    try {
+      console.log('✅ Usuario confirmó modal de expulsión, navegando a MainMenu...');
+      
+      // Cerrar modal primero
+      handleCloseKickedModal();
+      
+      // Esperar a que termine la animación del modal
+      setTimeout(() => {
+        // Navegar al MainMenu
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'MainMenu' }],
+        });
+      }, 300);
+      
+    } catch (error) {
+      console.error('❌ Error en handleConfirmKicked:', error);
+      // Aún así navegar para evitar que el jugador quede atrapado
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainMenu' }],
+      });
+    }
   };
 
   const handleKickPlayer = (playerId) => {
@@ -857,6 +1107,202 @@ const CreateLobbyScreen = ({ navigation, route }) => {
           )}
         </Animated.View>
       </View>
+
+      {/* Modal personalizado para confirmación de salida */}
+      <Modal
+        visible={showLeaveModal}
+        transparent={true}
+        animationType="none"
+        statusBarTranslucent={true}
+      >
+        <View style={styles.leaveModalOverlay}>
+          <Animated.View
+            style={[
+              styles.leaveModalContainer,
+              {
+                transform: [{ scale: leaveModalScale }],
+                opacity: leaveModalOpacity,
+              },
+            ]}
+          >
+            {/* Fondo con patrón de libreta */}
+            <View style={styles.leaveModalPaper}>
+              {/* Líneas de libreta en el modal */}
+              {[...Array(4)].map((_, index) => (
+                <View 
+                  key={index} 
+                  style={[styles.leaveModalLine, { top: 25 + (index * 30) }]} 
+                />
+              ))}
+              
+              {/* Línea vertical roja (margen) */}
+              <View style={styles.leaveModalRedLine} />
+              
+              {/* Agujeros de perforación */}
+              <View style={styles.leaveModalHoles}>
+                {[...Array(3)].map((_, index) => (
+                  <View key={index} style={styles.leaveModalHole} />
+                ))}
+              </View>
+              
+              {/* Contenido del modal */}
+              <View style={styles.leaveModalContent}>
+                <Text style={styles.leaveModalTitle}>⚠️ Salir de la Partida</Text>
+                <Text style={styles.leaveModalMessage}>
+                  Si sales ahora serás eliminado de la sala y de la partida. ¿Estás seguro?
+                </Text>
+                
+                {/* Botones */}
+                <View style={styles.leaveModalButtons}>
+                  <TouchableOpacity
+                    style={[styles.leaveModalButton, styles.leaveModalCancelButton]}
+                    onPress={handleCloseLeaveModal}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.leaveModalCancelButtonText}>Cancelar</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={[styles.leaveModalButton, styles.leaveModalConfirmButton]}
+                    onPress={handleConfirmLeave}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.leaveModalConfirmButtonText}>Salir</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+
+      {/* Modal personalizado para confirmación de disolución de sala (Host) */}
+      <Modal
+        visible={showHostLeaveModal}
+        transparent={true}
+        animationType="none"
+        statusBarTranslucent={true}
+      >
+        <View style={styles.hostLeaveModalOverlay}>
+          <Animated.View
+            style={[
+              styles.hostLeaveModalContainer,
+              {
+                transform: [{ scale: hostLeaveModalScale }],
+                opacity: hostLeaveModalOpacity,
+              },
+            ]}
+          >
+            {/* Fondo con patrón de libreta */}
+            <View style={styles.hostLeaveModalPaper}>
+              {/* Líneas de libreta en el modal */}
+              {[...Array(5)].map((_, index) => (
+                <View 
+                  key={index} 
+                  style={[styles.hostLeaveModalLine, { top: 30 + (index * 30) }]} 
+                />
+              ))}
+              
+              {/* Línea vertical roja (margen) */}
+              <View style={styles.hostLeaveModalRedLine} />
+              
+              {/* Agujeros de perforación */}
+              <View style={styles.hostLeaveModalHoles}>
+                {[...Array(3)].map((_, index) => (
+                  <View key={index} style={styles.hostLeaveModalHole} />
+                ))}
+              </View>
+              
+              {/* Contenido del modal */}
+              <View style={styles.hostLeaveModalContent}>
+                <Text style={styles.hostLeaveModalTitle}>👑 Disolver Sala</Text>
+                <Text style={styles.hostLeaveModalMessage}>
+                  Si sales ahora se eliminará la sala y se expulsará a todos los jugadores unidos a la partida. ¿Estás seguro?
+                </Text>
+                
+                {/* Botones */}
+                <View style={styles.hostLeaveModalButtons}>
+                  <TouchableOpacity
+                    style={[styles.hostLeaveModalButton, styles.hostLeaveModalCancelButton]}
+                    onPress={handleCloseHostLeaveModal}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.hostLeaveModalCancelButtonText}>Cancelar</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={[styles.hostLeaveModalButton, styles.hostLeaveModalConfirmButton]}
+                    onPress={handleConfirmHostLeave}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.hostLeaveModalConfirmButtonText}>Disolver</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+
+      {/* Modal personalizado para notificación de expulsión */}
+      <Modal
+        visible={showKickedModal}
+        transparent={true}
+        animationType="none"
+        statusBarTranslucent={true}
+        onRequestClose={() => {}} // No permitir cerrar con botón atrás
+      >
+        <View style={styles.leaveModalOverlay}>
+          <Animated.View 
+            style={[
+              styles.leaveModalContainer,
+              {
+                transform: [{ scale: kickedModalScale }, { rotate: '1deg' }],
+                opacity: kickedModalOpacity,
+              }
+            ]}
+          >
+            {/* Fondo de papel del modal */}
+            <View style={styles.leaveModalPaper}>
+              {/* Líneas del cuaderno */}
+              {[...Array(12)].map((_, index) => (
+                <View 
+                  key={index} 
+                  style={[styles.leaveModalLine, { top: 25 + (index * 20) }]} 
+                />
+              ))}
+              <View style={styles.leaveModalRedLine} />
+              <View style={styles.leaveModalHoles}>
+                {[...Array(5)].map((_, index) => (
+                  <View key={index} style={styles.leaveModalHole} />
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.leaveModalContent}>
+              {/* Título del modal */}
+              <Text style={styles.leaveModalTitle}>🚪 Sala Disuelta</Text>
+              
+              {/* Mensaje explicativo */}
+              <Text style={styles.leaveModalMessage}>
+                El host ha disuelto la sala.{'\n'}
+                Serás redirigido al menú principal.
+              </Text>
+              
+              {/* Botón de confirmación */}
+              <View style={styles.leaveModalButtons}>
+                <TouchableOpacity
+                  style={[styles.leaveModalButton, { backgroundColor: '#4CAF50', transform: [{ rotate: '-0.5deg' }] }]}
+                  onPress={handleConfirmKicked}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.leaveModalConfirmButtonText}>Entendido</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
     </Animated.View>
   );
 };
@@ -1399,6 +1845,323 @@ const styles = StyleSheet.create({
     height: 3,
     borderRadius: 2,
     transform: [{ rotate: '45deg' }],
+  },
+
+  // Estilos del modal de confirmación de salida
+  leaveModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 30,
+    paddingVertical: 50,
+  },
+  
+  leaveModalContainer: {
+    backgroundColor: '#F8F6F0',
+    borderRadius: 25,
+    padding: 20,
+    maxWidth: 500,
+    width: '90%',
+    minHeight: 280,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 20,
+    borderWidth: 3,
+    borderColor: '#000000',
+    borderTopLeftRadius: 5,
+    transform: [{ rotate: '-1deg' }],
+    overflow: 'hidden',
+  },
+  
+  leaveModalPaper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#F8F6F0',
+  },
+  
+  leaveModalLine: {
+    position: 'absolute',
+    left: 45,
+    right: 15,
+    height: 1,
+    backgroundColor: '#A8C8EC',
+    opacity: 0.4,
+  },
+  
+  leaveModalRedLine: {
+    position: 'absolute',
+    left: 40,
+    top: 15,
+    bottom: 15,
+    width: 2,
+    backgroundColor: '#FF6B6B',
+    opacity: 0.4,
+  },
+  
+  leaveModalHoles: {
+    position: 'absolute',
+    left: 15,
+    top: 40,
+    bottom: 40,
+    width: 15,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  
+  leaveModalHole: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D0D0D0',
+    shadowColor: '#000',
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  
+  leaveModalContent: {
+    paddingLeft: 55,
+    paddingRight: 25,
+    paddingTop: 30,
+    paddingBottom: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
+  
+  leaveModalTitle: {
+    fontSize: 20,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#000000',
+    textAlign: 'center',
+    marginBottom: 15,
+    transform: [{ rotate: '0.5deg' }],
+  },
+  
+  leaveModalMessage: {
+    fontSize: 15,
+    fontFamily: theme.fonts.primary,
+    color: '#2E2E2E',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 30,
+    paddingHorizontal: 10,
+  },
+  
+  leaveModalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 15,
+  },
+  
+  leaveModalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderTopLeftRadius: 3,
+    borderWidth: 2,
+    borderColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+    minHeight: 45,
+  },
+  
+  leaveModalCancelButton: {
+    backgroundColor: '#FFFFFF',
+    transform: [{ rotate: '0.5deg' }],
+  },
+  
+  leaveModalConfirmButton: {
+    backgroundColor: '#FF6B6B',
+    transform: [{ rotate: '-0.5deg' }],
+  },
+  
+  leaveModalCancelButtonText: {
+    fontSize: 16,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#000000',
+  },
+  
+  leaveModalConfirmButtonText: {
+    fontSize: 16,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#FFFFFF',
+  },
+
+  // Estilos del modal de confirmación para host (disolución de sala)
+  hostLeaveModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 25,
+    paddingVertical: 40,
+  },
+  
+  hostLeaveModalContainer: {
+    backgroundColor: '#F8F6F0',
+    borderRadius: 25,
+    padding: 20,
+    maxWidth: 520,
+    width: '92%',
+    minHeight: 320,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.4,
+    shadowRadius: 25,
+    elevation: 25,
+    borderWidth: 3,
+    borderColor: '#000000',
+    borderTopLeftRadius: 5,
+    transform: [{ rotate: '-0.8deg' }],
+    overflow: 'hidden',
+  },
+  
+  hostLeaveModalPaper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#F8F6F0',
+  },
+  
+  hostLeaveModalLine: {
+    position: 'absolute',
+    left: 50,
+    right: 15,
+    height: 1,
+    backgroundColor: '#A8C8EC',
+    opacity: 0.5,
+  },
+  
+  hostLeaveModalRedLine: {
+    position: 'absolute',
+    left: 45,
+    top: 15,
+    bottom: 15,
+    width: 2,
+    backgroundColor: '#FF6B6B',
+    opacity: 0.6,
+  },
+  
+  hostLeaveModalHoles: {
+    position: 'absolute',
+    left: 15,
+    top: 50,
+    bottom: 50,
+    width: 18,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  
+  hostLeaveModalHole: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#FF6B6B',
+    shadowColor: '#000',
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  
+  hostLeaveModalContent: {
+    paddingLeft: 60,
+    paddingRight: 25,
+    paddingTop: 35,
+    paddingBottom: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
+  
+  hostLeaveModalTitle: {
+    fontSize: 22,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#000000',
+    textAlign: 'center',
+    marginBottom: 18,
+    transform: [{ rotate: '0.3deg' }],
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  
+  hostLeaveModalMessage: {
+    fontSize: 15,
+    fontFamily: theme.fonts.primary,
+    color: '#2E2E2E',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 35,
+    paddingHorizontal: 5,
+  },
+  
+  hostLeaveModalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 18,
+  },
+  
+  hostLeaveModalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 15,
+    borderTopLeftRadius: 4,
+    borderWidth: 3,
+    borderColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 5,
+    minHeight: 50,
+  },
+  
+  hostLeaveModalCancelButton: {
+    backgroundColor: '#FFFFFF',
+    transform: [{ rotate: '0.8deg' }],
+  },
+  
+  hostLeaveModalConfirmButton: {
+    backgroundColor: '#FF4444',
+    transform: [{ rotate: '-0.8deg' }],
+  },
+  
+  hostLeaveModalCancelButtonText: {
+    fontSize: 16,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#000000',
+  },
+  
+  hostLeaveModalConfirmButtonText: {
+    fontSize: 16,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#FFFFFF',
   },
 });
 

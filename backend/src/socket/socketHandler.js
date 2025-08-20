@@ -189,11 +189,24 @@ function setupRoomEvents(socket, io) {
   // Salir de sala
   socket.on('leaveRoom', (data, callback) => {
     try {
+      // Primero obtener información de la sala ANTES de remover al jugador
+      const room = roomManager.getRoomBySocketId(socket.id);
+      const leavingPlayer = room ? room.getPlayerBySocketId(socket.id) : null;
+      const isHost = leavingPlayer ? leavingPlayer.isHost : false;
+      const roomId = room ? room.id : null;
+      const otherPlayers = room ? Array.from(room.players.values()).filter(p => p.socketId !== socket.id) : [];
+      
+      console.log(`🚪 Player ${leavingPlayer?.nickname || socket.id} leaving room ${roomId}`);
+      console.log(`👑 Is host: ${isHost}`);
+      console.log(`👥 Other players in room: ${otherPlayers.length}`);
+      otherPlayers.forEach(p => console.log(`  - ${p.nickname} (${p.socketId})`));
+      
+      // Ahora sí remover al jugador
       const result = roomManager.leaveRoom(socket.id, true);
       
       if (result.success) {
         // Salir del room de socket.io
-        socket.leave(result.room.id);
+        socket.leave(roomId);
         
         // Responder al jugador
         const response = {
@@ -203,14 +216,34 @@ function setupRoomEvents(socket, io) {
         
         if (callback) callback(response);
         
-        // Notificar a otros jugadores
-        socket.to(result.room.id).emit('playerLeft', {
-          player: result.player.toClientObject(),
-          room: result.room.toClientObject(),
-          wasHost: result.wasHost
-        });
+        // Si era el host y había otros jugadores, disolver la sala
+        if (isHost && otherPlayers.length > 0) {
+          console.log(`👑 Host left room ${roomId}, dissolving room and kicking ${otherPlayers.length} players`);
+          
+          // Notificar a todos los jugadores restantes que fueron expulsados
+          console.log(`📢 Sending kicked event to room ${roomId}`);
+          socket.to(roomId).emit('kicked', {
+            reason: 'Host disolvió la sala',
+            message: 'El host ha disuelto la sala',
+            byHost: true
+          });
+          
+          console.log(`✅ Kicked event sent to ${otherPlayers.length} players`);
+          
+          // La sala se eliminará automáticamente por roomManager.leaveRoom() 
+          // cuando quede vacía, no necesitamos eliminarla manualmente
+          
+        } else {
+          // Jugador normal salió, notificar a otros
+          console.log(`👤 Regular player left, notifying others`);
+          socket.to(roomId).emit('playerLeft', {
+            player: result.player.toClientObject(),
+            room: result.room.toClientObject(),
+            wasHost: result.wasHost
+          });
+        }
         
-        console.log(`✅ Player left room ${result.room.id} voluntarily`);
+        console.log(`✅ Player left room ${roomId} voluntarily`);
       } else {
         throw new Error(result.reason);
       }

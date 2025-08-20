@@ -47,8 +47,14 @@ const LobbyConfigScreen = ({ navigation, route }) => {
   // Redux
   const dispatch = useDispatch();
   
-  // Parámetros de navegación
-  const { gameMode, roomCode, isHost, playerData, roomData } = route.params;
+  // Parámetros de navegación con valores por defecto
+  const { 
+    gameMode = 'classic', 
+    roomCode = null, 
+    isHost = false, 
+    playerData = null, 
+    roomData = null 
+  } = route.params || {};
   
   // Estados para las selecciones
   const [playMethod, setPlayMethod] = useState('multiple'); // 'multiple' o 'single'
@@ -197,7 +203,17 @@ const LobbyConfigScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    navigation.goBack();
+    
+    // Si no hay parámetros de juego válidos, significa que vino de disolver una sala
+    // En este caso, ir al MainMenu en lugar de goBack()
+    if (!gameMode || (!roomCode && !playerData && !roomData)) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainMenu' }],
+      });
+    } else {
+      navigation.goBack();
+    }
   };
 
   const handleContinue = () => {
