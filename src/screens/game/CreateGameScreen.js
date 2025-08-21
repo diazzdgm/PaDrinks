@@ -205,29 +205,14 @@ const CreateGameScreen = ({ navigation }) => {
   };
 
   const playBeerSound = async () => {
-    try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: false,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-
-      const { sound: soundObject } = await Audio.Sound.createAsync(
-        require('../../../assets/sounds/beer.can.sound.mp3'),
-        {
-          shouldPlay: true,
-          isLooping: false,
-          volume: 0.8,
-        }
-      );
-      
+    const soundObject = await audioService.playSoundEffect(
+      require('../../../assets/sounds/beer.can.sound.mp3'),
+      { volume: 0.8 }
+    );
+    
+    if (soundObject) {
       beerSound.current = soundObject;
       console.log('🍺 Reproduciendo sonido de lata de cerveza...');
-      
-    } catch (error) {
-      console.log('Error loading beer sound:', error);
     }
   };
 

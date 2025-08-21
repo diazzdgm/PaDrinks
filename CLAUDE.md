@@ -362,6 +362,33 @@ Real-time room validation before joining:
 - **Frontend Validation**: Pre-validation of room codes with immediate feedback
 - **Navigation Integration**: Seamless flow from validation → registration → lobby
 
+### Player Validation and Management System
+
+#### Registration Validation System
+Complete field validation implemented across all registration screens:
+- **Required Fields**: Nickname (min 2 chars), gender, orientation, avatar (photo or emoji)
+- **Duplicate Name Prevention**: Real-time checking against existing players in both local and online modes
+- **Custom Error Modals**: Post-it notebook design matching game aesthetics instead of basic alerts
+- **Online Mode Validation**: Uses `getRoomInfo` backend endpoint to check room status without requiring membership
+- **Local Mode Validation**: Validates against `registeredPlayers` array in Redux store
+
+#### Player Kick/Expulsion System
+Comprehensive player management with custom modals and real-time synchronization:
+- **Host-Only Controls**: Only room host can initiate player expulsion
+- **Custom Kick Modal**: Post-it notebook design with confirmation workflow matching game aesthetics
+- **Backend Processing**: Single event handler in `socketHandler.js` (duplicate removed from `gameEvents.js`)
+- **Real-Time Notification**: Expelled players receive `kicked` event with custom modal display
+- **Automatic Sync Cancellation**: Cancels pending automatic room synchronization calls to prevent conflicts
+- **Cross-Device Updates**: Host sees immediate player removal, expelled player gets notification modal
+- **Navigation Management**: Proper redirection after expulsion with stack reset patterns
+
+#### Backend Event Architecture for Player Management
+- **validateRoom**: Pre-join room validation without membership requirement
+- **getRoomInfo**: Complete room information including player list for validation
+- **kickPlayer**: Host-initiated player expulsion with proper event cascading
+- **kicked**: Individual player notification event for expulsion
+- **playerLeft**: General notification to other players about departures
+
 ### Critical Implementation Patterns
 
 #### Event Listener Management
@@ -369,6 +396,12 @@ Real-time room validation before joining:
 - **Cleanup Pattern**: ALWAYS remove event listeners in useEffect cleanup functions
 - **Event Names**: Consistent naming: `playerJoined`, `playerLeft`, `kicked`, `roomSync`
 - **Handler Isolation**: Event handlers defined within useEffect scope to access current state
+
+#### Timeout and Synchronization Management
+- **Automatic Sync Timeouts**: Store timeout references using `useRef` for cancellation during cleanup
+- **Sync Cancellation Pattern**: Cancel automatic room synchronization timeouts after player expulsion to prevent errors
+- **Memory Leak Prevention**: Always clear timeouts in component unmount and after critical operations
+- **Conflict Resolution**: Prevent multiple simultaneous sync operations that can cause "Player not found" errors
 
 #### Modal Animation Patterns
 - **Entrance Animation**: `Animated.spring()` for scale with `Animated.timing()` for opacity

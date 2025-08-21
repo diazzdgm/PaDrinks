@@ -86,6 +86,12 @@ const CreateLobbyScreen = ({ navigation, route }) => {
   const [showKickPlayerModal, setShowKickPlayerModal] = useState(false);
   const [playerToKick, setPlayerToKick] = useState(null);
   
+  // Estados para nuevos modales personalizados
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [modalData, setModalData] = useState({ title: '', message: '', type: 'info' });
+  
   // Animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const leftSideAnim = useRef(new Animated.Value(-300)).current;
@@ -99,9 +105,10 @@ const CreateLobbyScreen = ({ navigation, route }) => {
   const kickedModalOpacity = useRef(new Animated.Value(0)).current;
   const kickPlayerModalScale = useRef(new Animated.Value(0)).current;
   const kickPlayerModalOpacity = useRef(new Animated.Value(0)).current;
+  const genericModalScale = useRef(new Animated.Value(0)).current;
+  const genericModalOpacity = useRef(new Animated.Value(0)).current;
   
-  // Referencias para sonidos
-  const beerSound = useRef(null);
+  // audioService gestiona los sonidos automáticamente
   
   // Referencias para timeouts de sincronización
   const syncTimeoutRefs = useRef([]);
@@ -111,6 +118,55 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     syncTimeoutRefs.current.forEach(timeout => clearTimeout(timeout));
     syncTimeoutRefs.current = [];
     console.log('🚫 Sincronizaciones automáticas canceladas');
+  };
+
+  // Función genérica para mostrar modales personalizados
+  const showCustomModal = (title, message, type = 'info') => {
+    setModalData({ title, message, type });
+    
+    if (type === 'error') {
+      setShowErrorModal(true);
+    } else if (type === 'success') {
+      setShowSuccessModal(true);
+    } else {
+      setShowInfoModal(true);
+    }
+    
+    // Animar entrada del modal
+    Animated.parallel([
+      Animated.spring(genericModalScale, {
+        toValue: 1,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(genericModalOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  // Función para cerrar modales genéricos
+  const handleCloseGenericModal = () => {
+    Animated.parallel([
+      Animated.timing(genericModalScale, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(genericModalOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowErrorModal(false);
+      setShowSuccessModal(false);
+      setShowInfoModal(false);
+      setModalData({ title: '', message: '', type: 'info' });
+    });
   };
   
   // Estado y animación para el botón de mute
@@ -235,7 +291,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
         
       } catch (error) {
         console.error('❌ Error creando sala en backend:', error.message);
-        Alert.alert('Error', 'No se pudo crear la sala online. Continuando en modo local.');
+        showCustomModal('❌ Error', 'No se pudo crear la sala online. Continuando en modo local.', 'error');
         // Continuar con código local si falla el backend
         generateRoomCode();
       } finally {
@@ -322,7 +378,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       startEntranceAnimations();
       
       return () => {
-        cleanupSound();
+        // audioService gestiona automáticamente la limpieza
       };
     }, [])
   );
@@ -495,15 +551,8 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     setRoomCode(result);
   };
 
-  const cleanupSound = async () => {
-    if (beerSound.current) {
-      try {
-        await beerSound.current.unloadAsync();
-      } catch (error) {
-        console.log('Error cleaning up beer sound:', error);
-      }
-    }
-  };
+  // audioService gestiona automáticamente la limpieza de sonidos
+  // No necesitamos cleanupSound manual
 
   const startEntranceAnimations = () => {
     // Resetear valores
@@ -540,30 +589,12 @@ const CreateLobbyScreen = ({ navigation, route }) => {
   };
 
   const playBeerSound = async () => {
-    try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: false,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-
-      const { sound: soundObject } = await Audio.Sound.createAsync(
-        require('../../../assets/sounds/beer.can.sound.mp3'),
-        {
-          shouldPlay: true,
-          isLooping: false,
-          volume: 0.8,
-        }
-      );
-      
-      beerSound.current = soundObject;
-      console.log('🍺 Reproduciendo sonido de lata de cerveza...');
-      
-    } catch (error) {
-      console.log('Error loading beer sound:', error);
-    }
+    // audioService gestiona automáticamente la limpieza, no necesitamos guardar referencia
+    await audioService.playSoundEffect(
+      require('../../../assets/sounds/beer.can.sound.mp3'),
+      { volume: 0.8 }
+    );
+    console.log('🍺 Reproduciendo sonido de lata de cerveza...');
   };
 
   const toggleMute = async () => {
@@ -911,44 +942,63 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       // Cerrar modal primero
       handleCloseKickPlayerModal();
       
-      // Expulsar jugador vía backend
+      // Expulsar jugador según el modo (local vs online)
       setTimeout(async () => {
         try {
           console.log(`📡 Expulsando jugador: ${playerToKick.nickname} (${playerToKick.id})`);
           
-          if (SocketService.connected) {
-            // Usar el backend para expulsar
-            const response = await new Promise((resolve, reject) => {
-              SocketService.socket.emit('kickPlayer', 
-                { targetPlayerId: playerToKick.id }, 
-                (response) => {
-                  if (response && response.success) {
-                    resolve(response);
-                  } else {
-                    reject(new Error(response?.error || 'Failed to kick player'));
-                  }
-                }
-              );
+          // Verificar si estamos en modo local o online
+          const isLocalMode = playMethod === 'single' || !SocketService.connected;
+          
+          if (isLocalMode) {
+            // MODO LOCAL - Expulsión directa sin backend
+            console.log('📱 Expulsando jugador en modo local');
+            
+            // Remover jugador de la lista local
+            setConnectedPlayers(prev => {
+              const updatedPlayers = prev.filter(p => p.id !== playerToKick.id);
+              console.log(`✅ Jugador ${playerToKick.nickname} expulsado localmente`);
+              console.log(`👥 Jugadores restantes: ${updatedPlayers.length}`);
+              return updatedPlayers;
             });
             
-            console.log('✅ Jugador expulsado exitosamente:', response.message);
-            
-            // Cancelar sincronizaciones automáticas para evitar errores
-            cancelAutoSync();
-            
-            // Actualizar lista local con datos del backend
-            if (response.room && response.room.players) {
-              const updatedPlayers = response.room.players.map(player => ({
-                ...player,
-                isCurrentUser: player.socketId === SocketService.socket?.id
-              }));
-              setConnectedPlayers(updatedPlayers);
-            }
+            // Mostrar confirmación al host
+            showCustomModal('✅ Expulsado', `${playerToKick.nickname} ha sido expulsado de la partida.`, 'success');
             
           } else {
-            // Fallback local si no hay conexión
-            console.log('⚠️ Sin conexión backend, expulsando localmente');
-            setConnectedPlayers(prev => prev.filter(p => p.id !== playerToKick.id));
+            // MODO ONLINE - Usar backend para expulsar
+            console.log('🌐 Expulsando jugador en modo online');
+            
+            if (SocketService.connected) {
+              const response = await new Promise((resolve, reject) => {
+                SocketService.socket.emit('kickPlayer', 
+                  { targetPlayerId: playerToKick.id }, 
+                  (response) => {
+                    if (response && response.success) {
+                      resolve(response);
+                    } else {
+                      reject(new Error(response?.error || 'Failed to kick player'));
+                    }
+                  }
+                );
+              });
+              
+              console.log('✅ Jugador expulsado exitosamente:', response.message);
+              
+              // Cancelar sincronizaciones automáticas para evitar errores
+              cancelAutoSync();
+              
+              // Actualizar lista local con datos del backend
+              if (response.room && response.room.players) {
+                const updatedPlayers = response.room.players.map(player => ({
+                  ...player,
+                  isCurrentUser: player.socketId === SocketService.socket?.id
+                }));
+                setConnectedPlayers(updatedPlayers);
+              }
+            } else {
+              throw new Error('No hay conexión al servidor');
+            }
           }
           
           playBeerSound();
@@ -962,7 +1012,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
         } catch (error) {
           console.error('❌ Error expulsando jugador:', error);
           // Mostrar error al host
-          Alert.alert('❌ Error', 'No se pudo expulsar al jugador. Inténtalo de nuevo.');
+          showCustomModal('❌ Error', 'No se pudo expulsar al jugador. Inténtalo de nuevo.', 'error');
         }
       }, 300);
     }
@@ -976,18 +1026,18 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     }
     
     // Mock clipboard functionality
-    Alert.alert('📋 Copiado', 'Código de sala copiado al portapapeles');
+    showCustomModal('📋 Copiado', 'Código de sala copiado al portapapeles', 'success');
     playBeerSound();
   };
 
   const handleStartGame = () => {
     if (!isHost) {
-      Alert.alert('❌ Sin permisos', 'Solo el host puede iniciar la partida.');
+      showCustomModal('❌ Sin permisos', 'Solo el host puede iniciar la partida.', 'error');
       return;
     }
 
     if (connectedPlayers.length < 2) {
-      Alert.alert('⚠️ Jugadores Insuficientes', 'Necesitas al menos 2 jugadores para iniciar el juego.');
+      showCustomModal('⚠️ Jugadores Insuficientes', 'Necesitas al menos 2 jugadores para iniciar el juego.', 'info');
       return;
     }
 
@@ -1000,7 +1050,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     playBeerSound();
     
     console.log('🎮 Host iniciando partida con jugadores:', connectedPlayers.map(p => p.nickname));
-    Alert.alert('🎮 ¡Iniciando Juego!', `${connectedPlayers.length} jugadores listos para jugar`);
+    showCustomModal('🎮 ¡Iniciando Juego!', `${connectedPlayers.length} jugadores listos para jugar`, 'success');
   };
 
   const canStartGame = isHost && connectedPlayers.length >= 2;
@@ -1537,6 +1587,171 @@ const CreateLobbyScreen = ({ navigation, route }) => {
                   activeOpacity={0.8}
                 >
                   <Text style={styles.leaveModalConfirmButtonText}>Expulsar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+
+      {/* Modal genérico personalizado para errores */}
+      <Modal
+        visible={showErrorModal}
+        transparent={true}
+        animationType="none"
+        onRequestClose={handleCloseGenericModal}
+      >
+        <View style={styles.leaveModalOverlay}>
+          <Animated.View 
+            style={[
+              styles.leaveModalContainer,
+              {
+                transform: [{ scale: genericModalScale }],
+                opacity: genericModalOpacity,
+              }
+            ]}
+          >
+            {/* Fondo de papel del modal */}
+            <View style={styles.leaveModalPaper}>
+              <View style={styles.leaveModalHoles}>
+                {[...Array(4)].map((_, i) => (
+                  <View key={i} style={styles.leaveModalHole} />
+                ))}
+              </View>
+              <View style={styles.leaveModalRedLine} />
+              {/* Líneas de libreta */}
+              {[...Array(8)].map((_, index) => (
+                <View 
+                  key={index} 
+                  style={[styles.leaveModalLine, { top: 25 + (index * 25) }]} 
+                />
+              ))}
+            </View>
+
+            <View style={styles.leaveModalContent}>
+              <Text style={styles.leaveModalTitle}>{modalData.title}</Text>
+              <Text style={styles.leaveModalMessage}>
+                {modalData.message}
+              </Text>
+              
+              {/* Botón */}
+              <View style={styles.leaveModalButtons}>
+                <TouchableOpacity
+                  style={[styles.leaveModalButton, { backgroundColor: '#FF6B6B', transform: [{ rotate: '-0.5deg' }] }]}
+                  onPress={handleCloseGenericModal}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.leaveModalConfirmButtonText}>Entendido</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+
+      {/* Modal genérico personalizado para éxitos */}
+      <Modal
+        visible={showSuccessModal}
+        transparent={true}
+        animationType="none"
+        onRequestClose={handleCloseGenericModal}
+      >
+        <View style={styles.leaveModalOverlay}>
+          <Animated.View 
+            style={[
+              styles.leaveModalContainer,
+              {
+                transform: [{ scale: genericModalScale }],
+                opacity: genericModalOpacity,
+              }
+            ]}
+          >
+            {/* Fondo de papel del modal */}
+            <View style={styles.leaveModalPaper}>
+              <View style={styles.leaveModalHoles}>
+                {[...Array(4)].map((_, i) => (
+                  <View key={i} style={styles.leaveModalHole} />
+                ))}
+              </View>
+              <View style={styles.leaveModalRedLine} />
+              {/* Líneas de libreta */}
+              {[...Array(8)].map((_, index) => (
+                <View 
+                  key={index} 
+                  style={[styles.leaveModalLine, { top: 25 + (index * 25) }]} 
+                />
+              ))}
+            </View>
+
+            <View style={styles.leaveModalContent}>
+              <Text style={styles.leaveModalTitle}>{modalData.title}</Text>
+              <Text style={styles.leaveModalMessage}>
+                {modalData.message}
+              </Text>
+              
+              {/* Botón */}
+              <View style={styles.leaveModalButtons}>
+                <TouchableOpacity
+                  style={[styles.leaveModalButton, { backgroundColor: '#4CAF50', transform: [{ rotate: '0.5deg' }] }]}
+                  onPress={handleCloseGenericModal}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.leaveModalConfirmButtonText}>¡Genial!</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+
+      {/* Modal genérico personalizado para información */}
+      <Modal
+        visible={showInfoModal}
+        transparent={true}
+        animationType="none"
+        onRequestClose={handleCloseGenericModal}
+      >
+        <View style={styles.leaveModalOverlay}>
+          <Animated.View 
+            style={[
+              styles.leaveModalContainer,
+              {
+                transform: [{ scale: genericModalScale }],
+                opacity: genericModalOpacity,
+              }
+            ]}
+          >
+            {/* Fondo de papel del modal */}
+            <View style={styles.leaveModalPaper}>
+              <View style={styles.leaveModalHoles}>
+                {[...Array(4)].map((_, i) => (
+                  <View key={i} style={styles.leaveModalHole} />
+                ))}
+              </View>
+              <View style={styles.leaveModalRedLine} />
+              {/* Líneas de libreta */}
+              {[...Array(8)].map((_, index) => (
+                <View 
+                  key={index} 
+                  style={[styles.leaveModalLine, { top: 25 + (index * 25) }]} 
+                />
+              ))}
+            </View>
+
+            <View style={styles.leaveModalContent}>
+              <Text style={styles.leaveModalTitle}>{modalData.title}</Text>
+              <Text style={styles.leaveModalMessage}>
+                {modalData.message}
+              </Text>
+              
+              {/* Botón */}
+              <View style={styles.leaveModalButtons}>
+                <TouchableOpacity
+                  style={[styles.leaveModalButton, { backgroundColor: '#2196F3', transform: [{ rotate: '-0.3deg' }] }]}
+                  onPress={handleCloseGenericModal}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.leaveModalConfirmButtonText}>OK</Text>
                 </TouchableOpacity>
               </View>
             </View>

@@ -81,30 +81,29 @@ const JoinGameScreen = ({ navigation }) => {
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
   const muteButtonScale = useRef(new Animated.Value(1)).current;
 
+  // Función para reproducir sonido respetando mute
+  const playBeerSound = async () => {
+    const soundObject = await audioService.playSoundEffect(
+      require('../../../assets/sounds/beer.can.sound.mp3'),
+      { volume: 0.8 }
+    );
+    
+    if (soundObject) {
+      // Si ya había un sonido cargado, liberarlo
+      if (beerSound.current) {
+        try {
+          await beerSound.current.unloadAsync();
+        } catch (error) {}
+      }
+      beerSound.current = soundObject;
+    }
+  };
+
   // Configurar audio y limpiar al salir
   useFocusEffect(
     React.useCallback(() => {
       const setupAudio = async () => {
-        try {
-          await Audio.setAudioModeAsync({
-            allowsRecordingIOS: false,
-            staysActiveInBackground: true,
-            interruptionModeIOS: 1,
-            playsInSilentModeIOS: true,
-            shouldDuckAndroid: true,
-            interruptionModeAndroid: 1,
-            playThroughEarpieceAndroid: false,
-          });
-
-          const { sound } = await Audio.Sound.createAsync(
-            require('../../../assets/sounds/beer.can.sound.mp3'),
-            { volume: 0.8 }
-          );
-          beerSound.current = sound;
-
-        } catch (error) {
-          console.error('Error configurando audio:', error);
-        }
+        // No precargar sonido, se carga cuando sea necesario
       };
 
       setupAudio();
@@ -158,13 +157,7 @@ const JoinGameScreen = ({ navigation }) => {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {}
 
-    if (beerSound.current) {
-      try {
-        await beerSound.current.replayAsync();
-      } catch (error) {
-        console.error('Error reproduciendo sonido:', error);
-      }
-    }
+    await playBeerSound();
 
     setShowCodeInput(true);
     

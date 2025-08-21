@@ -82,8 +82,7 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
   const errorModalScale = useRef(new Animated.Value(0)).current;
   const errorModalOpacity = useRef(new Animated.Value(0)).current;
   
-  // Referencias para sonidos
-  const beerSound = useRef(null);
+  // audioService gestiona los sonidos automáticamente
 
   // Función para redimensionar y convertir imagen a base64
   const processImageForUpload = async (uri) => {
@@ -134,20 +133,13 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
       startEntranceAnimations();
       
       return () => {
-        cleanupSound();
+        // audioService gestiona automáticamente la limpieza
       };
     }, [])
   );
 
-  const cleanupSound = async () => {
-    if (beerSound.current) {
-      try {
-        await beerSound.current.unloadAsync();
-      } catch (error) {
-        console.log('Error cleaning up beer sound:', error);
-      }
-    }
-  };
+  // audioService gestiona automáticamente la limpieza de sonidos
+  // No necesitamos cleanupSound manual
 
   const startEntranceAnimations = () => {
     // Resetear valores
@@ -176,30 +168,11 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
   };
 
   const playBeerSound = async () => {
-    try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: false,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-
-      const { sound: soundObject } = await Audio.Sound.createAsync(
-        require('../../../assets/sounds/beer.can.sound.mp3'),
-        {
-          shouldPlay: true,
-          isLooping: false,
-          volume: 0.8,
-        }
-      );
-      
-      beerSound.current = soundObject;
-      console.log('🍺 Reproduciendo sonido de lata de cerveza...');
-      
-    } catch (error) {
-      console.log('Error loading beer sound:', error);
-    }
+    // audioService gestiona automáticamente la limpieza, no necesitamos guardar referencia
+    await audioService.playSoundEffect(
+      require('../../../assets/sounds/beer.can.sound.mp3'),
+      { volume: 0.8 }
+    );
   };
 
   const handleGenderSelect = (selectedGender) => {
@@ -238,11 +211,7 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert(
-          'Permisos de Cámara',
-          'Necesitamos acceso a tu cámara para tomar una foto.',
-          [{ text: 'OK' }]
-        );
+        showError('📷 Permisos de Cámara\n\nNecesitamos acceso a tu cámara para tomar una foto.');
         return;
       }
       
@@ -273,11 +242,7 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
       
     } catch (error) {
       console.log('Error al tomar foto:', error);
-      Alert.alert(
-        'Error',
-        'No se pudo tomar la foto. Por favor, intenta de nuevo.',
-        [{ text: 'OK' }]
-      );
+      showError('❌ Error\n\nNo se pudo tomar la foto. Por favor, intenta de nuevo.');
     }
   };
 
@@ -571,29 +536,22 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
         
       } catch (error) {
         console.error('❌ Error al unirse a la sala:', error);
-        Alert.alert(
-          'Error de Conexión', 
-          'No se pudo unir a la sala. ¿Deseas intentar en modo local?',
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            { 
-              text: 'Modo Local', 
-              onPress: () => {
-                navigation.navigate('CreateLobby', { 
-                  roomCode: roomCode,
-                  isHost: false,
-                  useBackend: false,
-                  playerData: playerData,
-                  roomData: roomData,
-                  isJoining: true,
-                  gameMode: gameMode,
-                  playMethod: 'multiple',
-                  connectionType: 'local'
-                });
-              }
-            }
-          ]
-        );
+        showError('🌐 Error de Conexión\n\nNo se pudo unir a la sala online. El juego continuará en modo local.');
+        
+        // Navegar automáticamente en modo local tras el error
+        setTimeout(() => {
+          navigation.navigate('CreateLobby', { 
+            roomCode: roomCode,
+            isHost: false,
+            useBackend: false,
+            playerData: playerData,
+            roomData: roomData,
+            isJoining: true,
+            gameMode: gameMode,
+            playMethod: 'multiple',
+            connectionType: 'local'
+          });
+        }, 2000);
       }
     } else {
       // Si está creando una sala nueva, ir a CreateLobbyScreen

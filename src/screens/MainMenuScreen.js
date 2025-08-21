@@ -85,8 +85,7 @@ const MainMenuScreen = ({ navigation }) => {
     rotate: new Animated.Value(0),
   }))).current;
   
-  // Referencias para sonidos
-  const beerSound = useRef(null);
+  // audioService gestiona los sonidos automáticamente
   
   // Estado para controlar el mute
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
@@ -125,22 +124,15 @@ const MainMenuScreen = ({ navigation }) => {
       // Conectar al backend automáticamente
       initializeBackendConnection();
       
-      // Limpiar sonidos al salir
+      // audioService gestiona automáticamente la limpieza
       return () => {
-        cleanupSound();
+        // No necesitamos limpieza manual
       };
     }, [])
   );
 
-  const cleanupSound = async () => {
-    if (beerSound.current) {
-      try {
-        await beerSound.current.unloadAsync();
-      } catch (error) {
-        console.log('Error cleaning up beer sound:', error);
-      }
-    }
-  };
+  // audioService gestiona automáticamente la limpieza de sonidos
+  // No necesitamos cleanupSound manual
 
 
 
@@ -169,32 +161,12 @@ const MainMenuScreen = ({ navigation }) => {
   };
 
   const playBeerSound = async () => {
-    try {
-      // Configurar audio
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: false,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-
-      // Cargar y reproducir sonido de lata de cerveza
-      const { sound: soundObject } = await Audio.Sound.createAsync(
-        require('../../assets/sounds/beer.can.sound.mp3'),
-        {
-          shouldPlay: true,
-          isLooping: false,
-          volume: 0.8,
-        }
-      );
-      
-      beerSound.current = soundObject;
-      console.log('🍺 Reproduciendo sonido de lata de cerveza...');
-      
-    } catch (error) {
-      console.log('Error loading beer sound:', error);
-    }
+    // audioService gestiona automáticamente la limpieza, no necesitamos guardar referencia
+    await audioService.playSoundEffect(
+      require('../../assets/sounds/beer.can.sound.mp3'),
+      { volume: 0.8 }
+    );
+    console.log('🍺 Reproduciendo sonido de lata de cerveza...');
   };
 
   const startEntranceAnimations = () => {

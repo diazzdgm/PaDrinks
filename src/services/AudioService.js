@@ -5,6 +5,7 @@ class AudioService {
     this.backgroundMusic = null;
     this.isMuted = false;
     this.isPlaying = false;
+    this.soundEffectsEnabled = true; // Control separado para efectos de sonido
   }
 
   async initializeBackgroundMusic() {
@@ -68,11 +69,14 @@ class AudioService {
 
   async toggleMute() {
     this.isMuted = !this.isMuted;
+    this.soundEffectsEnabled = !this.isMuted; // Sincronizar efectos de sonido con mute general
     
     if (this.isMuted) {
       await this.pauseBackgroundMusic();
+      console.log('🔇 Audio completamente silenciado (música + efectos)');
     } else {
       await this.playBackgroundMusic();
+      console.log('🔊 Audio activado (música + efectos)');
     }
     
     return this.isMuted;
@@ -85,6 +89,42 @@ class AudioService {
       } catch (error) {
         console.log('Error setting volume:', error);
       }
+    }
+  }
+
+  // Método para reproducir efectos de sonido respetando el mute
+  async playSoundEffect(soundRequire, options = {}) {
+    // Si los efectos están silenciados, no reproducir
+    if (!this.soundEffectsEnabled || this.isMuted) {
+      console.log('🔇 Efecto de sonido silenciado');
+      return null;
+    }
+
+    try {
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        staysActiveInBackground: false,
+        playsInSilentModeIOS: true,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
+      });
+
+      const { sound: soundObject } = await Audio.Sound.createAsync(
+        soundRequire,
+        {
+          shouldPlay: true,
+          isLooping: false,
+          volume: options.volume || 0.8,
+          ...options
+        }
+      );
+      
+      console.log('🔊 Reproduciendo efecto de sonido...');
+      return soundObject;
+      
+    } catch (error) {
+      console.log('Error loading sound effect:', error);
+      return null;
     }
   }
 
@@ -108,6 +148,14 @@ class AudioService {
 
   get isMusicPlaying() {
     return this.isPlaying;
+  }
+
+  get areSoundEffectsEnabled() {
+    return this.soundEffectsEnabled;
+  }
+
+  get isAudioMuted() {
+    return this.isMuted; // Estado general del audio
   }
 }
 

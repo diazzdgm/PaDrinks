@@ -53,7 +53,7 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   
   // Parámetros de navegación
-  const { gameMode, playerCount, currentPlayer = 1, registeredPlayers = [] } = route.params;
+  const { gameMode, playerCount, currentPlayer = 1, registeredPlayers = [], draftPlayers = {} } = route.params;
   
   // Estados para el formulario
   const [nickname, setNickname] = useState('');
@@ -79,44 +79,70 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   const errorModalScale = useRef(new Animated.Value(0)).current;
   const errorModalOpacity = useRef(new Animated.Value(0)).current;
   
-  // Referencias para sonidos
-  const beerSound = useRef(null);
+  // audioService gestiona los sonidos automáticamente
   
   // Estado y animación para el botón de mute
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
   const muteButtonScale = useRef(new Animated.Value(1)).current;
+
+  // Efecto para restaurar datos SOLO cuando cambie currentPlayer (nueva navegación)
+  useEffect(() => {
+    console.log(`🔄 Jugador cambió a: ${currentPlayer}`);
+    console.log(`📋 DraftPlayers:`, draftPlayers);
+    console.log(`✅ RegisteredPlayers:`, registeredPlayers);
+    
+    // Primero buscar en jugadores ya registrados
+    const registeredPlayer = registeredPlayers.find(player => player.playerId === currentPlayer);
+    if (registeredPlayer) {
+      // Restaurar datos de jugador ya completado
+      setNickname(registeredPlayer.nickname || '');
+      setGender(registeredPlayer.gender || '');
+      setOrientation(registeredPlayer.orientation || '');
+      setPlayerPhoto(registeredPlayer.photo || null);
+      setSelectedEmoji(registeredPlayer.emoji || '');
+      setPhotoUri(registeredPlayer.photoUri || null);
+      console.log(`✅ Restaurando jugador YA REGISTRADO ${currentPlayer}:`, registeredPlayer);
+    } else {
+      // Si no está registrado, buscar en borradores
+      const currentPlayerDraft = draftPlayers[currentPlayer];
+      if (currentPlayerDraft) {
+        // Restaurar datos de borrador
+        setNickname(currentPlayerDraft.nickname || '');
+        setGender(currentPlayerDraft.gender || '');
+        setOrientation(currentPlayerDraft.orientation || '');
+        setPlayerPhoto(currentPlayerDraft.playerPhoto || null);
+        setSelectedEmoji(currentPlayerDraft.selectedEmoji || '');
+        setPhotoUri(currentPlayerDraft.photoUri || null);
+        console.log(`📝 Restaurando BORRADOR del jugador ${currentPlayer}:`, currentPlayerDraft);
+      } else {
+        // Limpiar formulario para jugador completamente nuevo
+        setNickname('');
+        setGender('');
+        setOrientation('');
+        setPlayerPhoto(null);
+        setSelectedEmoji('');
+        setPhotoUri(null);
+        console.log(`🆕 Nuevo jugador ${currentPlayer}, campos limpiados`);
+      }
+    }
+  }, [currentPlayer]); // SOLO depende de currentPlayer, no de los arrays que cambian
 
   useFocusEffect(
     React.useCallback(() => {
       // Sincronizar estado de mute cuando regresamos a la pantalla
       setIsMuted(audioService.isMusicMuted);
       
-      // Limpiar formulario para cada jugador nuevo
-      setNickname('');
-      setGender('');
-      setOrientation('');
-      setPlayerPhoto(null);
-      setSelectedEmoji('');
-      setPhotoUri(null);
-      
       // Animaciones de entrada
       startEntranceAnimations();
       
       return () => {
-        cleanupSound();
+        // audioService gestiona automáticamente la limpieza
       };
-    }, [currentPlayer])
+    }, [])
   );
 
-  const cleanupSound = async () => {
-    if (beerSound.current) {
-      try {
-        await beerSound.current.unloadAsync();
-      } catch (error) {
-        console.log('Error cleaning up beer sound:', error);
-      }
-    }
-  };
+  // audioService gestiona automáticamente la limpieza de sonidos
+  // No necesitamos cleanupSound manual
 
   const startEntranceAnimations = () => {
     // Resetear valores
@@ -145,30 +171,12 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   };
 
   const playBeerSound = async () => {
-    try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: false,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-
-      const { sound: soundObject } = await Audio.Sound.createAsync(
-        require('../../../assets/sounds/beer.can.sound.mp3'),
-        {
-          shouldPlay: true,
-          isLooping: false,
-          volume: 0.8,
-        }
-      );
-      
-      beerSound.current = soundObject;
-      console.log('🍺 Reproduciendo sonido de lata de cerveza...');
-      
-    } catch (error) {
-      console.log('Error loading beer sound:', error);
-    }
+    // audioService gestiona automáticamente la limpieza, no necesitamos guardar referencia
+    await audioService.playSoundEffect(
+      require('../../../assets/sounds/beer.can.sound.mp3'),
+      { volume: 0.8 }
+    );
+    console.log('🍺 Reproduciendo sonido de lata de cerveza...');
   };
 
   const handleGenderSelect = (selectedGender) => {
@@ -207,11 +215,7 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert(
-          'Permisos de Cámara',
-          'Necesitamos acceso a tu cámara para tomar una foto.',
-          [{ text: 'OK' }]
-        );
+        showError('📷 Permisos de Cámara\n\nNecesitamos acceso a tu cámara para tomar una foto.');
         return;
       }
       
@@ -237,11 +241,7 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
       
     } catch (error) {
       console.log('Error al tomar foto:', error);
-      Alert.alert(
-        'Error',
-        'No se pudo tomar la foto. Por favor, intenta de nuevo.',
-        [{ text: 'OK' }]
-      );
+      showError('❌ Error\n\nNo se pudo tomar la foto. Por favor, intenta de nuevo.');
     }
   };
 
@@ -365,6 +365,26 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
     }
   };
 
+  const saveCurrentDraft = () => {
+    // Guardar datos del jugador actual (incluso si están incompletos)
+    const currentDraft = {
+      nickname: nickname || '',
+      gender: gender || '',
+      orientation: orientation || '',
+      playerPhoto: playerPhoto || null,
+      selectedEmoji: selectedEmoji || '',
+      photoUri: photoUri || null
+    };
+    
+    const updatedDraftPlayers = {
+      ...draftPlayers,
+      [currentPlayer]: currentDraft
+    };
+    
+    console.log(`💾 Guardando borrador del jugador ${currentPlayer}:`, currentDraft);
+    return updatedDraftPlayers;
+  };
+
   const handleGoBack = () => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -372,19 +392,59 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
       console.log('Haptics not available:', error);
     }
     
+    console.log(`⬅️ BACK PRESSED - Jugador actual: ${currentPlayer}`);
+    console.log(`📝 Datos actuales antes de guardar:`, { 
+      nickname, gender, orientation, playerPhoto, selectedEmoji, photoUri 
+    });
+    
     if (currentPlayer === 1) {
       // Si es el primer jugador, regresar a SingleDeviceSetup
-      navigation.goBack();
-    } else {
-      // Si no es el primer jugador, regresar al jugador anterior
-      const updatedPlayers = [...registeredPlayers];
-      updatedPlayers.pop(); // Remover el último jugador registrado
+      // Siempre incluir todos los datos: registeredPlayers + draftPlayers actuales
+      const allDraftPlayers = { ...draftPlayers };
       
+      // Guardar borrador del jugador 1 si hay datos
+      if (nickname || gender || orientation || playerPhoto) {
+        const currentDraft = saveCurrentDraft();
+        Object.assign(allDraftPlayers, currentDraft);
+        console.log(`💾 Guardando datos del jugador 1:`, currentDraft);
+      }
+      
+      // También incluir registeredPlayers como draftPlayers
+      registeredPlayers.forEach(player => {
+        if (!allDraftPlayers[player.playerId]) {
+          allDraftPlayers[player.playerId] = {
+            nickname: player.nickname,
+            gender: player.gender,
+            orientation: player.orientation,
+            playerPhoto: player.photo,
+            selectedEmoji: player.emoji,
+            photoUri: player.photoUri
+          };
+        }
+      });
+      
+      console.log(`📋 TODOS los datos que se pasan a SingleDevice:`, allDraftPlayers);
+      
+      // Navegar de vuelta con TODOS los datos
+      navigation.replace('SingleDeviceSetup', {
+        gameMode,
+        playerCount,
+        draftPlayers: allDraftPlayers
+      });
+    } else {
+      // Guardar borrador del jugador actual antes de ir hacia atrás
+      const updatedDraftPlayers = saveCurrentDraft();
+      console.log(`💾 Navegando de jugador ${currentPlayer} a ${currentPlayer - 1}`);
+      console.log(`📋 Borradores actualizados:`, updatedDraftPlayers);
+      
+      // Si no es el primer jugador, regresar al jugador anterior
+      // MANTENER todos los jugadores registrados, no eliminar ninguno
       navigation.replace('MultiPlayerRegistration', {
         gameMode,
         playerCount,
         currentPlayer: currentPlayer - 1,
-        registeredPlayers: updatedPlayers
+        registeredPlayers, // Mantener TODOS los jugadores registrados
+        draftPlayers: updatedDraftPlayers // Pasar los borradores actualizados
       });
     }
   };
@@ -412,10 +472,12 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
       return;
     }
     
-    // Validar nombres duplicados en modo local
+    // Validar nombres duplicados en modo local (excluyendo al jugador actual)
     if (registeredPlayers && registeredPlayers.length > 0) {
       const duplicateName = registeredPlayers.find(player => 
-        player.nickname && player.nickname.toLowerCase().trim() === nickname.toLowerCase().trim()
+        player.playerId !== currentPlayer && // EXCLUIR el jugador actual
+        player.nickname && 
+        player.nickname.toLowerCase().trim() === nickname.toLowerCase().trim()
       );
       
       if (duplicateName) {
@@ -443,18 +505,33 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
       photoUri: photoUri,
     };
     
-    // Agregar jugador actual a la lista
-    const updatedPlayers = [...registeredPlayers, currentPlayerData];
+    // Verificar si el jugador ya existe en la lista (editando jugador existente)
+    const existingPlayerIndex = registeredPlayers.findIndex(player => player.playerId === currentPlayer);
     
-    console.log(`Jugador ${currentPlayer} registrado:`, currentPlayerData);
+    let updatedPlayers;
+    if (existingPlayerIndex !== -1) {
+      // Actualizar jugador existente
+      updatedPlayers = [...registeredPlayers];
+      updatedPlayers[existingPlayerIndex] = currentPlayerData;
+      console.log(`✏️ Jugador ${currentPlayer} ACTUALIZADO:`, currentPlayerData);
+    } else {
+      // Agregar nuevo jugador a la lista
+      updatedPlayers = [...registeredPlayers, currentPlayerData];
+      console.log(`➕ Jugador ${currentPlayer} AGREGADO:`, currentPlayerData);
+    }
     
     if (currentPlayer < playerCount) {
+      // Limpiar el borrador del jugador actual ya que se ha completado
+      const updatedDraftPlayers = { ...draftPlayers };
+      delete updatedDraftPlayers[currentPlayer];
+      
       // Si no es el último jugador, continuar con el siguiente
       navigation.replace('MultiPlayerRegistration', {
         gameMode,
         playerCount,
         currentPlayer: currentPlayer + 1,
-        registeredPlayers: updatedPlayers
+        registeredPlayers: updatedPlayers,
+        draftPlayers: updatedDraftPlayers // Pasar borradores sin el jugador actual
       });
     } else {
       // Si es el último jugador, finalizar registro

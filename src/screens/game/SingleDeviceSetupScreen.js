@@ -50,6 +50,7 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
   
   // Estados
   const [playerCount, setPlayerCount] = useState(4); // Default 4 jugadores
+  const [savedDraftPlayers, setSavedDraftPlayers] = useState({});
   
   // Animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -57,8 +58,7 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
   const selectorAnim = useRef(new Animated.Value(50)).current;
   const buttonAnim = useRef(new Animated.Value(100)).current;
   
-  // Referencias para sonidos
-  const beerSound = useRef(null);
+  // audioService gestiona los sonidos automáticamente
   
   // Estado y animación para el botón de mute
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
@@ -69,24 +69,23 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
       // Sincronizar estado de mute cuando regresamos a la pantalla
       setIsMuted(audioService.isMusicMuted);
       
+      // Capturar draftPlayers si vienen de MultiPlayerRegistration
+      if (route.params?.draftPlayers) {
+        setSavedDraftPlayers(route.params.draftPlayers);
+        console.log(`📋 Capturando draftPlayers en SingleDevice:`, route.params.draftPlayers);
+      }
+      
       // Animaciones de entrada
       startEntranceAnimations();
       
       return () => {
-        cleanupSound();
+        // audioService gestiona automáticamente la limpieza
       };
-    }, [])
+    }, [route.params?.draftPlayers])
   );
 
-  const cleanupSound = async () => {
-    if (beerSound.current) {
-      try {
-        await beerSound.current.unloadAsync();
-      } catch (error) {
-        console.log('Error cleaning up beer sound:', error);
-      }
-    }
-  };
+  // audioService gestiona automáticamente la limpieza de sonidos
+  // No necesitamos cleanupSound manual
 
   const startEntranceAnimations = () => {
     // Resetear valores
@@ -128,30 +127,11 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
   };
 
   const playBeerSound = async () => {
-    try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: false,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-
-      const { sound: soundObject } = await Audio.Sound.createAsync(
-        require('../../../assets/sounds/beer.can.sound.mp3'),
-        {
-          shouldPlay: true,
-          isLooping: false,
-          volume: 0.8,
-        }
-      );
-      
-      beerSound.current = soundObject;
-      console.log('🍺 Reproduciendo sonido de lata de cerveza...');
-      
-    } catch (error) {
-      console.log('Error loading beer sound:', error);
-    }
+    // audioService gestiona automáticamente la limpieza, no necesitamos guardar referencia
+    await audioService.playSoundEffect(
+      require('../../../assets/sounds/beer.can.sound.mp3'),
+      { volume: 0.8 }
+    );
   };
 
   const handlePlayerCountChange = (newCount) => {
@@ -214,10 +194,16 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
     
     console.log('Iniciando juego:', gameData);
     
+    // Usar los draftPlayers guardados en el estado local
+    // Esto permite mantener datos de jugadores al cambiar playerCount
+    console.log(`🎮 Iniciando juego con ${playerCount} jugadores`);
+    console.log(`📋 Borradores guardados:`, Object.keys(savedDraftPlayers).length > 0 ? Object.keys(savedDraftPlayers) : 'Ninguno');
+    
     // Navegar a MultiPlayerRegistrationScreen para registrar jugadores
     navigation.navigate('MultiPlayerRegistration', { 
       gameMode: 'single-device',
-      playerCount 
+      playerCount,
+      draftPlayers: savedDraftPlayers // Usar los datos guardados en estado local
     });
   };
 

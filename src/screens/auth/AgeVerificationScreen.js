@@ -13,6 +13,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../styles/theme';
+import audioService from '../../services/AudioService';
 
 const AgeVerificationScreen = ({ navigation }) => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -70,31 +71,14 @@ const AgeVerificationScreen = ({ navigation }) => {
   };
   
   const playBeerSound = async () => {
-    try {
-      // Configurar audio
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: false,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-
-      // Cargar y reproducir sonido de lata de cerveza
-      const { sound: soundObject } = await Audio.Sound.createAsync(
-        require('../../../assets/sounds/beer.can.sound.mp3'),
-        {
-          shouldPlay: true,
-          isLooping: false,
-          volume: 0.7,
-        }
-      );
-      
+    const soundObject = await audioService.playSoundEffect(
+      require('../../../assets/sounds/beer.can.sound.mp3'),
+      { volume: 0.7 }
+    );
+    
+    if (soundObject) {
       beerSound.current = soundObject;
       console.log('🍺 Reproduciendo sonido de lata de cerveza...');
-      
-    } catch (error) {
-      console.log('Error loading beer sound:', error);
     }
   };
 

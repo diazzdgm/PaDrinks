@@ -11,6 +11,7 @@ import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../styles/theme';
 import CircularText from '../../components/common/CircularText';
+import audioService from '../../services/AudioService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -75,32 +76,24 @@ const SplashScreen = ({ navigation }) => {
 
   const loadAndPlaySound = async () => {
     try {
-      // Configurar audio para reproducir incluso en modo silencioso
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: false,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-
-      // Cargar el sonido
-      const { sound: soundObject } = await Audio.Sound.createAsync(
+      // Usar audioService para manejar el sonido respetando el mute
+      const soundObject = await audioService.playSoundEffect(
         require('../../../assets/sounds/pouring.shot.mp3'),
-        {
+        { 
           shouldPlay: false, // No reproducir automáticamente
-          isLooping: false,
-          volume: 0.8,
+          volume: 0.8 
         }
       );
       
-      sound.current = soundObject;
-      
-      // Reproducir desde el segundo 4 (4000ms)
-      await soundObject.setPositionAsync(4000);
-      await soundObject.playAsync();
-      
-      console.log('🔊 Reproduciendo sonido desde el segundo 4...');
+      if (soundObject) {
+        sound.current = soundObject;
+        
+        // Reproducir desde el segundo 4 (4000ms)
+        await soundObject.setPositionAsync(4000);
+        await soundObject.playAsync();
+        
+        console.log('🔊 Reproduciendo sonido desde el segundo 4...');
+      }
       
     } catch (error) {
       console.log('Error loading sound:', error);

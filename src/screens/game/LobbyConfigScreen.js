@@ -123,29 +123,14 @@ const LobbyConfigScreen = ({ navigation, route }) => {
   };
 
   const playBeerSound = async () => {
-    try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: false,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-
-      const { sound: soundObject } = await Audio.Sound.createAsync(
-        require('../../../assets/sounds/beer.can.sound.mp3'),
-        {
-          shouldPlay: true,
-          isLooping: false,
-          volume: 0.8,
-        }
-      );
-      
+    const soundObject = await audioService.playSoundEffect(
+      require('../../../assets/sounds/beer.can.sound.mp3'),
+      { volume: 0.8 }
+    );
+    
+    if (soundObject) {
       beerSound.current = soundObject;
       console.log('🍺 Reproduciendo sonido de lata de cerveza...');
-      
-    } catch (error) {
-      console.log('Error loading beer sound:', error);
     }
   };
 
@@ -163,6 +148,12 @@ const LobbyConfigScreen = ({ navigation, route }) => {
   const handleConnectionSelect = (connection) => {
     // No permitir selección si está en modo un dispositivo
     if (playMethod === 'single') return;
+    
+    // No permitir selección de Bluetooth (próximamente)
+    if (connection === 'bluetooth') {
+      console.log('🚫 Bluetooth próximamente - selección bloqueada');
+      return;
+    }
     
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -386,9 +377,10 @@ const LobbyConfigScreen = ({ navigation, route }) => {
                 styles.optionButton,
                 connectionType === 'bluetooth' && styles.selectedOption,
                 playMethod === 'single' && styles.disabledOption,
+                { opacity: 0.7 }, // Opacity reducida porque es próximamente
               ]}
               onPress={() => handleConnectionSelect('bluetooth')}
-              activeOpacity={playMethod === 'single' ? 1 : 0.8}
+              activeOpacity={playMethod === 'single' ? 1 : 0.6}
             >
               <View style={styles.radioButton}>
                 {connectionType === 'bluetooth' && playMethod !== 'single' && 
@@ -401,6 +393,11 @@ const LobbyConfigScreen = ({ navigation, route }) => {
                   <Text style={styles.optionTitle}>Bluetooth</Text>
                 </View>
                 <Text style={styles.optionDescription}>Conexión directa entre dispositivos</Text>
+              </View>
+              
+              {/* Badge de "Próximamente" */}
+              <View style={styles.comingSoonBadge}>
+                <Text style={styles.comingSoonText}>PRÓXIMAMENTE</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -908,6 +905,26 @@ const styles = StyleSheet.create({
     height: 3,
     borderRadius: 2,
     transform: [{ rotate: '45deg' }],
+  },
+  
+  // Badge "Próximamente" para Bluetooth
+  comingSoonBadge: {
+    position: 'absolute',
+    top: -10,
+    right: -10,
+    backgroundColor: '#FF5722',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#000000',
+    transform: [{ rotate: '15deg' }],
+  },
+  
+  comingSoonText: {
+    fontSize: 12,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#FFFFFF',
   },
 });
 
