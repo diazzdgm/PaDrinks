@@ -64,11 +64,15 @@ const JoinGameScreen = ({ navigation }) => {
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [roomCode, setRoomCode] = useState('');
   const [isJoining, setIsJoining] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   
   // Animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const modalScale = useRef(new Animated.Value(0)).current;
   const modalOpacity = useRef(new Animated.Value(0)).current;
+  const errorModalScale = useRef(new Animated.Value(0)).current;
+  const errorModalOpacity = useRef(new Animated.Value(0)).current;
   
   // Referencias para sonidos
   const beerSound = useRef(null);
@@ -199,49 +203,98 @@ const JoinGameScreen = ({ navigation }) => {
     });
   };
 
-  // Función para validar código de sala (sin unirse todavía)
+  // Función para mostrar modal de error
+  const showError = (message) => {
+    setErrorMessage(message);
+    setShowErrorModal(true);
+    
+    // Animar entrada del modal
+    Animated.parallel([
+      Animated.spring(errorModalScale, {
+        toValue: 1,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(errorModalOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  // Función para ocultar modal de error
+  const hideErrorModal = () => {
+    Animated.parallel([
+      Animated.timing(errorModalScale, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(errorModalOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowErrorModal(false);
+      setErrorMessage('');
+    });
+  };
+
+  // Función para validar código de sala usando el backend
   const handleJoinByCode = async () => {
     if (!roomCode.trim() || roomCode.length !== 6) {
-      Alert.alert('Error', 'Ingresa un código válido de 6 números');
+      showError('Ingresa un código válido de 6 números');
       return;
     }
 
     if (!isConnected) {
-      Alert.alert('Error de Conexión', 'No hay conexión con el servidor. Verifica tu conexión a internet.');
+      showError('No hay conexión con el servidor. Verifica tu conexión a internet.');
       return;
     }
 
     try {
       setIsJoining(true);
-
-      // Solo validar que la sala existe, NO unirse todavía
       console.log('🔍 Validando existencia de sala:', roomCode.trim());
       
-      // Validar sala directamente navegando - PlayerRegistrationScreen manejará la unión
-      console.log('✅ Conectado al servidor, navegando a registro...');
+      // Validar sala usando el backend
+      const response = await new Promise((resolve, reject) => {
+        SocketService.socket.emit('validateRoom', { roomCode: roomCode.trim() }, (response) => {
+          if (response.success) {
+            resolve(response);
+          } else {
+            reject(new Error(response.error));
+          }
+        });
+      });
       
-      // Navegar directamente a registro de jugador
-      // El PlayerRegistrationScreen manejará la validación y unión a la sala
+      console.log('✅ Sala válida, navegando a registro...');
+      
+      // Cerrar modal de código y navegar
       hideCodeInput();
       navigation.navigate('PlayerRegistration', { 
         roomCode: roomCode.trim(),
         isHost: false,
         useBackend: true,
-        isJoining: true, // Flag para indicar que se está uniendo (no creando)
-        roomData: { room: { id: roomCode.trim() } } // Datos mínimos
+        isJoining: true,
+        roomData: { room: { id: roomCode.trim() } }
       });
       
     } catch (error) {
       console.error('❌ Error validando sala:', error.message);
       
       let errorMessage = 'No se pudo acceder a la sala';
-      if (error.message.includes('not found')) {
-        errorMessage = 'Sala no encontrada. Verifica el código.';
-      } else if (error.message.includes('full')) {
-        errorMessage = 'La sala está llena.';
+      if (error.message === 'ROOM_NOT_FOUND') {
+        errorMessage = 'No se encontró una sala con ese código. Verifica el código e inténtalo de nuevo.';
+      } else if (error.message === 'ROOM_FULL') {
+        errorMessage = 'La sala está llena. No se pueden agregar más jugadores.';
+      } else if (error.message.includes('connection')) {
+        errorMessage = 'Error de conexión. Verifica tu internet e inténtalo de nuevo.';
       }
       
-      Alert.alert('Error', errorMessage);
+      showError(errorMessage);
     } finally {
       setIsJoining(false);
     }
@@ -444,6 +497,52 @@ const JoinGameScreen = ({ navigation }) => {
                   ) : (
                     <Text style={styles.joinButtonText}>Unirse</Text>
                   )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+
+      {/* Modal de error personalizado */}
+      <Modal
+        visible={showErrorModal}
+        transparent={true}
+        animationType="none"
+        onRequestClose={hideErrorModal}
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View 
+            style={[
+              styles.modalContainer,
+              {
+                transform: [{ scale: errorModalScale }],
+                opacity: errorModalOpacity,
+              }
+            ]}
+          >
+            {/* Fondo de papel del modal */}
+            <View style={styles.modalPaper}>
+              <View style={styles.modalHoles}>
+                {[...Array(4)].map((_, i) => (
+                  <View key={i} style={styles.modalHole} />
+                ))}
+              </View>
+              <View style={styles.modalRedLine} />
+            </View>
+
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>❌ Error</Text>
+              <Text style={styles.modalSubtitle}>{errorMessage}</Text>
+
+              {/* Botón de cerrar */}
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.errorButton]}
+                  onPress={hideErrorModal}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.errorButtonText}>Entendido</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -865,6 +964,18 @@ const styles = StyleSheet.create({
   },
 
   joinButtonText: {
+    fontSize: 16,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#FFF',
+  },
+
+  errorButton: {
+    backgroundColor: '#FF6B6B',
+    borderWidth: 2,
+    borderColor: '#000000',
+  },
+
+  errorButtonText: {
     fontSize: 16,
     fontFamily: theme.fonts.primaryBold,
     color: '#FFF',

@@ -83,6 +83,8 @@ const CreateLobbyScreen = ({ navigation, route }) => {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showHostLeaveModal, setShowHostLeaveModal] = useState(false);
   const [showKickedModal, setShowKickedModal] = useState(false);
+  const [showKickPlayerModal, setShowKickPlayerModal] = useState(false);
+  const [playerToKick, setPlayerToKick] = useState(null);
   
   // Animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -95,9 +97,21 @@ const CreateLobbyScreen = ({ navigation, route }) => {
   const hostLeaveModalOpacity = useRef(new Animated.Value(0)).current;
   const kickedModalScale = useRef(new Animated.Value(0)).current;
   const kickedModalOpacity = useRef(new Animated.Value(0)).current;
+  const kickPlayerModalScale = useRef(new Animated.Value(0)).current;
+  const kickPlayerModalOpacity = useRef(new Animated.Value(0)).current;
   
   // Referencias para sonidos
   const beerSound = useRef(null);
+  
+  // Referencias para timeouts de sincronización
+  const syncTimeoutRefs = useRef([]);
+  
+  // Función para cancelar todas las sincronizaciones automáticas
+  const cancelAutoSync = () => {
+    syncTimeoutRefs.current.forEach(timeout => clearTimeout(timeout));
+    syncTimeoutRefs.current = [];
+    console.log('🚫 Sincronizaciones automáticas canceladas');
+  };
   
   // Estado y animación para el botón de mute
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
@@ -148,16 +162,19 @@ const CreateLobbyScreen = ({ navigation, route }) => {
           SocketService.socket.emit('syncRoom');
           
           // Sincronización adicional para asegurar
-          setTimeout(() => {
+          const timeout1 = setTimeout(() => {
             console.log('📡 Solicitando sincronización adicional...');
             SocketService.socket.emit('syncRoom');
           }, 2000);
           
           // Una más por si acaso
-          setTimeout(() => {
+          const timeout2 = setTimeout(() => {
             console.log('📡 Solicitando sincronización final...');
             SocketService.socket.emit('syncRoom');
           }, 5000);
+          
+          // Guardar referencias para poder cancelarlos
+          syncTimeoutRefs.current.push(timeout1, timeout2);
         }
       } else {
         // NO usar fallback local - siempre esperar datos del backend
@@ -170,10 +187,13 @@ const CreateLobbyScreen = ({ navigation, route }) => {
           SocketService.socket.emit('syncRoom');
           
           // Solicitar sincronización adicional después de 2 segundos
-          setTimeout(() => {
+          const timeout3 = setTimeout(() => {
             console.log('📡 Solicitando sincronización adicional...');
             SocketService.socket.emit('syncRoom');
           }, 2000);
+          
+          // Guardar referencia para poder cancelarlo
+          syncTimeoutRefs.current.push(timeout3);
         }
       }
       return;
@@ -411,6 +431,30 @@ const CreateLobbyScreen = ({ navigation, route }) => {
         }),
       ]).start();
     };
+    
+    const handlePlayerKicked = (data) => {
+      console.log('🔔 *** EVENTO PLAYERKICKED RECIBIDO ***');
+      console.log('❌ Jugador expulsado individualmente:', data);
+      console.log('📱 Mostrando modal de expulsión individual...');
+      
+      // Mostrar modal personalizado al jugador expulsado
+      setShowKickedModal(true);
+      
+      // Animar entrada del modal
+      Animated.parallel([
+        Animated.spring(kickedModalScale, {
+          toValue: 1,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.timing(kickedModalOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    };
 
     // Registrar event listeners
     console.log('📡 Registrando event listeners de Socket.IO...');
@@ -419,6 +463,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     SocketService.on('playerUpdated', handlePlayerUpdated);
     SocketService.on('roomSync', handleRoomSync);
     SocketService.on('kicked', handleKicked);
+    SocketService.on('playerKicked', handlePlayerKicked);
     console.log('✅ Event listeners registrados');
 
     // Solicitar sincronización inicial
@@ -434,6 +479,10 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       SocketService.off('playerUpdated', handlePlayerUpdated);
       SocketService.off('roomSync', handleRoomSync);
       SocketService.off('kicked', handleKicked);
+      SocketService.off('playerKicked', handlePlayerKicked);
+      
+      // Cancelar timeouts pendientes
+      cancelAutoSync();
     };
   }, [connected, isJoining]);
 
@@ -614,15 +663,23 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       // Cerrar modal primero
       handleCloseLeaveModal();
       
-      // Limpiar listeners de eventos para evitar conflictos
-      SocketService.off('playerJoined');
-      SocketService.off('playerLeft');
-      SocketService.off('roomSync');
+      // Verificar si está en modo online o local
+      const isLocalMode = playMethod === 'single' || !SocketService.connected;
       
-      // Salir de la sala en el backend
-      if (SocketService.connected) {
-        await SocketService.leaveRoom();
-        console.log('✅ Jugador salió de la sala exitosamente');
+      if (!isLocalMode) {
+        // Solo para modo online
+        // Limpiar listeners de eventos para evitar conflictos
+        SocketService.off('playerJoined');
+        SocketService.off('playerLeft');
+        SocketService.off('roomSync');
+        
+        // Salir de la sala en el backend
+        if (SocketService.connected) {
+          await SocketService.leaveRoom();
+          console.log('✅ Jugador salió de la sala exitosamente');
+        }
+      } else {
+        console.log('📱 Saliendo en modo local - no requiere backend');
       }
       
       // Feedback háptico de salida
@@ -632,18 +689,28 @@ const CreateLobbyScreen = ({ navigation, route }) => {
         console.log('Haptics not available:', error);
       }
       
-      // Navegar a JoinGameScreen y limpiar stack
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'JoinGame' }],
-      });
+      // Navegar según el modo
+      if (isLocalMode) {
+        // En modo local, navegar al menú principal
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'MainMenu' }],
+        });
+      } else {
+        // En modo online, navegar a JoinGame
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'JoinGame' }],
+        });
+      }
       
     } catch (error) {
       console.error('❌ Error saliendo de la sala:', error);
       // Aún así navegar para evitar que el jugador quede atrapado
+      const isLocalMode = playMethod === 'single' || !SocketService.connected;
       navigation.reset({
         index: 0,
-        routes: [{ name: 'JoinGame' }],
+        routes: [{ name: isLocalMode ? 'MainMenu' : 'JoinGame' }],
       });
     }
   };
@@ -676,15 +743,23 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       // Esperar a que termine la animación del modal
       setTimeout(async () => {
         try {
-          // Limpiar listeners de eventos para evitar conflictos
-          SocketService.off('playerJoined');
-          SocketService.off('playerLeft');
-          SocketService.off('roomSync');
+          // Verificar si está en modo online o local
+          const isLocalMode = playMethod === 'single' || !SocketService.connected;
           
-          // Salir de la sala en el backend (esto automáticamente expulsará a todos los jugadores)
-          if (SocketService.connected) {
-            await SocketService.leaveRoom();
-            console.log('✅ Host salió y sala disuelta exitosamente');
+          if (!isLocalMode) {
+            // Solo para modo online
+            // Limpiar listeners de eventos para evitar conflictos
+            SocketService.off('playerJoined');
+            SocketService.off('playerLeft');
+            SocketService.off('roomSync');
+            
+            // Salir de la sala en el backend (esto automáticamente expulsará a todos los jugadores)
+            if (SocketService.connected) {
+              await SocketService.leaveRoom();
+              console.log('✅ Host salió y sala disuelta exitosamente');
+            }
+          } else {
+            console.log('📱 Disolviendo sala en modo local - no requiere backend');
           }
           
           // Feedback háptico de confirmación
@@ -694,23 +769,40 @@ const CreateLobbyScreen = ({ navigation, route }) => {
             console.log('Haptics not available:', error);
           }
           
-          // Navegar a LobbyConfigScreen con parámetros necesarios (sin reset)
-          navigation.navigate('LobbyConfig', {
-            gameMode: gameMode || 'classic',
-            playMethod: playMethod || 'multiple',
-            connectionType: connectionType || 'wifi',
-            playerCount: playerCount || 2
-          });
+          // Navegar según el modo
+          if (isLocalMode) {
+            // En modo local, navegar al menú principal
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'MainMenu' }],
+            });
+          } else {
+            // En modo online, navegar a LobbyConfigScreen
+            navigation.navigate('LobbyConfig', {
+              gameMode: gameMode || 'classic',
+              playMethod: playMethod || 'multiple',
+              connectionType: connectionType || 'wifi',
+              playerCount: playerCount || 2
+            });
+          }
           
         } catch (error) {
           console.error('❌ Error disolviendo la sala:', error);
           // Aún así navegar para evitar que el host quede atrapado
-          navigation.navigate('LobbyConfig', {
-            gameMode: gameMode || 'classic',
-            playMethod: playMethod || 'multiple',
-            connectionType: connectionType || 'wifi',
-            playerCount: playerCount || 2
-          });
+          const isLocalMode = playMethod === 'single' || !SocketService.connected;
+          if (isLocalMode) {
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'MainMenu' }],
+            });
+          } else {
+            navigation.navigate('LobbyConfig', {
+              gameMode: gameMode || 'classic',
+              playMethod: playMethod || 'multiple',
+              connectionType: connectionType || 'wifi',
+              playerCount: playerCount || 2
+            });
+          }
         }
       }, 300); // Esperar 300ms para que termine la animación
       
@@ -772,24 +864,108 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       console.log('Haptics not available:', error);
     }
 
-    Alert.alert(
-      '⚠️ Expulsar Jugador',
-      '¿Estás seguro de que quieres expulsar a este jugador?',
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Expulsar',
-          style: 'destructive',
-          onPress: () => {
-            setConnectedPlayers(prev => prev.filter(p => p.id !== playerId));
-            playBeerSound();
-          },
-        },
-      ]
-    );
+    // Encontrar el jugador a expulsar
+    const player = connectedPlayers.find(p => p.id === playerId);
+    if (player) {
+      setPlayerToKick(player);
+      setShowKickPlayerModal(true);
+      
+      // Animar entrada del modal
+      Animated.parallel([
+        Animated.spring(kickPlayerModalScale, {
+          toValue: 1,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.timing(kickPlayerModalOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  };
+  
+  // Funciones para modal de expulsión de jugador
+  const handleCloseKickPlayerModal = () => {
+    Animated.parallel([
+      Animated.timing(kickPlayerModalScale, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(kickPlayerModalOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowKickPlayerModal(false);
+      setPlayerToKick(null);
+    });
+  };
+  
+  const handleConfirmKickPlayer = async () => {
+    if (playerToKick) {
+      // Cerrar modal primero
+      handleCloseKickPlayerModal();
+      
+      // Expulsar jugador vía backend
+      setTimeout(async () => {
+        try {
+          console.log(`📡 Expulsando jugador: ${playerToKick.nickname} (${playerToKick.id})`);
+          
+          if (SocketService.connected) {
+            // Usar el backend para expulsar
+            const response = await new Promise((resolve, reject) => {
+              SocketService.socket.emit('kickPlayer', 
+                { targetPlayerId: playerToKick.id }, 
+                (response) => {
+                  if (response && response.success) {
+                    resolve(response);
+                  } else {
+                    reject(new Error(response?.error || 'Failed to kick player'));
+                  }
+                }
+              );
+            });
+            
+            console.log('✅ Jugador expulsado exitosamente:', response.message);
+            
+            // Cancelar sincronizaciones automáticas para evitar errores
+            cancelAutoSync();
+            
+            // Actualizar lista local con datos del backend
+            if (response.room && response.room.players) {
+              const updatedPlayers = response.room.players.map(player => ({
+                ...player,
+                isCurrentUser: player.socketId === SocketService.socket?.id
+              }));
+              setConnectedPlayers(updatedPlayers);
+            }
+            
+          } else {
+            // Fallback local si no hay conexión
+            console.log('⚠️ Sin conexión backend, expulsando localmente');
+            setConnectedPlayers(prev => prev.filter(p => p.id !== playerToKick.id));
+          }
+          
+          playBeerSound();
+          
+          try {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+          } catch (error) {
+            console.log('Haptics not available:', error);
+          }
+          
+        } catch (error) {
+          console.error('❌ Error expulsando jugador:', error);
+          // Mostrar error al host
+          Alert.alert('❌ Error', 'No se pudo expulsar al jugador. Inténtalo de nuevo.');
+        }
+      }, 300);
+    }
   };
 
   const handleCopyRoomCode = () => {
@@ -1281,11 +1457,11 @@ const CreateLobbyScreen = ({ navigation, route }) => {
 
             <View style={styles.leaveModalContent}>
               {/* Título del modal */}
-              <Text style={styles.leaveModalTitle}>🚪 Sala Disuelta</Text>
+              <Text style={styles.leaveModalTitle}>🚫 Has Sido Expulsado</Text>
               
               {/* Mensaje explicativo */}
               <Text style={styles.leaveModalMessage}>
-                El host ha disuelto la sala.{'\n'}
+                El host te ha expulsado de la sala.{'\n'}{'\n'}
                 Serás redirigido al menú principal.
               </Text>
               
@@ -1297,6 +1473,70 @@ const CreateLobbyScreen = ({ navigation, route }) => {
                   activeOpacity={0.8}
                 >
                   <Text style={styles.leaveModalConfirmButtonText}>Entendido</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+      
+      {/* Modal personalizado para expulsión de jugador */}
+      <Modal
+        visible={showKickPlayerModal}
+        transparent={true}
+        animationType="none"
+        onRequestClose={handleCloseKickPlayerModal}
+      >
+        <View style={styles.leaveModalOverlay}>
+          <Animated.View 
+            style={[
+              styles.leaveModalContainer,
+              {
+                transform: [{ scale: kickPlayerModalScale }],
+                opacity: kickPlayerModalOpacity,
+              }
+            ]}
+          >
+            {/* Fondo de papel del modal */}
+            <View style={styles.leaveModalPaper}>
+              <View style={styles.leaveModalHoles}>
+                {[...Array(4)].map((_, i) => (
+                  <View key={i} style={styles.leaveModalHole} />
+                ))}
+              </View>
+              <View style={styles.leaveModalRedLine} />
+              {/* Líneas de libreta */}
+              {[...Array(6)].map((_, index) => (
+                <View 
+                  key={index} 
+                  style={[styles.leaveModalLine, { top: 25 + (index * 25) }]} 
+                />
+              ))}
+            </View>
+
+            <View style={styles.leaveModalContent}>
+              <Text style={styles.leaveModalTitle}>⚠️ Expulsar Jugador</Text>
+              <Text style={styles.leaveModalMessage}>
+                ¿Estás seguro de que quieres expulsar a {playerToKick?.nickname || 'este jugador'}?{'\n'}{'\n'}
+                Esta acción no se puede deshacer.
+              </Text>
+
+              {/* Botones */}
+              <View style={styles.leaveModalButtons}>
+                <TouchableOpacity
+                  style={[styles.leaveModalButton, styles.leaveModalCancelButton]}
+                  onPress={handleCloseKickPlayerModal}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.leaveModalCancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.leaveModalButton, styles.leaveModalConfirmButton]}
+                  onPress={handleConfirmKickPlayer}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.leaveModalConfirmButtonText}>Expulsar</Text>
                 </TouchableOpacity>
               </View>
             </View>

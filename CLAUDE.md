@@ -11,21 +11,23 @@ PaDrinks is a React Native drinking game app built with Expo. It's designed for 
 ### Frontend (React Native)
 ```bash
 # Start development server
+npm start
+# or
 npx expo start
 
 # Run on specific platforms
-npx expo start --android
-npx expo start --ios  
-npx expo start --web
+npm run android
+npm run ios  
+npm run web
 
-# Clear cache if needed
-npx expo start --clear
+# Clear cache versions
+npm run start:clear
+npm run clean:cache
 
 # Install dependencies
 npm install
-
-# Clean build (if Metro bundler issues)
-npx expo start -c
+# or
+npm run expo:install
 
 # Full clean and reinstall (for persistent issues)
 npm run clean
@@ -64,12 +66,15 @@ node test-api.js
 ## Project Configuration
 
 - **Expo SDK**: Version 53 with new architecture enabled
-- **Orientation**: app.json specifies "portrait" but App.js forces landscape mode at runtime
+- **React Version**: React 19.0.0 with React Native 0.79.5
+- **Orientation**: app.json specifies "portrait" but App.js forces landscape mode at runtime via expo-screen-orientation
 - **No Testing Setup**: No Jest, ESLint, or other testing/linting tools configured
 - **No Build Scripts**: Uses default Expo build system
 - **Firebase Integration**: React Native Firebase SDK with Auth and Realtime Database modules
 - **Connectivity Stack**: Multiple networking options - Bluetooth (BLE Manager), WiFi P2P, Firebase backend, and Socket.IO real-time communication
 - **Backend Integration**: Node.js + Express + Socket.IO backend server for multiplayer functionality
+- **Image Processing**: expo-image-manipulator for photo compression (150x150px, 30% quality)
+- **AsyncStorage**: Session persistence using @react-native-async-storage/async-storage
 
 ## Architecture
 
@@ -298,10 +303,12 @@ backend/
 
 #### Backend Development Workflow
 1. **Start Backend**: `cd backend && npm run dev` for development with auto-reload (run from Windows CMD, not WSL)
-2. **Test Integration**: `node test-api.js` validates all endpoints and Socket.IO events
-3. **Monitor Connections**: Backend logs show real-time connection events with player details
-4. **Mobile Testing**: Update IP address in src/config/server.js for device testing
-5. **Room Management**: 6-digit codes auto-expire after 2 hours of inactivity
+2. **Production Mode**: `cd backend && npm start` for production server
+3. **Test Integration**: `cd backend && node test-api.js` validates all endpoints and Socket.IO events
+4. **Health Check**: `curl http://localhost:3001/health` to verify server status
+5. **Monitor Connections**: Backend logs show real-time connection events with player details
+6. **Mobile Testing**: Update IP address in src/config/server.js for device testing (currently set to 192.168.100.18)
+7. **Room Management**: 6-digit codes auto-expire after 2 hours of inactivity
 
 #### Socket.IO Events Architecture
 Key events for game functionality:
@@ -325,16 +332,74 @@ The project uses custom Metro configuration (metro.config.js) to prevent conflic
 - Watch folders are restricted to src/, assets/, and frontend node_modules only
 - This prevents React Native from trying to bundle backend dependencies
 
+### Room Dissolution and Navigation Management
+
+#### Advanced Modal System
+The app implements a comprehensive modal system for room dissolution and error handling:
+- **Host Dissolution Modal**: Custom post-it styled modal when host wants to dissolve room
+- **Player Leave Modal**: Confirmation modal when non-host players want to leave
+- **Kicked Notification Modal**: Automatic modal for players when host dissolves room
+- **Error Modals**: Custom error modals with post-it design for room validation failures
+
+#### Room Dissolution Flow
+Complete implementation of room dissolution with proper player notification:
+1. **Host Initiates**: Host presses back button → confirmation modal appears
+2. **Backend Processing**: `leaveRoom` event detects host departure and emits `kicked` to remaining players
+3. **Player Notification**: All players receive `kicked` event → custom modal appears automatically
+4. **Navigation Management**: Players redirected to MainMenu, host goes to LobbyConfigScreen
+5. **Resource Cleanup**: Room deleted from backend, event listeners cleaned up, sessions cleared
+
+#### Advanced Navigation Patterns
+- **Stack Reset Strategy**: Use `navigation.reset()` instead of `goBack()` to prevent "GO_BACK action not handled" errors
+- **Parameter Safety**: Always provide default values for route parameters to handle missing navigation state
+- **Modal Navigation**: Custom modal-based confirmation flows instead of basic Alert.alert()
+- **Cross-Screen State**: Singleton services maintain state across navigation transitions
+
+#### Room Validation System
+Real-time room validation before joining:
+- **Backend Validation**: `validateRoom` endpoint checks room existence and capacity before joining
+- **Error Categorization**: Specific error types (ROOM_NOT_FOUND, ROOM_FULL) with custom messages
+- **Frontend Validation**: Pre-validation of room codes with immediate feedback
+- **Navigation Integration**: Seamless flow from validation → registration → lobby
+
+### Critical Implementation Patterns
+
+#### Event Listener Management
+- **Registration Pattern**: All Socket.IO event listeners registered in useEffect with dependency arrays
+- **Cleanup Pattern**: ALWAYS remove event listeners in useEffect cleanup functions
+- **Event Names**: Consistent naming: `playerJoined`, `playerLeft`, `kicked`, `roomSync`
+- **Handler Isolation**: Event handlers defined within useEffect scope to access current state
+
+#### Modal Animation Patterns
+- **Entrance Animation**: `Animated.spring()` for scale with `Animated.timing()` for opacity
+- **Exit Animation**: `Animated.timing()` for both scale and opacity with faster duration (200ms)
+- **Timing Coordination**: Use `setTimeout()` delays (300ms) after modal close before navigation
+- **State Management**: Separate state variables for each modal type with individual animation refs
+
+#### Socket.IO Event Architecture
+Key events implemented in the system:
+- **Room Events**: `createRoom`, `joinRoom`, `leaveRoom`, `validateRoom`, `syncRoom`
+- **Player Events**: `playerJoined`, `playerLeft`, `playerDisconnected`, `playerReconnected`
+- **Dissolution Events**: `kicked` (for automatic player expulsion when host leaves)
+- **Sync Events**: `roomSync` for real-time lobby updates with complete player data
+
 ### Error Handling Patterns
 - **Backend**: Comprehensive error handling with process-level uncaught exception and unhandled rejection handlers
 - **Frontend**: Haptic feedback wrapped in try-catch for cross-platform compatibility
 - **Audio Service**: All audio operations include error handling with fallback behavior
 - **Socket.IO**: 30-second timeouts with exponential backoff reconnection
 - **Image Processing**: Error handling for large base64 strings and compression failures
+- **Navigation Errors**: Stack management to prevent navigation action failures
+- **Modal Error Display**: Custom error modals instead of basic alerts for better UX
 
 ### Security Considerations
 - CORS configured for development (wildcard origins) - should be restricted in production
-- Rate limiting implemented on backend (100 requests/minute per IP)
+- Rate limiting implemented on backend (100 requests/minute per IP) using rate-limiter-flexible
 - Helmet middleware for basic security headers
-- Process-level graceful shutdown handlers for clean server termination
+- Process-level graceful shutdown handlers for clean server termination (SIGTERM)
+- Process-level error handlers for uncaughtException and unhandledRejection
 - Session expiration (30 minutes) for reconnection data in AsyncStorage
+- Room validation prevents unauthorized access to non-existent or full rooms
+- UUID-based player identification for secure player management
+- Connection state recovery with 2-minute disconnection tolerance
+- Socket.IO configuration with ping timeout (60s) and ping interval (25s)

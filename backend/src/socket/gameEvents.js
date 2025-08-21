@@ -259,67 +259,7 @@ function setupGameEvents(socket, io, roomManager) {
     }
   });
 
-  // Expulsar jugador (solo host)
-  socket.on('kickPlayer', (data, callback) => {
-    try {
-      const room = roomManager.getRoomBySocketId(socket.id);
-      
-      if (!room) {
-        throw new Error('Not in a room');
-      }
-      
-      const host = room.getPlayerBySocketId(socket.id);
-      if (!host || !host.isHost) {
-        throw new Error('Only host can kick players');
-      }
-      
-      const { playerId, reason } = data;
-      const targetPlayer = room.players.get(playerId);
-      
-      if (!targetPlayer) {
-        throw new Error('Player not found');
-      }
-      
-      if (targetPlayer.isHost) {
-        throw new Error('Cannot kick the host');
-      }
-      
-      // Remover jugador
-      room.removePlayer(playerId, false);
-      
-      // Notificar al jugador expulsado
-      if (targetPlayer.socketId) {
-        io.to(targetPlayer.socketId).emit('kicked', {
-          reason: reason || 'Kicked by host',
-          room: room.toClientObject()
-        });
-      }
-      
-      const response = {
-        success: true,
-        kickedPlayer: targetPlayer.toClientObject(),
-        room: room.toClientObject()
-      };
-      
-      if (callback) callback(response);
-      
-      // Notificar a otros jugadores
-      socket.to(room.id).emit('playerKicked', response);
-      
-      console.log(`👟 Player ${playerId} kicked from room ${room.id}`);
-      
-    } catch (error) {
-      console.error(`❌ Error kicking player:`, error.message);
-      
-      const errorResponse = {
-        success: false,
-        error: error.message
-      };
-      
-      if (callback) callback(errorResponse);
-      socket.emit('error', errorResponse);
-    }
-  });
+  // Nota: kickPlayer event está manejado en socketHandler.js para evitar duplicados
 
   // Sincronizar estado del juego (para reconexiones)
   socket.on('syncGameState', (callback) => {

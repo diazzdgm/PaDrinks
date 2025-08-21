@@ -67,12 +67,20 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
   const [photoUri, setPhotoUri] = useState(null);
   const [showEmojiModal, setShowEmojiModal] = useState(false);
   
+  // Estados para modal de error
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  
   // Animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const leftSideAnim = useRef(new Animated.Value(-300)).current;
   const rightSideAnim = useRef(new Animated.Value(300)).current;
   const emojiModalScale = useRef(new Animated.Value(0)).current;
   const emojiModalOpacity = useRef(new Animated.Value(0)).current;
+  
+  // Animaciones para modal de error
+  const errorModalScale = useRef(new Animated.Value(0)).current;
+  const errorModalOpacity = useRef(new Animated.Value(0)).current;
   
   // Referencias para sonidos
   const beerSound = useRef(null);
@@ -329,6 +337,46 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
       setShowEmojiModal(false);
     });
   };
+  
+  // Función para mostrar modal de error
+  const showError = (message) => {
+    setErrorMessage(message);
+    setShowErrorModal(true);
+    
+    // Animar entrada del modal
+    Animated.parallel([
+      Animated.spring(errorModalScale, {
+        toValue: 1,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(errorModalOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+  
+  // Función para ocultar modal de error
+  const hideErrorModal = () => {
+    Animated.parallel([
+      Animated.timing(errorModalScale, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(errorModalOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowErrorModal(false);
+      setErrorMessage('');
+    });
+  };
 
   const toggleMute = async () => {
     try {
@@ -365,18 +413,86 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
   const handleContinue = async () => {
     // Validar campos obligatorios
     if (!nickname.trim() || nickname.trim().length < 2) {
-      Alert.alert('Error', 'El apodo debe tener al menos 2 caracteres');
+      showError('El apodo debe tener al menos 2 caracteres');
       return;
     }
     
     if (!gender) {
-      Alert.alert('Error', 'Selecciona tu género');
+      showError('Selecciona tu género para continuar');
       return;
     }
     
     if (!orientation) {
-      Alert.alert('Error', 'Selecciona tu orientación sexual');
+      showError('Selecciona tu orientación sexual para continuar');
       return;
+    }
+    
+    // Validar que tenga foto o emoji
+    if (!playerPhoto || (!selectedEmoji && !photoUri)) {
+      showError('Selecciona una foto o un emoji como avatar para continuar');
+      return;
+    }
+    
+    console.log(`🔍 Validando nombre "${nickname.trim()}" en sala ${roomCode}...`);
+    
+    // Validar nombres duplicados en modo online
+    if (isJoining && SocketService.connected && roomCode) {
+      try {
+        // Obtener información actual de la sala
+        const currentRoomData = await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('Timeout')), 5000);
+          
+          SocketService.socket.emit('getRoomInfo', { roomCode }, (response) => {
+            clearTimeout(timeout);
+            if (response && response.success) {
+              resolve(response);
+            } else {
+              reject(new Error(response?.error || 'Failed to get room info'));
+            }
+          });
+        });
+        
+        let existingPlayers = [];
+        if (currentRoomData && currentRoomData.room && currentRoomData.room.players) {
+          existingPlayers = currentRoomData.room.players;
+        }
+        
+        // Verificar si ya existe el nombre (case insensitive)
+        const duplicateName = existingPlayers.find(player => {
+          const playerNick = player.nickname ? player.nickname.toLowerCase().trim() : '';
+          const inputNick = nickname.toLowerCase().trim();
+          return playerNick === inputNick;
+        });
+        
+        if (duplicateName) {
+          console.log(`❌ Nombre duplicado: "${nickname.trim()}" ya existe`);
+          showError(`Ya existe un jugador con el nombre "${nickname.trim()}". Elige un nombre diferente.`);
+          return;
+        }
+        
+        console.log(`✅ Nombre "${nickname.trim()}" disponible`);
+        
+      } catch (error) {
+        console.warn('⚠️ Error validando con backend, usando datos estáticos');
+        
+        // Usar datos estáticos como fallback
+        let existingPlayers = [];
+        if (roomData && roomData.room && roomData.room.players) {
+          existingPlayers = roomData.room.players;
+        }
+        
+        const duplicateName = existingPlayers.find(player => {
+          const playerNick = player.nickname ? player.nickname.toLowerCase().trim() : '';
+          const inputNick = nickname.toLowerCase().trim();
+          return playerNick === inputNick;
+        });
+        
+        if (duplicateName) {
+          console.log(`❌ Nombre duplicado (fallback): "${nickname.trim()}"`);
+          showError(`Ya existe un jugador con el nombre "${nickname.trim()}". Elige un nombre diferente.`);
+          return;
+        }
+      }
     }
     
     try {
@@ -786,6 +902,52 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
                   activeOpacity={0.8}
                 >
                   <Text style={styles.emojiModalButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
+      
+      {/* Modal de error personalizado */}
+      <Modal
+        visible={showErrorModal}
+        transparent={true}
+        animationType="none"
+        onRequestClose={hideErrorModal}
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View 
+            style={[
+              styles.modalContainer,
+              {
+                transform: [{ scale: errorModalScale }],
+                opacity: errorModalOpacity,
+              }
+            ]}
+          >
+            {/* Fondo de papel del modal */}
+            <View style={styles.modalPaper}>
+              <View style={styles.modalHoles}>
+                {[...Array(4)].map((_, i) => (
+                  <View key={i} style={styles.modalHole} />
+                ))}
+              </View>
+              <View style={styles.modalRedLine} />
+            </View>
+
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>⚠️ Datos Incompletos</Text>
+              <Text style={styles.modalSubtitle}>{errorMessage}</Text>
+
+              {/* Botón de cerrar */}
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.errorButton]}
+                  onPress={hideErrorModal}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.errorButtonText}>Entendido</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -1424,6 +1586,106 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
+  },
+  
+  // Estilos para modal de error (consistente con JoinGameScreen)
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modalContainer: {
+    width: width * 0.8,
+    maxWidth: 400,
+    backgroundColor: '#F8F6F0',
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#8B4513',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 20,
+  },
+
+  modalPaper: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 17,
+  },
+
+  modalHoles: {
+    position: 'absolute',
+    left: 25,
+    top: 40,
+    flexDirection: 'column',
+  },
+
+  modalHole: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#E0E0E0',
+    marginBottom: 40,
+  },
+
+  modalRedLine: {
+    position: 'absolute',
+    left: 50,
+    top: 0,
+    bottom: 0,
+    width: 2,
+    backgroundColor: '#FF6B6B',
+  },
+
+  modalContent: {
+    padding: 30,
+    paddingLeft: 70,
+  },
+
+  modalTitle: {
+    fontSize: 24,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#000000',
+    textAlign: 'center',
+    marginBottom: 8,
+    transform: [{ rotate: '-0.5deg' }],
+  },
+
+  modalSubtitle: {
+    fontSize: 16,
+    fontFamily: theme.fonts.primary,
+    color: '#666666',
+    textAlign: 'center',
+    marginBottom: 30,
+    transform: [{ rotate: '0.3deg' }],
+  },
+
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+
+  modalButton: {
+    flex: 1,
+    paddingVertical: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+
+  errorButton: {
+    backgroundColor: '#FF6B6B',
+    borderWidth: 2,
+    borderColor: '#000000',
+  },
+
+  errorButtonText: {
+    fontSize: 16,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#FFF',
   },
 });
 

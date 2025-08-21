@@ -139,6 +139,63 @@ function setupRoomEvents(socket, io) {
       }
     }
   });
+  
+  // Obtener información completa de la sala (incluye jugadores)
+  socket.on('getRoomInfo', (data, callback) => {
+    console.log(`🔍 getRoomInfo event received from ${socket.id}:`, data);
+    
+    try {
+      const { roomCode } = data;
+      
+      if (!roomCode) {
+        throw new Error('Room code is required');
+      }
+      
+      console.log(`🔍 Getting room info for: ${roomCode}`);
+      
+      // Verificar si la sala existe
+      const room = roomManager.getRoom(roomCode);
+      
+      if (!room) {
+        console.log(`❌ Room ${roomCode} not found`);
+        throw new Error('Room not found');
+      }
+      
+      console.log(`✅ Room found: ${roomCode}, players: ${room.players.size}/${room.settings.maxPlayers}`);
+      
+      // Responder con información completa de la sala incluyendo jugadores
+      const response = {
+        success: true,
+        room: room.toClientObject() // Esto incluye la lista completa de jugadores
+      };
+      
+      console.log(`✅ Sending room info response with ${room.players.size} players`);
+      
+      if (callback) {
+        callback(response);
+      } else {
+        console.log('❌ No callback provided for getRoomInfo');
+      }
+      
+      console.log(`✅ Room info for ${roomCode} sent successfully`);
+      
+    } catch (error) {
+      console.error(`❌ Error getting room info:`, error.message);
+      
+      const errorResponse = {
+        success: false,
+        error: error.message
+      };
+      
+      console.log(`❌ Sending error response:`, errorResponse);
+      
+      if (callback) {
+        callback(errorResponse);
+      } else {
+        console.log('❌ No callback provided for error response');
+      }
+    }
+  });
 
   // Unirse a sala existente
   socket.on('joinRoom', (data, callback) => {
@@ -330,6 +387,97 @@ function setupRoomEvents(socket, io) {
       
     } catch (error) {
       console.error(`❌ Error syncing room:`, error.message);
+      
+      const errorResponse = {
+        success: false,
+        error: error.message
+      };
+      
+      if (callback) callback(errorResponse);
+    }
+  });
+  
+  // Expulsar jugador específico (solo el host puede hacerlo)
+  socket.on('kickPlayer', (data, callback) => {
+    console.log(`⚡ kickPlayer event received from ${socket.id}:`, data);
+    
+    try {
+      const { targetPlayerId } = data;
+      
+      if (!targetPlayerId) {
+        throw new Error('Target player ID is required');
+      }
+      
+      // Obtener la sala del host
+      const room = roomManager.getRoomBySocketId(socket.id);
+      
+      if (!room) {
+        throw new Error('Host is not in any room');
+      }
+      
+      // Verificar que quien expulsa sea el host
+      const hostPlayer = room.getPlayerBySocketId(socket.id);
+      if (!hostPlayer || !hostPlayer.isHost) {
+        throw new Error('Only the host can kick players');
+      }
+      
+      console.log(`👑 Host ${hostPlayer.nickname} attempting to kick player ${targetPlayerId}`);
+      
+      // Buscar al jugador a expulsar
+      const targetPlayer = room.players.get(targetPlayerId);
+      if (!targetPlayer) {
+        throw new Error('Target player not found in room');
+      }
+      
+      console.log(`🎯 Target player found: ${targetPlayer.nickname} (${targetPlayer.socketId})`);
+      
+      // No permitir que el host se expulse a sí mismo
+      if (targetPlayer.socketId === socket.id) {
+        throw new Error('Host cannot kick themselves');
+      }
+      
+      // Notificar al jugador expulsado
+      console.log(`📢 Sending kicked event to ${targetPlayer.socketId}`);
+      io.to(targetPlayer.socketId).emit('kicked', {
+        message: `Has sido expulsado de la sala por el host`,
+        hostNickname: hostPlayer.nickname,
+        roomId: room.id,
+        reason: 'Expulsado por el host'
+      });
+      
+      // Remover al jugador de la sala
+      room.removePlayer(targetPlayerId);
+      
+      // Hacer que el socket del jugador salga de la sala
+      const targetSocket = io.sockets.sockets.get(targetPlayer.socketId);
+      if (targetSocket) {
+        targetSocket.leave(room.id);
+      }
+      
+      // Capturar datos actualizados de la sala DESPUÉS de remover al jugador
+      const updatedRoomData = room.toClientObject();
+      
+      // Notificar a todos los demás jugadores sobre la expulsión
+      socket.to(room.id).emit('playerLeft', {
+        playerId: targetPlayerId,
+        nickname: targetPlayer.nickname,
+        reason: 'kicked',
+        room: updatedRoomData
+      });
+      
+      // Responder al host
+      const response = {
+        success: true,
+        message: `Player ${targetPlayer.nickname} has been kicked`,
+        room: updatedRoomData
+      };
+      
+      console.log(`✅ Player ${targetPlayer.nickname} kicked successfully`);
+      
+      if (callback) callback(response);
+      
+    } catch (error) {
+      console.error(`❌ Error kicking player:`, error.message);
       
       const errorResponse = {
         success: false,
