@@ -55,15 +55,27 @@ export const MANUAL_SERVER_URL = 'http://192.168.100.18:3001'; // Tu IP actual (
 // export const MANUAL_SERVER_URL = null;
 
 /**
+ * Configuración para modo túnel
+ * Cuando uses túnel de Expo, también necesitas túnel para el backend
+ */
+export const TUNNEL_SERVER_URL = 'https://5b1c98490b38.ngrok-free.app'; // URL de ngrok
+// export const TUNNEL_SERVER_URL = null; // Descomenta esta línea para deshabilitar el túnel
+
+/**
  * Obtener URL final del servidor
  */
 export const getFinalServerUrl = () => {
-  // Si hay configuración manual, usarla
+  // Prioridad 1: Túnel (para modo túnel de Expo)
+  if (TUNNEL_SERVER_URL) {
+    return TUNNEL_SERVER_URL;
+  }
+  
+  // Prioridad 2: Configuración manual (para red local)
   if (MANUAL_SERVER_URL) {
     return MANUAL_SERVER_URL;
   }
   
-  // Usar detección automática
+  // Prioridad 3: Detección automática
   return getServerUrl();
 };
 
