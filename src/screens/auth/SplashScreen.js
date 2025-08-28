@@ -12,8 +12,24 @@ import * as Haptics from 'expo-haptics';
 import { theme } from '../../styles/theme';
 import CircularText from '../../components/common/CircularText';
 import audioService from '../../services/AudioService';
+import { 
+  scale, 
+  scaleWidth, 
+  scaleHeight, 
+  scaleText, 
+  scaleModerate,
+  getDeviceType,
+  isSmallDevice,
+  isTablet,
+  RESPONSIVE,
+  getDeviceInfo 
+} from '../../utils/responsive';
 
+// Obtener información del dispositivo para estilos dinámicos
 const { width, height } = Dimensions.get('window');
+const deviceType = getDeviceType();
+const isSmallScreen = isSmallDevice();
+const isTabletScreen = isTablet();
 
 const SplashScreen = ({ navigation }) => {
   // Animaciones
@@ -269,12 +285,12 @@ const SplashScreen = ({ navigation }) => {
           
         </Animated.View>
         
-        {/* Texto circular girando alrededor del logo - Texto más grande */}
+        {/* Texto circular girando alrededor del logo - Responsive */}
         <CircularText 
           text="PADRINKS*PADRINKS*PADRINKS*"
           spinDuration={20000}
-          radius={150}
-          fontSize={30}
+          radius={isSmallScreen ? scale(120) : isTabletScreen ? scale(200) : scale(150)}
+          fontSize={isSmallScreen ? scaleText(24, 20, 28) : isTabletScreen ? scaleText(36, 32, 42) : scaleText(30, 26, 34)}
           style={styles.circularTextContainer}
           enableDancing={true}
         />
@@ -304,7 +320,7 @@ const styles = StyleSheet.create({
   notebookLines: {
     position: 'absolute',
     top: 0,
-    left: 80, // Después de perforaciones y margen
+    left: 100, // Después de agujeros y margen
     right: 20,
     bottom: 0,
   },
@@ -314,38 +330,38 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#A8C8EC',
     opacity: 0.6,
   },
   
   // Línea roja del margen
   redMarginLine: {
     position: 'absolute',
-    left: 75,
+    left: 95,
     top: 0,
     bottom: 0,
     width: 2,
     backgroundColor: '#FF6B6B',
-    opacity: 0.4,
+    opacity: 0.5,
   },
   
   // Agujeros de perforación
   holesPunch: {
     position: 'absolute',
-    left: 25,
+    left: 30,
     top: 60,
     bottom: 60,
-    width: 20,
+    width: 25,
     justifyContent: 'space-around',
     alignItems: 'center',
   },
   
   hole: {
-    width: 15,
-    height: 15,
-    borderRadius: 8,
+    width: 18,
+    height: 18,
+    borderRadius: 10,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#D0D0D0',
     shadowColor: '#000',
     shadowOffset: {
@@ -353,7 +369,7 @@ const styles = StyleSheet.create({
       height: 2,
     },
     shadowOpacity: 0.3,
-    shadowRadius: 3,
+    shadowRadius: 4,
     elevation: 3,
   },
   
@@ -371,28 +387,28 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   
-  // Shot container - Más grande
+  // Shot container - Responsive
   shotContainer: {
     position: 'relative',
-    width: 320,
-    height: 400,
+    width: isSmallScreen ? scale(260) : isTabletScreen ? scale(400) : scale(320),
+    height: isSmallScreen ? scale(320) : isTabletScreen ? scale(500) : scale(400),
     alignItems: 'center',
     justifyContent: 'center',
   },
   
   shotLogo: {
-    width: 320,
-    height: 400,
+    width: isSmallScreen ? scale(260) : isTabletScreen ? scale(400) : scale(320),
+    height: isSmallScreen ? scale(320) : isTabletScreen ? scale(500) : scale(400),
     zIndex: 1,
   },
   
-  // Container para el texto circular - Perfectamente centrado
+  // Container para el texto circular - Responsive y centrado
   circularTextContainer: {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginTop: -150,
-    marginLeft: -150,
+    marginTop: isSmallScreen ? scale(-120) : isTabletScreen ? scale(-200) : scale(-150),
+    marginLeft: isSmallScreen ? scale(-120) : isTabletScreen ? scale(-200) : scale(-150),
     zIndex: 1,
   },
   

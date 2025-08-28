@@ -22,9 +22,23 @@ import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { 
+  scale, 
+  scaleWidth, 
+  scaleHeight, 
+  scaleText, 
+  scaleModerate,
+  getDeviceType,
+  isSmallDevice,
+  isTablet,
+  RESPONSIVE,
+  getDeviceInfo 
+} from '../../utils/responsive';
 
-// 🔊 ICONO PERSONALIZADO USANDO PNG
-const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
+// 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
+const CustomMuteIcon = ({ size, isMuted = false }) => {
+  const responsiveSize = size || scaleModerate(50, 0.3);
+  
   return (
     <View style={styles.customIconContainer}>
       <Image 
@@ -32,8 +46,8 @@ const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
         style={[
           styles.megaphoneImage,
           { 
-            width: size, 
-            height: size,
+            width: responsiveSize, 
+            height: responsiveSize,
             opacity: isMuted ? 0.6 : 1,
           }
         ]}
@@ -916,7 +930,11 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
   );
 };
 
+// Obtener información del dispositivo para estilos dinámicos
 const { width, height } = Dimensions.get('window');
+const deviceType = getDeviceType();
+const isSmallScreen = isSmallDevice();
+const isTabletScreen = isTablet();
 
 const styles = StyleSheet.create({
   container: {
@@ -937,8 +955,8 @@ const styles = StyleSheet.create({
   notebookLines: {
     position: 'absolute',
     top: 0,
-    left: 100,
-    right: 20,
+    left: scaleWidth(isSmallScreen ? 80 : isTabletScreen ? 120 : 100),
+    right: scaleWidth(20),
     bottom: 0,
   },
   
@@ -953,61 +971,61 @@ const styles = StyleSheet.create({
   
   redMarginLine: {
     position: 'absolute',
-    left: 95,
+    left: scaleWidth(isSmallScreen ? 75 : isTabletScreen ? 115 : 95),
     top: 0,
     bottom: 0,
-    width: 2,
+    width: scale(2),
     backgroundColor: '#FF6B6B',
     opacity: 0.5,
   },
   
   holesPunch: {
     position: 'absolute',
-    left: 30,
-    top: 60,
-    bottom: 60,
-    width: 25,
+    left: scaleWidth(isSmallScreen ? 25 : isTabletScreen ? 35 : 30),
+    top: scaleHeight(60),
+    bottom: scaleHeight(60),
+    width: scaleWidth(25),
     justifyContent: 'space-around',
     alignItems: 'center',
   },
   
   hole: {
-    width: 18,
-    height: 18,
-    borderRadius: 10,
+    width: scale(isSmallScreen ? 15 : isTabletScreen ? 22 : 18),
+    height: scale(isSmallScreen ? 15 : isTabletScreen ? 22 : 18),
+    borderRadius: scale(isSmallScreen ? 7.5 : isTabletScreen ? 11 : 10),
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scale(2),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scale(2), height: scale(2) },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowRadius: scale(4),
     elevation: 3,
   },
   
   // Botón de regreso
   backButton: {
     position: 'absolute',
-    top: 40,
-    left: 30,
+    top: scaleHeight(isSmallScreen ? 30 : isTabletScreen ? 50 : 40),
+    left: scaleWidth(isSmallScreen ? 20 : isTabletScreen ? 40 : 30),
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 15,
-    borderTopLeftRadius: 5,
-    borderWidth: 2,
+    paddingHorizontal: scaleWidth(isSmallScreen ? 15 : isTabletScreen ? 25 : 20),
+    paddingVertical: scaleHeight(isSmallScreen ? 8 : isTabletScreen ? 12 : 10),
+    borderRadius: scale(15),
+    borderTopLeftRadius: scale(5),
+    borderWidth: scale(2),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scale(2), height: scale(2) },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scale(4),
     elevation: 4,
     transform: [{ rotate: '-1deg' }],
     zIndex: 10,
   },
   
   backButtonText: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? scaleText(14, 12, 16) : isTabletScreen ? scaleText(20, 16, 22) : scaleText(16, 14, 18),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
@@ -1015,21 +1033,21 @@ const styles = StyleSheet.create({
   // Título
   titleContainer: {
     alignItems: 'center',
-    paddingTop: 20,
-    marginBottom: 15,
+    paddingTop: scaleHeight(20),
+    marginBottom: scaleHeight(15),
   },
   
   title: {
-    fontSize: 24,
+    fontSize: isSmallScreen ? scaleText(20, 18, 24) : isTabletScreen ? scaleText(32, 28, 36) : scaleText(24, 22, 28),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 3,
+    marginBottom: scaleHeight(3),
     transform: [{ rotate: '0.5deg' }],
   },
   
   subtitle: {
-    fontSize: 14,
+    fontSize: isSmallScreen ? scaleText(12, 10, 14) : isTabletScreen ? scaleText(18, 16, 20) : scaleText(14, 12, 16),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
@@ -1040,29 +1058,29 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
     flexDirection: 'row',
-    paddingHorizontal: 120, // Espacio para agujeros y margen
-    paddingBottom: 80,
+    paddingHorizontal: scaleWidth(isSmallScreen ? 90 : isTabletScreen ? 150 : 120),
+    paddingBottom: scaleHeight(isSmallScreen ? 60 : isTabletScreen ? 100 : 80),
   },
   
   // Lado izquierdo - 35% del ancho
   leftSide: {
-    flex: 0.35,
-    paddingRight: 20,
-    paddingLeft: 20,
+    flex: isSmallScreen ? 0.4 : 0.35,
+    paddingRight: scaleWidth(isSmallScreen ? 15 : isTabletScreen ? 25 : 20),
+    paddingLeft: scaleWidth(isSmallScreen ? 15 : isTabletScreen ? 25 : 20),
   },
   
   // Lado derecho - 65% del ancho
   rightSide: {
-    flex: 0.65,
-    paddingLeft: 20,
-    paddingTop: -5,
-    borderLeftWidth: 2,
+    flex: isSmallScreen ? 0.6 : 0.65,
+    paddingLeft: scaleWidth(isSmallScreen ? 15 : isTabletScreen ? 25 : 20),
+    paddingTop: scaleHeight(-5),
+    borderLeftWidth: scale(2),
     borderLeftColor: '#A8C8EC',
     borderLeftStyle: 'dashed',
   },
   
   sectionTitle: {
-    fontSize: 18,
+    fontSize: isSmallScreen ? scaleText(16, 14, 18) : isTabletScreen ? scaleText(24, 20, 28) : scaleText(18, 16, 20),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -1338,20 +1356,20 @@ const styles = StyleSheet.create({
   // Estilos para el botón de mute
   sketchMuteButton: {
     position: 'absolute',
-    top: 30,
-    right: 30,
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    top: scaleHeight(isSmallScreen ? 20 : isTabletScreen ? 40 : 30),
+    right: scaleWidth(isSmallScreen ? 20 : isTabletScreen ? 40 : 30),
+    width: scaleModerate(isSmallScreen ? 55 : isTabletScreen ? 85 : 70, 0.3),
+    height: scaleModerate(isSmallScreen ? 55 : isTabletScreen ? 85 : 70, 0.3),
+    borderRadius: scaleModerate(isSmallScreen ? 27.5 : isTabletScreen ? 42.5 : 35, 0.3),
     backgroundColor: '#FFFFFF',
-    borderWidth: 3,
+    borderWidth: scale(3),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scale(3), height: scale(3) },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scale(4),
     elevation: 6,
     transform: [{ rotate: '2deg' }],
     zIndex: 15,

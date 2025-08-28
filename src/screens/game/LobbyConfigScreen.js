@@ -14,9 +14,22 @@ import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { useDispatch } from 'react-redux';
 import { theme } from '../../styles/theme';
+import { 
+  scale, 
+  scaleWidth, 
+  scaleHeight, 
+  scaleText, 
+  scaleModerate,
+  getDeviceType,
+  isSmallDevice,
+  isTablet,
+  RESPONSIVE,
+  getDeviceInfo 
+} from '../../utils/responsive';
 
-// 🔊 ICONO PERSONALIZADO USANDO PNG
-const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
+// 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
+const CustomMuteIcon = ({ size, isMuted = false }) => {
+  const responsiveSize = size || scaleModerate(50, 0.3);
   return (
     <View style={styles.customIconContainer}>
       <Image 

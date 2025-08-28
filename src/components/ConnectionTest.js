@@ -2,6 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useSocket, useRoom } from '../hooks/useSocket';
 import { theme } from '../styles/theme';
+import { 
+  scale, 
+  scaleWidth, 
+  scaleHeight, 
+  scaleText, 
+  scaleModerate,
+  getDeviceType,
+  isSmallDevice,
+  isTablet,
+  RESPONSIVE 
+} from '../utils/responsive';
 
 /**
  * Componente de prueba para la conexión con el backend
@@ -180,15 +191,15 @@ const ConnectionTest = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: scale(20),
     backgroundColor: '#F5F5F5',
   },
   
   title: {
-    fontSize: 20,
+    fontSize: scaleText(20),
     fontFamily: theme.fonts.primaryBold,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: scale(20),
     color: '#333',
   },
   
@@ -196,30 +207,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
-    padding: 10,
+    marginBottom: scale(20),
+    padding: scale(10),
     backgroundColor: 'white',
-    borderRadius: 10,
+    borderRadius: scale(10),
     borderWidth: 1,
     borderColor: '#DDD',
   },
   
   statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 8,
+    width: scale(12),
+    height: scale(12),
+    borderRadius: scale(6),
+    marginRight: scale(8),
   },
   
   statusText: {
-    fontSize: 16,
+    fontSize: scaleText(16),
     fontFamily: theme.fonts.primary,
     color: '#333',
-    marginRight: 10,
+    marginRight: scale(10),
   },
   
   socketId: {
-    fontSize: 12,
+    fontSize: scaleText(12),
     fontFamily: theme.fonts.primary,
     color: '#666',
   },
@@ -227,15 +238,15 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 20,
+    marginBottom: scale(20),
   },
   
   button: {
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingHorizontal: scale(15),
+    paddingVertical: scale(10),
+    borderRadius: scale(8),
     borderWidth: 1,
-    marginHorizontal: 5,
+    marginHorizontal: scale(5),
   },
   
   connectButton: {
@@ -261,76 +272,76 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontFamily: theme.fonts.primary,
-    fontSize: 12,
+    fontSize: scaleText(12),
     textAlign: 'center',
   },
   
   roomInfo: {
     backgroundColor: 'white',
-    padding: 15,
-    borderRadius: 10,
+    padding: scale(15),
+    borderRadius: scale(10),
     borderWidth: 1,
     borderColor: '#DDD',
-    marginBottom: 20,
+    marginBottom: scale(20),
   },
   
   roomTitle: {
-    fontSize: 16,
+    fontSize: scaleText(16),
     fontFamily: theme.fonts.primaryBold,
     color: '#333',
-    marginBottom: 10,
+    marginBottom: scale(10),
   },
   
   roomText: {
-    fontSize: 14,
+    fontSize: scaleText(14),
     fontFamily: theme.fonts.primary,
     color: '#666',
-    marginBottom: 5,
+    marginBottom: scale(5),
   },
   
   playerInfo: {
     backgroundColor: 'white',
-    padding: 15,
-    borderRadius: 10,
+    padding: scale(15),
+    borderRadius: scale(10),
     borderWidth: 1,
     borderColor: '#DDD',
-    marginBottom: 20,
+    marginBottom: scale(20),
   },
   
   playerTitle: {
-    fontSize: 16,
+    fontSize: scaleText(16),
     fontFamily: theme.fonts.primaryBold,
     color: '#333',
-    marginBottom: 10,
+    marginBottom: scale(10),
   },
   
   playerText: {
-    fontSize: 14,
+    fontSize: scaleText(14),
     fontFamily: theme.fonts.primary,
     color: '#666',
-    marginBottom: 5,
+    marginBottom: scale(5),
   },
   
   errorContainer: {
     backgroundColor: '#FFEBEE',
-    padding: 10,
-    borderRadius: 8,
+    padding: scale(10),
+    borderRadius: scale(8),
     borderWidth: 1,
     borderColor: '#F44336',
-    marginBottom: 10,
+    marginBottom: scale(10),
   },
   
   errorText: {
     color: '#D32F2F',
     fontFamily: theme.fonts.primary,
-    fontSize: 14,
+    fontSize: scaleText(14),
     textAlign: 'center',
   },
   
   loadingContainer: {
     backgroundColor: '#E3F2FD',
-    padding: 10,
-    borderRadius: 8,
+    padding: scale(10),
+    borderRadius: scale(8),
     borderWidth: 1,
     borderColor: '#2196F3',
   },
@@ -338,7 +349,7 @@ const styles = StyleSheet.create({
   loadingText: {
     color: '#1976D2',
     fontFamily: theme.fonts.primary,
-    fontSize: 14,
+    fontSize: scaleText(14),
     textAlign: 'center',
   },
 });

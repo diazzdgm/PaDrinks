@@ -17,9 +17,23 @@ import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../styles/theme';
 import { useSocket } from '../hooks/useSocket';
 import { setSocketConnected } from '../store/connectionSlice';
+import { 
+  scale, 
+  scaleWidth, 
+  scaleHeight, 
+  scaleText, 
+  scaleModerate,
+  getDeviceType,
+  isSmallDevice,
+  isTablet,
+  RESPONSIVE,
+  getDeviceInfo 
+} from '../utils/responsive';
 
-// 🔊 ICONO PERSONALIZADO USANDO PNG
-const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
+// 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
+const CustomMuteIcon = ({ size, isMuted = false }) => {
+  const responsiveSize = size || scaleModerate(50, 0.3);
+  
   return (
     <View style={styles.customIconContainer}>
       <Image 
@@ -27,8 +41,8 @@ const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
         style={[
           styles.megaphoneImage,
           { 
-            width: size, 
-            height: size,
+            width: responsiveSize, 
+            height: responsiveSize,
             opacity: isMuted ? 0.6 : 1,
           }
         ]}
@@ -53,6 +67,10 @@ const MainMenuScreen = ({ navigation }) => {
   
   // Socket hooks
   const { connect, disconnect, connected } = useSocket();
+  
+  // Device info para debugging responsive
+  const deviceInfo = getDeviceInfo();
+  const deviceType = getDeviceType();
   
   // Referencias para animaciones
   const logoFloat = useRef(new Animated.Value(0)).current;
@@ -93,27 +111,34 @@ const MainMenuScreen = ({ navigation }) => {
   // Animación para el botón de mute
   const muteButtonScale = useRef(new Animated.Value(1)).current;
   
-  // Función para conectar al backend
-  const initializeBackendConnection = async () => {
-    if (!connected && !isConnecting) {
+  // Función para conectar al backend - usando useCallback para evitar re-creación
+  const initializeBackendConnection = React.useCallback(async () => {
+    // Solo intentar conectar si no está ya conectado o conectando
+    if (!isConnected && !isConnecting) {
       try {
         console.log('🔌 Iniciando conexión al backend desde MainMenu...');
         await connect();
-        dispatch(setSocketConnected({ connected: true, socketId: connected }));
         console.log('✅ Conexión al backend establecida desde MainMenu');
       } catch (error) {
         console.error('❌ Error conectando al backend desde MainMenu:', error.message);
         // No bloquear la funcionalidad, permitir uso offline
-        dispatch(setSocketConnected({ connected: false, socketId: null }));
       }
-    } else if (connected) {
-      console.log('🔌 Ya conectado al backend desde MainMenu');
-      dispatch(setSocketConnected({ connected: true, socketId: connected }));
     }
-  };
+  }, [isConnected, isConnecting, connect]);
 
   useFocusEffect(
     React.useCallback(() => {
+      // Debug responsive design (solo una vez)
+      console.log('📱 Device Info:', {
+        type: deviceType,
+        dimensions: `${deviceInfo.width}x${deviceInfo.height}`,
+        scaleFactors: {
+          width: deviceInfo.scaleFactorWidth.toFixed(2),
+          height: deviceInfo.scaleFactorHeight.toFixed(2),
+          min: deviceInfo.scaleFactorMin.toFixed(2)
+        }
+      });
+      
       startEntranceAnimations();
       // Inicializar y reproducir música solo desde MainMenu
       audioService.initializeBackgroundMusic();
@@ -375,20 +400,7 @@ const MainMenuScreen = ({ navigation }) => {
     });
   };
 
-  // Función temporal para test de backend
-  const handleBackendTest = () => {
-    Alert.alert(
-      '🧪 Test Backend',
-      '¿Quieres probar la conexión con el backend?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Test', 
-          onPress: () => navigation.navigate('BackendTest')
-        }
-      ]
-    );
-  };
+  // Función temporal para test de backend (eliminada)
 
 
 
@@ -640,7 +652,7 @@ const MainMenuScreen = ({ navigation }) => {
           activeOpacity={0.8}
         >
           <CustomMuteIcon 
-            size={50}
+            size={scaleModerate(50, 0.3)}
             isMuted={isMuted}
           />
         </TouchableOpacity>
@@ -652,21 +664,17 @@ const MainMenuScreen = ({ navigation }) => {
           PaDrinks • Bebe responsablemente • No conduzcas
         </Text>
         
-        {/* Botón de test temporal - desarrollo */}
-        <TouchableOpacity 
-          style={styles.testButton}
-          onPress={handleBackendTest}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.testButtonText}>🧪 Test Backend</Text>
-        </TouchableOpacity>
       </View>
 
     </View>
   );
 };
 
+// Obtener información del dispositivo para estilos dinámicos
 const { width, height } = Dimensions.get('window');
+const deviceType = getDeviceType();
+const isSmallScreen = isSmallDevice();
+const isTabletScreen = isTablet();
 
 const styles = StyleSheet.create({
   container: {
@@ -759,17 +767,17 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     flexDirection: 'row', // Layout horizontal
-    paddingHorizontal: 40,
-    paddingVertical: 30,
+    paddingHorizontal: scaleWidth(isSmallDevice() ? 20 : isTablet() ? 60 : 40),
+    paddingVertical: scaleHeight(isSmallDevice() ? 15 : isTablet() ? 40 : 30),
   },
   
   // LADO IZQUIERDO - Logo
   leftSide: {
-    flex: 0.4, // 40% del ancho
+    flex: isSmallDevice() ? 0.35 : isTablet() ? 0.4 : 0.4, // Menos espacio en pantallas pequeñas
     justifyContent: 'center',
     alignItems: 'center',
-    paddingRight: 20,
-    paddingLeft: 60, // Mover contenido más a la derecha
+    paddingRight: scaleWidth(isSmallDevice() ? 10 : 20),
+    paddingLeft: scaleWidth(isSmallDevice() ? 30 : isTablet() ? 80 : 60),
   },
   
   logoContainer: {
@@ -777,23 +785,23 @@ const styles = StyleSheet.create({
   },
   
   logoImageContainer: {
-    marginBottom: -10, // Negativo para superponer los textos más al logo
+    marginBottom: scaleHeight(-10),
   },
   
   logoImage: {
-    width: 220,
-    height: 220,
+    width: isSmallDevice() ? scale(160) : isTablet() ? scale(280) : scale(220),
+    height: isSmallDevice() ? scale(160) : isTablet() ? scale(280) : scale(220),
   },
   
   appTitle: {
-    fontSize: 48, // Aumentado de 36 a 48
+    fontSize: isSmallDevice() ? scaleText(36) : isTablet() ? scaleText(60) : scaleText(48),
     fontFamily: theme.fonts.primaryBold,
-    color: '#000000', // Negro
+    color: '#000000',
     textAlign: 'center',
-    marginBottom: -5, // Negativo para acercar más a la versión
+    marginBottom: scaleHeight(-5),
     textShadowColor: 'rgba(0, 0, 0, 0.1)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    textShadowOffset: { width: scale(1), height: scale(1) },
+    textShadowRadius: scale(2),
   },
   
   appSubtitle: {
@@ -805,40 +813,40 @@ const styles = StyleSheet.create({
   },
   
   appVersion: {
-    fontSize: 12,
+    fontSize: isSmallDevice() ? scaleText(10) : isTablet() ? scaleText(16) : scaleText(12),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
-    marginTop: -15, // Subir mucho más el texto
+    marginTop: scaleHeight(isSmallDevice() ? -5 : isTablet() ? -3 : -4), // Más cerca del logo
   },
   
   // LADO DERECHO - Botones
   rightSide: {
-    flex: 0.6, // 60% del ancho
+    flex: isSmallDevice() ? 0.65 : isTablet() ? 0.6 : 0.6, // Más espacio en pantallas pequeñas
     justifyContent: 'center',
-    paddingLeft: 20,
+    paddingLeft: scaleWidth(isSmallDevice() ? 10 : isTablet() ? 30 : 20),
   },
   
   mainButtonsContainer: {
-    gap: 20,
+    gap: scaleHeight(isSmallDevice() ? 12 : isTablet() ? 20 : 16), // Reducir separación entre botones
   },
   
   mainButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 18,
-    paddingHorizontal: 25,
-    borderRadius: 18,
-    borderTopLeftRadius: 5,
+    paddingVertical: scaleHeight(isSmallDevice() ? 8 : isTablet() ? 16 : 12), // Reducir altura
+    paddingHorizontal: scaleWidth(isSmallDevice() ? 12 : isTablet() ? 24 : 18), // Reducir ancho
+    borderRadius: scale(isSmallDevice() ? 12 : isTablet() ? 18 : 15),
+    borderTopLeftRadius: scale(5),
     shadowColor: '#000',
     shadowOffset: {
-      width: 4,
-      height: 4,
+      width: scale(3),
+      height: scale(3),
     },
     shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 8,
-    borderWidth: 3,
+    shadowRadius: scale(6),
+    elevation: 6,
+    borderWidth: scale(2),
   },
   
   createGameButton: {
@@ -855,12 +863,12 @@ const styles = StyleSheet.create({
   
   
   buttonIcon: {
-    fontSize: 28,
-    marginRight: 15,
+    fontSize: isSmallDevice() ? scaleText(20) : isTablet() ? scaleText(30) : scaleText(24),
+    marginRight: scaleWidth(isSmallDevice() ? 8 : isTablet() ? 16 : 12),
   },
   
   buttonText: {
-    fontSize: 20,
+    fontSize: isSmallDevice() ? scaleText(16) : isTablet() ? scaleText(26) : scaleText(20), // Aumentar tamaño de texto
     fontFamily: theme.fonts.primaryBold,
     flex: 1,
   },
@@ -941,28 +949,28 @@ const styles = StyleSheet.create({
   // Indicador de conexión
   connectionIndicator: {
     position: 'absolute',
-    top: 60,
-    right: 20,
+    top: scaleHeight(isSmallDevice() ? 45 : isTablet() ? 80 : 60),
+    right: scaleWidth(isSmallDevice() ? 15 : isTablet() ? 30 : 20),
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleHeight(6),
+    borderRadius: scale(15),
     borderWidth: 1,
     borderColor: '#DDD',
     zIndex: 1000,
   },
   
   connectionDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
+    width: scale(isSmallDevice() ? 6 : isTablet() ? 10 : 8),
+    height: scale(isSmallDevice() ? 6 : isTablet() ? 10 : 8),
+    borderRadius: scale(isSmallDevice() ? 3 : isTablet() ? 5 : 4),
+    marginRight: scaleWidth(6),
   },
   
   connectionText: {
-    fontSize: 12,
+    fontSize: isSmallDevice() ? scaleText(10) : isTablet() ? scaleText(16) : scaleText(12),
     fontFamily: theme.fonts.primary,
     color: '#333',
   },
@@ -970,23 +978,23 @@ const styles = StyleSheet.create({
   // Botón de Mute estilo sketch
   sketchMuteButton: {
     position: 'absolute',
-    top: 30,
-    right: 30,
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    top: scaleHeight(isSmallDevice() ? 10 : isTablet() ? 15 : 12),
+    right: scaleWidth(isSmallDevice() ? 15 : isTablet() ? 25 : 20),
+    width: scaleModerate(isSmallDevice() ? 55 : isTablet() ? 85 : 70, 0.3),
+    height: scaleModerate(isSmallDevice() ? 55 : isTablet() ? 85 : 70, 0.3),
+    borderRadius: scaleModerate(isSmallDevice() ? 27.5 : isTablet() ? 42.5 : 35, 0.3),
     backgroundColor: '#FFFFFF',
-    borderWidth: 3,
+    borderWidth: scale(3),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { 
-      width: 3, 
-      height: 3 
+      width: scale(3), 
+      height: scale(3) 
     },
     shadowOpacity: 0.25,
-    shadowRadius: 6,
+    shadowRadius: scale(6),
     elevation: 6,
     transform: [{ rotate: '1.5deg' }],
     zIndex: 10,
@@ -1137,40 +1145,24 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '45deg' }],
   },
   
-  // Footer
+  // Footer - Posicionado en la parte inferior con margen
   footer: {
     position: 'absolute',
-    bottom: 40, // Mover más arriba
-    left: 20,
-    right: 20,
+    bottom: scaleHeight(isSmallDevice() ? 15 : isTablet() ? 25 : 20), // Margen desde el borde inferior
+    left: scaleWidth(isSmallDevice() ? 20 : isTablet() ? 40 : 30),
+    right: scaleWidth(isSmallDevice() ? 20 : isTablet() ? 40 : 30),
     alignItems: 'center',
   },
   
   footerText: {
-    fontSize: 11,
+    fontSize: isSmallDevice() ? scaleText(9, 8, 11) : isTablet() ? scaleText(14, 12, 16) : scaleText(11, 9, 13),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
-    opacity: 0.7,
+    opacity: 0.8, // Ligeramente más visible
   },
   
-  testButton: {
-    backgroundColor: '#E3F2FD',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#2196F3',
-    marginTop: 10,
-    alignSelf: 'center',
-  },
-  
-  testButtonText: {
-    fontSize: 10,
-    fontFamily: theme.fonts.primary,
-    color: '#1976D2',
-    textAlign: 'center',
-  },
+  // Estilos del botón de test eliminados
 });
 
 export default MainMenuScreen;

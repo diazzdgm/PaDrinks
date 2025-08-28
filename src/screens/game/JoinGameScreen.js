@@ -21,11 +21,28 @@ import { theme } from '../../styles/theme';
 import { useSocket, useRoom } from '../../hooks/useSocket';
 import { setRoomData } from '../../store/connectionSlice';
 import SocketService from '../../services/SocketService';
+import { 
+  scale, 
+  scaleWidth, 
+  scaleHeight, 
+  scaleText, 
+  scaleModerate,
+  getDeviceType,
+  isSmallDevice,
+  isTablet,
+  RESPONSIVE,
+  getDeviceInfo 
+} from '../../utils/responsive';
 
+// Obtener información del dispositivo para estilos dinámicos
 const { width, height } = Dimensions.get('window');
+const deviceType = getDeviceType();
+const isSmallScreen = isSmallDevice();
+const isTabletScreen = isTablet();
 
-// 🔊 ICONO PERSONALIZADO USANDO PNG
-const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
+// 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
+const CustomMuteIcon = ({ size, isMuted = false }) => {
+  const responsiveSize = size || scaleModerate(50, 0.3);
   return (
     <View style={styles.customIconContainer}>
       <Image 

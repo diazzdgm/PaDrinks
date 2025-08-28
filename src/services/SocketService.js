@@ -20,7 +20,7 @@ class SocketService {
     this.serverConfig = {
       url: this.getServerUrl(), // Detectar automáticamente la URL correcta
       options: {
-        transports: ['websocket', 'polling'],
+        transports: ['polling', 'websocket'], // polling primero para ngrok
         timeout: 30000,
         forceNew: true,
         reconnection: true,
@@ -30,7 +30,11 @@ class SocketService {
         maxHttpBufferSize: 1e8,
         pingTimeout: 60000,
         pingInterval: 25000,
-        upgradeTimeout: 30000
+        upgradeTimeout: 30000,
+        // Configuración específica para ngrok
+        extraHeaders: {
+          'ngrok-skip-browser-warning': 'true'
+        }
       }
     };
     

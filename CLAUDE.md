@@ -61,6 +61,31 @@ curl http://localhost:3001/health
 
 # Run comprehensive backend API tests
 node test-api.js
+
+# Test backend with client simulator
+# Open test-client.html in browser for Socket.IO testing
+```
+
+### Windows Development Setup
+```bash
+# Windows-specific Expo commands (bypassing npx issues)
+npm run start:windows          # Use .bat file wrapper
+npm run start:windows:clear    # Use .bat file with cache clear
+
+# Direct node execution (recommended for Windows)
+npm start                      # Uses expo-start.js custom wrapper
+```
+
+### Tunnel Development (ngrok)
+```bash
+# Setup ngrok tunnel for backend (run from Windows CMD as Administrator)
+npm install -g ngrok
+ngrok config add-authtoken YOUR_NGROK_TOKEN
+ngrok http 3001
+
+# Update src/config/server.js with ngrok URL
+# Then start Expo in tunnel mode
+npm run start:tunnel
 ```
 
 ## Project Configuration
@@ -114,10 +139,11 @@ Kalam fonts (Regular/Bold) are loaded asynchronously in App.js. Font loading com
 - **Background Music**: Looping background music with volume control and mute functionality
 
 ### Design System Implementation
-- **Theme File**: Centralized in `src/styles/theme.js` with post-it colors and Kalam fonts
+- **Theme File**: Centralized in `src/styles/theme.js` with post-it colors and Kalam fonts, now using responsive values from `src/utils/responsive.js`
 - **Color Palette**: postItYellow (#FFE082), postItGreen (#C8E6C9), postItPink, postItBlue
 - **Visual Style**: Notebook paper backgrounds with holes, red margin lines, and horizontal blue lines
 - **Typography**: Handwritten feel using Kalam font family throughout
+- **Responsive System**: Complete cross-device scaling system for phone-small, phone-large, and tablet devices
 
 ### Navigation and State Flow
 ```
@@ -331,6 +357,8 @@ The project uses custom Metro configuration (metro.config.js) to prevent conflic
 - Backend directory and node_modules are explicitly blocked from Metro's file resolution
 - Watch folders are restricted to src/, assets/, and frontend node_modules only
 - This prevents React Native from trying to bundle backend dependencies
+- **Windows-Specific**: Blocks `.bin` directories to prevent EACCES permission errors on Windows
+- **Windows File Watcher**: Disables problematic file watchers on win32 platform
 
 ### Room Dissolution and Navigation Management
 
@@ -436,3 +464,29 @@ Key events implemented in the system:
 - UUID-based player identification for secure player management
 - Connection state recovery with 2-minute disconnection tolerance
 - Socket.IO configuration with ping timeout (60s) and ping interval (25s)
+
+## Windows Development Issues and Solutions
+
+### Windows/WSL Compatibility Issues
+- **npx Problems**: `npx expo` fails in Git Bash/WSL - use direct node execution instead
+- **Permission Errors**: EACCES errors with node_modules/.bin resolved by custom expo-start.js wrapper
+- **Symlink Issues**: Windows symlinks in node_modules cause Metro crashes - blocked in metro.config.js
+- **Path Resolution**: Use forward slashes in scripts, but direct node execution for cross-platform compatibility
+
+### Windows-Specific Files Created
+- `expo-start.js`: Custom Node.js wrapper to bypass npx issues on Windows
+- `start-expo.bat` & `start-expo-clear.bat`: Windows batch alternatives for direct execution
+- Modified `metro.config.js`: Windows-specific .bin directory blocking and file watcher configuration
+
+### Tunnel Configuration (ngrok Integration)
+- **Server Configuration**: `src/config/server.js` includes priority system: tunnel > manual > auto-detection
+- **ngrok Setup**: Requires authentication token and installation via Windows CMD as Administrator
+- **URL Management**: `TUNNEL_SERVER_URL` variable enables/disables tunnel mode
+- **Mobile Testing**: Tunnel allows app testing from any network, bypassing local IP limitations
+
+### Development Environment Recommendations
+- **Backend**: Run from Windows CMD (not WSL) to avoid IP resolution issues with mobile devices
+- **Frontend**: Can run from WSL/Git Bash using custom scripts, or Windows CMD for full compatibility
+- **ngrok**: Must be installed and run from Windows CMD with Administrator privileges
+- **Metro Cache**: Cache corruption common after installations - automatic fallback to full crawl is normal
+- **IP Configuration**: For mobile device testing, update IP in src/config/server.js to your machine's local network IP (use `ipconfig` to find it)

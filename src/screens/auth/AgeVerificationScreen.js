@@ -14,6 +14,18 @@ import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../styles/theme';
 import audioService from '../../services/AudioService';
+import { 
+  scale, 
+  scaleWidth, 
+  scaleHeight, 
+  scaleText, 
+  scaleModerate,
+  getDeviceType,
+  isSmallDevice,
+  isTablet,
+  RESPONSIVE,
+  getDeviceInfo 
+} from '../../utils/responsive';
 
 const AgeVerificationScreen = ({ navigation }) => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -286,45 +298,50 @@ const AgeVerificationScreen = ({ navigation }) => {
         ]}
       >
         
-        {/* Icono principal con animaciones dramáticas */}
-        <Animated.View
-          style={[
-            styles.iconContainer,
-            {
-              transform: [
-                { translateY: iconFall },
-                { scale: iconPulse }
-              ],
-              opacity: iconBlink,
-            },
-          ]}
-        >
-          <Text style={styles.mainIcon}>🔞</Text>
-        </Animated.View>
+        {/* SECCIÓN SUPERIOR - Icono y Pregunta */}
+        <View style={styles.topSection}>
+          {/* Icono principal con animaciones dramáticas */}
+          <Animated.View
+            style={[
+              styles.iconContainer,
+              {
+                transform: [
+                  { translateY: iconFall },
+                  { scale: iconPulse }
+                ],
+                opacity: iconBlink,
+              },
+            ]}
+          >
+            <Text style={styles.mainIcon}>🔞</Text>
+          </Animated.View>
 
-        {/* Pregunta principal con deslizamiento */}
-        <Animated.View 
-          style={[
-            styles.questionContainer,
-            {
-              transform: [{ translateX: questionSlide }],
-            },
-          ]}
-        >
-          <Text style={styles.question}>
-            ¿Eres mayor de 18 años?
-          </Text>
-        </Animated.View>
+          {/* Pregunta principal con deslizamiento */}
+          <Animated.View 
+            style={[
+              styles.questionContainer,
+              {
+                transform: [{ translateX: questionSlide }],
+              },
+            ]}
+          >
+            <Text style={styles.question}>
+              ¿Eres mayor de 18 años?
+            </Text>
+          </Animated.View>
+        </View>
 
-        {/* Botones de respuesta - Sin animación desde abajo */}
-        <Animated.View
-          style={[
-            styles.buttonsContainer,
-            {
-              transform: [{ scale: scaleAnim }],
-            },
-          ]}
-        >
+        {/* SECCIÓN CENTRAL - Botones */}
+        <View style={styles.centerSection}>
+          {/* Botones de respuesta */}
+          <Animated.View
+            style={[
+              styles.buttonsContainer,
+              {
+                transform: [{ scale: scaleAnim }],
+              },
+            ]}
+          >
           
           {/* Botón SÍ con efecto bounce */}
           <Animated.View style={{ transform: [{ scale: yesButtonScale }] }}>
@@ -360,28 +377,10 @@ const AgeVerificationScreen = ({ navigation }) => {
             </TouchableOpacity>
           </Animated.View>
 
-        </Animated.View>
+          </Animated.View>
+        </View>
 
-        {/* Información adicional con flotación */}
-        <Animated.View 
-          style={[
-            styles.infoContainer,
-            {
-              transform: [
-                {
-                  translateY: infoFloat.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, -3],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <Text style={styles.infoText}>
-            Al continuar, confirmas que tienes la edad legal para consumir alcohol en tu país
-          </Text>
-        </Animated.View>
+        {/* SECCIÓN INFERIOR - Información (eliminada) */}
 
       </Animated.View>
 
@@ -470,7 +469,11 @@ const AgeVerificationScreen = ({ navigation }) => {
   );
 };
 
+// Obtener información del dispositivo para estilos dinámicos
 const { width, height } = Dimensions.get('window');
+const deviceType = getDeviceType();
+const isSmallScreen = isSmallDevice();
+const isTabletScreen = isTablet();
 
 const styles = StyleSheet.create({
   container: {
@@ -492,7 +495,7 @@ const styles = StyleSheet.create({
   notebookLines: {
     position: 'absolute',
     top: 0,
-    left: 80, // Después de perforaciones y margen
+    left: 100, // Después de agujeros y margen
     right: 20,
     bottom: 0,
   },
@@ -502,38 +505,38 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#A8C8EC',
     opacity: 0.6,
   },
   
   // Línea roja del margen
   redMarginLine: {
     position: 'absolute',
-    left: 75,
+    left: 95,
     top: 0,
     bottom: 0,
     width: 2,
     backgroundColor: '#FF6B6B',
-    opacity: 0.4,
+    opacity: 0.5,
   },
   
   // Agujeros de perforación
   holesPunch: {
     position: 'absolute',
-    left: 25,
+    left: 30,
     top: 60,
     bottom: 60,
-    width: 20,
+    width: 25,
     justifyContent: 'space-around',
     alignItems: 'center',
   },
   
   hole: {
-    width: 15,
-    height: 15,
-    borderRadius: 8,
+    width: 18,
+    height: 18,
+    borderRadius: 10,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#D0D0D0',
     shadowColor: '#000',
     shadowOffset: {
@@ -541,65 +544,82 @@ const styles = StyleSheet.create({
       height: 2,
     },
     shadowOpacity: 0.3,
-    shadowRadius: 3,
+    shadowRadius: 4,
     elevation: 3,
   },
   
   content: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.xl,
-    paddingTop: theme.spacing.xxl,
+    flexDirection: 'column', // Layout vertical
+    justifyContent: 'flex-start', // Empezar desde arriba
+    alignItems: 'center', // Centrar horizontalmente
+    paddingHorizontal: scaleWidth(isSmallScreen ? 40 : isTabletScreen ? 80 : 60),
+    paddingTop: scaleHeight(isSmallScreen ? 8 : isTabletScreen ? 12 : 10), // Reducido aún más para subir todo
+    paddingLeft: scaleWidth(130), // Espacio para el margen de la libreta
+    paddingBottom: scaleHeight(60), // Mantener espacio para el footer
   },
   
+  
+  // SECCIÓN SUPERIOR - Icono y pregunta
+  topSection: {
+    alignItems: 'center',
+    marginTop: scaleHeight(isSmallScreen ? 2 : isTabletScreen ? 5 : 3), // Reducido aún más para subir
+    marginBottom: scaleHeight(isSmallScreen ? 4 : isTabletScreen ? 6 : 5), // Reducido más
+  },
   
   // Icono principal
   iconContainer: {
-    marginBottom: theme.spacing.xs,
+    marginBottom: scaleHeight(isSmallScreen ? 2 : isTabletScreen ? 4 : 3), // Añadir responsividad
   },
   
   mainIcon: {
-    fontSize: 60,
+    fontSize: isSmallScreen ? scaleText(50) : isTabletScreen ? scaleText(70) : scaleText(60),
     textAlign: 'center',
   },
   
   // Pregunta
   questionContainer: {
     alignItems: 'center',
-    marginBottom: theme.spacing.sm,
   },
   
   question: {
-    fontSize: 26,
+    fontSize: isSmallScreen ? scaleText(20) : isTabletScreen ? scaleText(28) : scaleText(24),
     fontFamily: theme.fonts.primaryBold,
-    color: '#000000', // Negro
+    color: '#000000',
     textAlign: 'center',
     transform: [{ rotate: '0.5deg' }],
+    lineHeight: isSmallScreen ? scaleHeight(24) : isTabletScreen ? scaleHeight(32) : scaleHeight(28),
+  },
+  
+  // SECCIÓN CENTRAL - Botones
+  centerSection: {
+    width: '100%',
+    alignItems: 'center',
   },
   
   // Botones
   buttonsContainer: {
-    width: '100%',
-    maxWidth: 420,
-    gap: theme.spacing.sm,
+    width: isSmallScreen ? '60%' : isTabletScreen ? '50%' : '55%', // Responsivo: más ancho en pantallas pequeñas
+    gap: scaleHeight(isSmallScreen ? 5 : isTabletScreen ? 8 : 6), // Gap responsivo
+    marginTop: scaleHeight(isSmallScreen ? 3 : isTabletScreen ? 6 : 4), // Reducido para subir más los botones
+    marginBottom: scaleHeight(isSmallScreen ? 6 : isTabletScreen ? 10 : 8), // Espaciado responsivo
   },
   
   button: {
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.large,
-    borderTopLeftRadius: theme.borderRadius.small,
+    width: '100%', // Ancho completo
+    paddingVertical: scaleHeight(isSmallScreen ? 6 : isTabletScreen ? 8 : 7), // Más chaparros
+    paddingHorizontal: scaleWidth(isSmallScreen ? 20 : isTabletScreen ? 30 : 25),
+    borderRadius: scale(theme.borderRadius.large),
+    borderTopLeftRadius: scale(theme.borderRadius.small),
     shadowColor: '#000',
     shadowOffset: {
-      width: 3,
-      height: 3,
+      width: scale(3),
+      height: scale(3),
     },
     shadowOpacity: 0.25,
-    shadowRadius: 6,
+    shadowRadius: scale(6),
     elevation: 6,
-    marginVertical: theme.spacing.xs,
+    marginVertical: scaleHeight(2), // Margen vertical mínimo
   },
   
   yesButton: {
@@ -621,7 +641,7 @@ const styles = StyleSheet.create({
   },
   
   buttonText: {
-    fontSize: 18,
+    fontSize: isSmallScreen ? scaleText(14) : isTabletScreen ? scaleText(20) : scaleText(16),
     fontFamily: theme.fonts.primaryBold,
     textAlign: 'center',
   },
@@ -634,44 +654,26 @@ const styles = StyleSheet.create({
     color: theme.colors.error,
   },
   
-  // Información
-  infoContainer: {
-    marginTop: theme.spacing.sm,
-    backgroundColor: theme.colors.postItBlue,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.medium,
-    borderTopLeftRadius: 0,
-    maxWidth: 380,
-    transform: [{ rotate: '0.8deg' }],
-  },
-  
-  infoText: {
-    fontSize: 12,
-    fontFamily: theme.fonts.primary,
-    color: theme.colors.text,
-    textAlign: 'center',
-    lineHeight: 15,
-  },
+  // SECCIÓN INFERIOR - Información (eliminada)
   
   // Footer
   footer: {
     position: 'absolute',
-    bottom: theme.spacing.lg,
-    left: theme.spacing.sm,
-    right: theme.spacing.sm,
+    bottom: scaleHeight(15),
+    left: scaleWidth(120), // Alineado con el contenido (después del margen de libreta)
+    right: scaleWidth(theme.spacing.sm),
     alignItems: 'center',
   },
   
   footerText: {
-    fontSize: 12,
+    fontSize: isSmallScreen ? scaleText(10) : isTabletScreen ? scaleText(16) : scaleText(12),
     fontFamily: theme.fonts.primary,
     color: theme.colors.error,
     textAlign: 'center',
     backgroundColor: 'rgba(211, 47, 47, 0.1)',
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 2,
-    borderRadius: theme.borderRadius.small,
+    paddingHorizontal: scaleWidth(theme.spacing.sm),
+    paddingVertical: scale(2),
+    borderRadius: scale(theme.borderRadius.small),
     borderWidth: 1,
     borderColor: theme.colors.error,
     borderStyle: 'dashed',
@@ -688,18 +690,18 @@ const styles = StyleSheet.create({
   
   modalContainer: {
     backgroundColor: '#F8F6F0',
-    borderRadius: 25,
-    padding: theme.spacing.xl,
-    maxWidth: 400,
+    borderRadius: scale(25),
+    padding: scaleWidth(isSmallScreen ? 25 : isTabletScreen ? 40 : theme.spacing.xl),
+    maxWidth: isSmallScreen ? scaleWidth(340) : isTabletScreen ? scaleWidth(500) : scaleWidth(400),
     width: '90%',
     position: 'relative',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 10,
+      height: scale(10),
     },
     shadowOpacity: 0.3,
-    shadowRadius: 20,
+    shadowRadius: scale(20),
     elevation: 15,
   },
   
@@ -737,52 +739,52 @@ const styles = StyleSheet.create({
   },
   
   modalTitle: {
-    fontSize: 28,
+    fontSize: isSmallScreen ? scaleText(24) : isTabletScreen ? scaleText(36) : scaleText(28),
     fontFamily: theme.fonts.primaryBold,
     color: '#D32F2F',
     textAlign: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: scaleHeight(theme.spacing.lg),
     transform: [{ rotate: '-1deg' }],
   },
   
   modalMessage: {
-    fontSize: 18,
+    fontSize: isSmallScreen ? scaleText(16) : isTabletScreen ? scaleText(24) : scaleText(18),
     fontFamily: theme.fonts.primary,
     color: theme.colors.text,
     textAlign: 'center',
-    marginBottom: theme.spacing.md,
-    lineHeight: 24,
+    marginBottom: scaleHeight(theme.spacing.md),
+    lineHeight: isSmallScreen ? scaleHeight(20) : isTabletScreen ? scaleHeight(32) : scaleHeight(24),
   },
   
   modalSubMessage: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? scaleText(14) : isTabletScreen ? scaleText(20) : scaleText(16),
     fontFamily: theme.fonts.primary,
     color: theme.colors.textSecondary,
     textAlign: 'center',
-    marginBottom: theme.spacing.xl,
-    lineHeight: 22,
+    marginBottom: scaleHeight(theme.spacing.xl),
+    lineHeight: isSmallScreen ? scaleHeight(18) : isTabletScreen ? scaleHeight(28) : scaleHeight(22),
     fontStyle: 'italic',
   },
   
   modalButton: {
     backgroundColor: theme.colors.postItPink,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.xl,
-    borderRadius: 20,
-    borderTopLeftRadius: 5,
+    paddingVertical: scaleHeight(isSmallScreen ? 12 : isTabletScreen ? 18 : theme.spacing.md),
+    paddingHorizontal: scaleWidth(isSmallScreen ? 25 : isTabletScreen ? 40 : theme.spacing.xl),
+    borderRadius: scale(20),
+    borderTopLeftRadius: scale(5),
     shadowColor: '#000',
     shadowOffset: {
-      width: 3,
-      height: 3,
+      width: scale(3),
+      height: scale(3),
     },
     shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowRadius: scale(6),
     elevation: 6,
     transform: [{ rotate: '1deg' }],
   },
   
   modalButtonText: {
-    fontSize: 18,
+    fontSize: isSmallScreen ? scaleText(16) : isTabletScreen ? scaleText(24) : scaleText(18),
     fontFamily: theme.fonts.primaryBold,
     color: '#D32F2F',
     textAlign: 'center',

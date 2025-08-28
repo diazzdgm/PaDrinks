@@ -19,9 +19,23 @@ import { theme } from '../../styles/theme';
 import { setGameMode } from '../../store/gameSlice';
 import { useSocket, useRoom } from '../../hooks/useSocket';
 import { setSocketConnected, setRoomData } from '../../store/connectionSlice';
+import { 
+  scale, 
+  scaleWidth, 
+  scaleHeight, 
+  scaleText, 
+  scaleModerate,
+  getDeviceType,
+  isSmallDevice,
+  isTablet,
+  RESPONSIVE,
+  getDeviceInfo 
+} from '../../utils/responsive';
 
-// 🔊 ICONO PERSONALIZADO USANDO PNG
-const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
+// 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
+const CustomMuteIcon = ({ size, isMuted = false }) => {
+  const responsiveSize = size || scaleModerate(50, 0.3);
+  
   return (
     <View style={styles.customIconContainer}>
       <Image 
@@ -29,8 +43,8 @@ const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
         style={[
           styles.megaphoneImage,
           { 
-            width: size, 
-            height: size,
+            width: responsiveSize, 
+            height: responsiveSize,
             opacity: isMuted ? 0.6 : 1,
           }
         ]}
@@ -56,6 +70,10 @@ const CreateGameScreen = ({ navigation }) => {
   // Socket hooks
   const { connect, disconnect, connected } = useSocket();
   const { createRoom, loading: roomLoading, error: roomError } = useRoom();
+  
+  // Device info para responsive design
+  const deviceInfo = getDeviceInfo();
+  const deviceType = getDeviceType();
   
   // Estado para el modo seleccionado y modal
   const [selectedMode, setSelectedMode] = useState(null);
@@ -528,7 +546,11 @@ const CreateGameScreen = ({ navigation }) => {
   );
 };
 
+// Obtener información del dispositivo para estilos dinámicos
 const { width, height } = Dimensions.get('window');
+const deviceType = getDeviceType();
+const isSmallScreen = isSmallDevice();
+const isTabletScreen = isTablet();
 
 const styles = StyleSheet.create({
   container: {
@@ -539,28 +561,28 @@ const styles = StyleSheet.create({
   // Indicador de conexión
   connectionIndicator: {
     position: 'absolute',
-    top: 60,
-    right: 20,
+    top: scaleHeight(isSmallScreen ? 45 : isTabletScreen ? 80 : 60),
+    right: scaleWidth(isSmallScreen ? 15 : isTabletScreen ? 30 : 20),
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleHeight(6),
+    borderRadius: scale(15),
     borderWidth: 1,
     borderColor: '#DDD',
     zIndex: 1000,
   },
   
   connectionDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
+    width: scale(isSmallScreen ? 6 : isTabletScreen ? 10 : 8),
+    height: scale(isSmallScreen ? 6 : isTabletScreen ? 10 : 8),
+    borderRadius: scale(isSmallScreen ? 3 : isTabletScreen ? 5 : 4),
+    marginRight: scaleWidth(6),
   },
   
   connectionText: {
-    fontSize: 12,
+    fontSize: isSmallScreen ? scaleText(10) : isTabletScreen ? scaleText(16) : scaleText(12),
     fontFamily: theme.fonts.primary,
     color: '#333',
   },
@@ -629,26 +651,26 @@ const styles = StyleSheet.create({
   // Botón de regreso
   backButton: {
     position: 'absolute',
-    top: 40,
-    left: 30,
+    top: scaleHeight(isSmallScreen ? 30 : isTabletScreen ? 50 : 40),
+    left: scaleWidth(isSmallScreen ? 20 : isTabletScreen ? 40 : 30),
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 15,
-    borderTopLeftRadius: 5,
-    borderWidth: 2,
+    paddingHorizontal: scaleWidth(isSmallScreen ? 15 : isTabletScreen ? 25 : 20),
+    paddingVertical: scaleHeight(isSmallScreen ? 8 : isTabletScreen ? 12 : 10),
+    borderRadius: scale(15),
+    borderTopLeftRadius: scale(5),
+    borderWidth: scale(2),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scale(2), height: scale(2) },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scale(4),
     elevation: 4,
     transform: [{ rotate: '-1deg' }],
     zIndex: 10,
   },
   
   backButtonText: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? scaleText(14) : isTabletScreen ? scaleText(20) : scaleText(16),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
@@ -656,31 +678,31 @@ const styles = StyleSheet.create({
   // Contenido principal
   content: {
     flex: 1,
-    paddingHorizontal: 40,
-    paddingVertical: 10,
-    paddingTop: 40,
-    paddingBottom: 120,
+    paddingHorizontal: scaleWidth(isSmallScreen ? 25 : isTabletScreen ? 60 : 40),
+    paddingVertical: scaleHeight(isSmallScreen ? 8 : isTabletScreen ? 15 : 10),
+    paddingTop: scaleHeight(isSmallScreen ? 30 : isTabletScreen ? 50 : 40),
+    paddingBottom: scaleHeight(isSmallScreen ? 100 : isTabletScreen ? 140 : 120),
     alignItems: 'center',
   },
   
   // Título
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 10,
+    marginBottom: scaleHeight(isSmallScreen ? 15 : isTabletScreen ? 25 : 20),
+    marginTop: scaleHeight(isSmallScreen ? 8 : isTabletScreen ? 12 : 10),
   },
   
   title: {
-    fontSize: 32,
+    fontSize: isSmallScreen ? scaleText(26) : isTabletScreen ? scaleText(42) : scaleText(32),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: scaleHeight(8),
     transform: [{ rotate: '0.5deg' }],
   },
   
   subtitle: {
-    fontSize: 18,
+    fontSize: isSmallScreen ? scaleText(15) : isTabletScreen ? scaleText(24) : scaleText(18),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
@@ -693,13 +715,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 40,
+    marginTop: scaleHeight(isSmallScreen ? 25 : isTabletScreen ? 50 : 40),
   },
   
   // Área principal del carrusel
   carouselMainArea: {
     width: '100%',
-    height: 320,
+    height: isSmallScreen ? scaleHeight(240) : isTabletScreen ? scaleHeight(420) : scaleHeight(320),
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
@@ -715,17 +737,25 @@ const styles = StyleSheet.create({
   
   // Botón del modo
   modeButton: {
-    width: Math.min(width * 0.7, 320),
-    height: Math.min(width * 0.45, 220),
-    padding: 20,
-    borderRadius: 18,
-    borderTopLeftRadius: 6,
-    borderWidth: 3,
+    width: isSmallScreen 
+      ? Math.min(width * 0.8, scaleWidth(280)) 
+      : isTabletScreen 
+        ? Math.min(width * 0.6, scaleWidth(400))
+        : Math.min(width * 0.7, scaleWidth(320)),
+    height: isSmallScreen 
+      ? Math.min(width * 0.5, scaleHeight(180))
+      : isTabletScreen
+        ? Math.min(width * 0.35, scaleHeight(280))
+        : Math.min(width * 0.45, scaleHeight(220)),
+    padding: scaleWidth(isSmallScreen ? 15 : isTabletScreen ? 25 : 20),
+    borderRadius: scale(18),
+    borderTopLeftRadius: scale(6),
+    borderWidth: scale(3),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 5, height: 5 },
+    shadowOffset: { width: scale(5), height: scale(5) },
     shadowOpacity: 0.25,
-    shadowRadius: 10,
+    shadowRadius: scale(10),
     elevation: 10,
     alignItems: 'center',
     justifyContent: 'center',
@@ -740,19 +770,19 @@ const styles = StyleSheet.create({
   
   // Estilos del botón del modo
   modeIcon: {
-    fontSize: 58,
-    marginBottom: 10,
+    fontSize: isSmallScreen ? scaleText(46) : isTabletScreen ? scaleText(74) : scaleText(58),
+    marginBottom: scaleHeight(isSmallScreen ? 8 : isTabletScreen ? 12 : 10),
   },
   
   modeTitle: {
-    fontSize: 24,
+    fontSize: isSmallScreen ? scaleText(20) : isTabletScreen ? scaleText(32) : scaleText(24),
     fontFamily: theme.fonts.primaryBold,
-    marginBottom: 6,
+    marginBottom: scaleHeight(6),
     textAlign: 'center',
   },
   
   modeDescription: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? scaleText(13) : isTabletScreen ? scaleText(20) : scaleText(16),
     fontFamily: theme.fonts.primary,
     textAlign: 'center',
     opacity: 0.8,
@@ -761,19 +791,19 @@ const styles = StyleSheet.create({
   // Badge "Próximamente"
   comingSoonBadge: {
     position: 'absolute',
-    top: -10,
-    right: -10,
+    top: scaleHeight(-10),
+    right: scaleWidth(-10),
     backgroundColor: '#FF5722',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 2,
+    paddingHorizontal: scaleWidth(10),
+    paddingVertical: scaleHeight(4),
+    borderRadius: scale(12),
+    borderWidth: scale(2),
     borderColor: '#000000',
     transform: [{ rotate: '15deg' }],
   },
   
   comingSoonText: {
-    fontSize: 12,
+    fontSize: isSmallScreen ? scaleText(10) : isTabletScreen ? scaleText(16) : scaleText(12),
     fontFamily: theme.fonts.primaryBold,
     color: '#FFFFFF',
   },
@@ -781,30 +811,30 @@ const styles = StyleSheet.create({
   // Indicadores del carrusel
   carouselIndicators: {
     position: 'absolute',
-    bottom: 30,
+    bottom: scaleHeight(isSmallScreen ? 20 : isTabletScreen ? 40 : 30),
     left: 0,
     right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 20,
-    paddingHorizontal: 20,
+    gap: scaleWidth(isSmallScreen ? 15 : isTabletScreen ? 25 : 20),
+    paddingHorizontal: scaleWidth(20),
   },
   
   // Indicador individual
   indicator: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: isSmallScreen ? scale(40) : isTabletScreen ? scale(60) : scale(50),
+    height: isSmallScreen ? scale(40) : isTabletScreen ? scale(60) : scale(50),
+    borderRadius: isSmallScreen ? scale(20) : isTabletScreen ? scale(30) : scale(25),
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scale(2),
     borderColor: '#CCCCCC',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scale(2), height: scale(2) },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: scale(4),
     elevation: 3,
   },
   
@@ -818,12 +848,12 @@ const styles = StyleSheet.create({
   
   // Estilos de indicadores
   indicatorEmoji: {
-    fontSize: 20,
+    fontSize: isSmallScreen ? scaleText(16) : isTabletScreen ? scaleText(26) : scaleText(20),
     opacity: 0.6,
   },
   
   activeIndicatorEmoji: {
-    fontSize: 22,
+    fontSize: isSmallScreen ? scaleText(18) : isTabletScreen ? scaleText(28) : scaleText(22),
     opacity: 1,
     color: '#FFFFFF',
   },
@@ -831,20 +861,20 @@ const styles = StyleSheet.create({
   // Estilos para el botón de mute
   sketchMuteButton: {
     position: 'absolute',
-    top: 30,
-    right: 30,
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    top: scaleHeight(isSmallScreen ? 20 : isTabletScreen ? 40 : 30),
+    right: scaleWidth(isSmallScreen ? 20 : isTabletScreen ? 40 : 30),
+    width: scaleModerate(isSmallScreen ? 55 : isTabletScreen ? 85 : 70, 0.3),
+    height: scaleModerate(isSmallScreen ? 55 : isTabletScreen ? 85 : 70, 0.3),
+    borderRadius: scaleModerate(isSmallScreen ? 27.5 : isTabletScreen ? 42.5 : 35, 0.3),
     backgroundColor: '#FFFFFF',
-    borderWidth: 3,
+    borderWidth: scale(3),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scale(3), height: scale(3) },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scale(4),
     elevation: 6,
     transform: [{ rotate: '2deg' }],
     zIndex: 15,
@@ -894,21 +924,21 @@ const styles = StyleSheet.create({
   
   modalContainer: {
     backgroundColor: '#F8F6F0',
-    borderRadius: 25,
-    padding: 25,
-    maxWidth: 380,
+    borderRadius: scale(25),
+    padding: scaleWidth(isSmallScreen ? 20 : isTabletScreen ? 30 : 25),
+    maxWidth: isSmallScreen ? scaleWidth(320) : isTabletScreen ? scaleWidth(480) : scaleWidth(380),
     width: '85%',
-    minHeight: 300,
+    minHeight: isSmallScreen ? scaleHeight(250) : isTabletScreen ? scaleHeight(360) : scaleHeight(300),
     position: 'relative',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 15,
+      height: scale(15),
     },
     shadowOpacity: 0.4,
-    shadowRadius: 25,
+    shadowRadius: scale(25),
     elevation: 20,
-    borderWidth: 3,
+    borderWidth: scale(3),
     borderColor: '#000000',
   },
   
@@ -978,55 +1008,55 @@ const styles = StyleSheet.create({
   },
   
   modalIcon: {
-    fontSize: 60,
-    marginBottom: 15,
+    fontSize: isSmallScreen ? scaleText(48) : isTabletScreen ? scaleText(72) : scaleText(60),
+    marginBottom: scaleHeight(15),
   },
   
   modalTitle: {
-    fontSize: 24,
+    fontSize: isSmallScreen ? scaleText(20) : isTabletScreen ? scaleText(30) : scaleText(24),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: scaleHeight(15),
     transform: [{ rotate: '0.5deg' }],
   },
   
   modalMessage: {
-    fontSize: 18,
+    fontSize: isSmallScreen ? scaleText(15) : isTabletScreen ? scaleText(22) : scaleText(18),
     fontFamily: theme.fonts.primary,
     color: '#333333',
     textAlign: 'center',
-    marginBottom: 10,
-    lineHeight: 24,
+    marginBottom: scaleHeight(10),
+    lineHeight: isSmallScreen ? scaleHeight(20) : isTabletScreen ? scaleHeight(30) : scaleHeight(24),
   },
   
   modalSubMessage: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? scaleText(13) : isTabletScreen ? scaleText(20) : scaleText(16),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
-    marginBottom: 25,
+    marginBottom: scaleHeight(25),
     fontStyle: 'italic',
   },
   
   modalButton: {
     backgroundColor: '#FFE082',
-    paddingHorizontal: 30,
-    paddingVertical: 12,
-    borderRadius: 15,
-    borderTopLeftRadius: 5,
-    borderWidth: 2,
+    paddingHorizontal: scaleWidth(isSmallScreen ? 25 : isTabletScreen ? 40 : 30),
+    paddingVertical: scaleHeight(isSmallScreen ? 10 : isTabletScreen ? 15 : 12),
+    borderRadius: scale(15),
+    borderTopLeftRadius: scale(5),
+    borderWidth: scale(2),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scale(3), height: scale(3) },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scale(4),
     elevation: 4,
     transform: [{ rotate: '-1deg' }],
   },
   
   modalButtonText: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? scaleText(14) : isTabletScreen ? scaleText(20) : scaleText(16),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },

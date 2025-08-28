@@ -15,9 +15,23 @@ import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { useDispatch } from 'react-redux';
 import { theme } from '../../styles/theme';
+import { 
+  scale, 
+  scaleWidth, 
+  scaleHeight, 
+  scaleText, 
+  scaleModerate,
+  getDeviceType,
+  isSmallDevice,
+  isTablet,
+  RESPONSIVE,
+  getDeviceInfo 
+} from '../../utils/responsive';
 
-// 🔊 ICONO PERSONALIZADO USANDO PNG
-const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
+// 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
+const CustomMuteIcon = ({ size, isMuted = false }) => {
+  const responsiveSize = size || scaleModerate(50, 0.3);
+  
   return (
     <View style={styles.customIconContainer}>
       <Image 
@@ -25,8 +39,8 @@ const CustomMuteIcon = ({ size = 50, isMuted = false }) => {
         style={[
           styles.megaphoneImage,
           { 
-            width: size, 
-            height: size,
+            width: responsiveSize, 
+            height: responsiveSize,
             opacity: isMuted ? 0.6 : 1,
           }
         ]}
@@ -334,7 +348,11 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
   );
 };
 
+// Obtener información del dispositivo para estilos dinámicos
 const { width, height } = Dimensions.get('window');
+const deviceType = getDeviceType();
+const isSmallScreen = isSmallDevice();
+const isTabletScreen = isTablet();
 
 const styles = StyleSheet.create({
   container: {

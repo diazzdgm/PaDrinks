@@ -1,14 +1,22 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, Dimensions } from 'react-native';
 import { theme } from '../../styles/theme';
+import { 
+  scale, 
+  scaleText, 
+  scaleModerate,
+  getDeviceType,
+  isTablet,
+  RESPONSIVE 
+} from '../../utils/responsive';
 
 const { width, height } = Dimensions.get('window');
 
 const CircularText = ({ 
   text = "PADRINKS*PADRINKS*PADRINKS*", 
   spinDuration = 20000,
-  radius = 150,
-  fontSize = 24,
+  radius = scale(150),
+  fontSize = scaleText(24),
   style = {},
   enableDancing = false
 }) => {
@@ -96,8 +104,8 @@ const CircularText = ({
               color: '#000000', // Negro
               fontWeight: 'bold',
               textShadowColor: 'rgba(0, 0, 0, 0.3)',
-              textShadowOffset: { width: 1, height: 1 },
-              textShadowRadius: 2,
+              textShadowOffset: { width: scale(1), height: scale(1) },
+              textShadowRadius: scale(2),
               transform: [
                 { translateX: x },
                 { translateY: y },

@@ -1,3 +1,5 @@
+import { RESPONSIVE } from '../utils/responsive';
+
 export const theme = {
   colors: {
     primary: '#FF7F11',        // Naranja
@@ -27,12 +29,12 @@ export const theme = {
     primary: 'Kalam-Regular',
     primaryBold: 'Kalam-Bold',
     sizes: {
-      small: 14,
-      medium: 16,
-      large: 18,
-      xlarge: 24,
-      xxlarge: 32,
-      title: 48,
+      small: RESPONSIVE.fontSize.small,
+      medium: RESPONSIVE.fontSize.medium,
+      large: RESPONSIVE.fontSize.large,
+      xlarge: RESPONSIVE.fontSize.xlarge,
+      xxlarge: RESPONSIVE.fontSize.xxlarge,
+      title: RESPONSIVE.fontSize.title,
     },
     weights: {
       normal: '400',                 
@@ -41,19 +43,19 @@ export const theme = {
   },
   
   spacing: {
-    xs: 4,
-    sm: 8,
-    md: 16,
-    lg: 24,
-    xl: 32,
-    xxl: 48,
+    xs: RESPONSIVE.spacing.xs,
+    sm: RESPONSIVE.spacing.sm,
+    md: RESPONSIVE.spacing.md,
+    lg: RESPONSIVE.spacing.lg,
+    xl: RESPONSIVE.spacing.xl,
+    xxl: RESPONSIVE.spacing.xxl,
   },
   
   borderRadius: {
-    small: 8,
-    medium: 15,
-    large: 25,
-    postIt: '0 15px 15px 15px',
+    small: RESPONSIVE.spacing.sm,
+    medium: RESPONSIVE.spacing.md * 0.9,
+    large: RESPONSIVE.spacing.lg * 1.0,
+    postIt: `0 ${RESPONSIVE.spacing.md}px ${RESPONSIVE.spacing.md}px ${RESPONSIVE.spacing.md}px`,
   },
   
   shadows: {
