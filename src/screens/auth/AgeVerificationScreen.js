@@ -423,10 +423,19 @@ const AgeVerificationScreen = ({ navigation }) => {
               
               {/* Línea vertical roja */}
               <View style={styles.modalRedLine} />
+              
+              {/* Agujeros de perforación del modal */}
+              <View style={styles.modalHoles}>
+                {[...Array(6)].map((_, index) => (
+                  <View key={index} style={styles.modalHole} />
+                ))}
+              </View>
             </View>
             
             {/* Contenido del modal */}
             <View style={styles.modalContent}>
+              <Text style={styles.modalIcon}>🔞</Text>
+              
               <Text style={styles.modalTitle}>Lo sentimos</Text>
               
               <Text style={styles.modalMessage}>
@@ -682,27 +691,30 @@ const styles = StyleSheet.create({
   // Estilos del modal personalizado
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.xl,
+    paddingHorizontal: 30,
+    paddingVertical: 50,
   },
   
   modalContainer: {
     backgroundColor: '#F8F6F0',
-    borderRadius: scale(25),
-    padding: scaleWidth(isSmallScreen ? 25 : isTabletScreen ? 40 : theme.spacing.xl),
-    maxWidth: isSmallScreen ? scaleWidth(340) : isTabletScreen ? scaleWidth(500) : scaleWidth(400),
+    borderRadius: 25,
+    padding: 20,
+    maxWidth: 500, // Igual que CreateGameScreen
     width: '90%',
-    position: 'relative',
+    minHeight: 280,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: scale(10),
-    },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
-    shadowRadius: scale(20),
-    elevation: 15,
+    shadowRadius: 20,
+    elevation: 20,
+    borderWidth: 3,
+    borderColor: '#000000',
+    borderTopLeftRadius: 5,
+    transform: [{ rotate: '-1deg' }],
+    position: 'relative',
   },
   
   modalPaper: {
@@ -711,83 +723,118 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    borderRadius: 25,
+    borderRadius: 22, // Ligeramente menor que el container
+    backgroundColor: '#F8F6F0', // Asegurar fondo sólido
+    zIndex: -1,
   },
   
   modalLine: {
     position: 'absolute',
-    left: 40,
+    left: 65,
     right: 15,
     height: 1,
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#A8C8EC',
     opacity: 0.4,
   },
   
   modalRedLine: {
     position: 'absolute',
-    left: 35,
-    top: 0,
-    bottom: 0,
+    left: 60,
+    top: 15,
+    bottom: 15,
     width: 2,
     backgroundColor: '#FF6B6B',
-    opacity: 0.3,
+    opacity: 0.4,
+  },
+  
+  modalHoles: {
+    position: 'absolute',
+    left: 25,
+    top: 40,
+    bottom: 40,
+    width: 20,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  
+  modalHole: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#CCCCCC',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 3,
   },
   
   modalContent: {
     alignItems: 'center',
-    paddingLeft: 20,
+    justifyContent: 'center',
+    paddingLeft: 50, // Valores fijos como CreateGameScreen
+    paddingRight: 15,
+    paddingTop: 20,
+    paddingBottom: 10,
+    flex: 1,
+    minHeight: 250,
+  },
+  
+  modalIcon: {
+    fontSize: 60, // Tamaño fijo apropiado para el modal más ancho
+    marginBottom: 15,
   },
   
   modalTitle: {
-    fontSize: isSmallScreen ? scaleText(24) : isTabletScreen ? scaleText(36) : scaleText(28),
+    fontSize: 24, // Tamaño fijo como CreateGameScreen
     fontFamily: theme.fonts.primaryBold,
-    color: '#D32F2F',
+    color: '#000000',
     textAlign: 'center',
-    marginBottom: scaleHeight(theme.spacing.lg),
-    transform: [{ rotate: '-1deg' }],
+    marginBottom: 15,
+    transform: [{ rotate: '0.5deg' }],
   },
   
   modalMessage: {
-    fontSize: isSmallScreen ? scaleText(16) : isTabletScreen ? scaleText(24) : scaleText(18),
+    fontSize: 16, // Tamaño estándar para el modal más ancho
     fontFamily: theme.fonts.primary,
-    color: theme.colors.text,
+    color: '#333333',
     textAlign: 'center',
-    marginBottom: scaleHeight(theme.spacing.md),
-    lineHeight: isSmallScreen ? scaleHeight(20) : isTabletScreen ? scaleHeight(32) : scaleHeight(24),
+    marginBottom: 10,
+    lineHeight: 22,
   },
   
   modalSubMessage: {
-    fontSize: isSmallScreen ? scaleText(14) : isTabletScreen ? scaleText(20) : scaleText(16),
+    fontSize: 14, // Tamaño fijo
     fontFamily: theme.fonts.primary,
-    color: theme.colors.textSecondary,
+    color: '#666666',
     textAlign: 'center',
-    marginBottom: scaleHeight(theme.spacing.xl),
-    lineHeight: isSmallScreen ? scaleHeight(18) : isTabletScreen ? scaleHeight(28) : scaleHeight(22),
+    marginBottom: 25,
     fontStyle: 'italic',
+    lineHeight: 18,
   },
   
   modalButton: {
-    backgroundColor: theme.colors.postItPink,
-    paddingVertical: scaleHeight(isSmallScreen ? 12 : isTabletScreen ? 18 : theme.spacing.md),
-    paddingHorizontal: scaleWidth(isSmallScreen ? 25 : isTabletScreen ? 40 : theme.spacing.xl),
-    borderRadius: scale(20),
-    borderTopLeftRadius: scale(5),
+    backgroundColor: '#FFE082',
+    paddingHorizontal: 30, // Valores fijos apropiados
+    paddingVertical: 12,
+    borderRadius: 15,
+    borderTopLeftRadius: 5,
+    borderWidth: 2,
+    borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: {
-      width: scale(3),
-      height: scale(3),
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: scale(6),
-    elevation: 6,
-    transform: [{ rotate: '1deg' }],
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+    transform: [{ rotate: '-1deg' }],
   },
   
   modalButtonText: {
-    fontSize: isSmallScreen ? scaleText(16) : isTabletScreen ? scaleText(24) : scaleText(18),
+    fontSize: 16, // Tamaño fijo apropiado
     fontFamily: theme.fonts.primaryBold,
-    color: '#D32F2F',
-    textAlign: 'center',
+    color: '#000000',
   },
 });
 
