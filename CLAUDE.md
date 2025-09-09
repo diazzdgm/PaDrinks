@@ -92,6 +92,7 @@ npm run start:tunnel
 
 - **Expo SDK**: Version 53 with new architecture enabled
 - **React Version**: React 19.0.0 with React Native 0.79.5
+- **Expo CLI**: Version 0.24.20 with custom Windows wrappers
 - **Orientation**: app.json specifies "portrait" but App.js forces landscape mode at runtime via expo-screen-orientation
 - **No Testing Setup**: No Jest, ESLint, or other testing/linting tools configured
 - **No Build Scripts**: Uses default Expo build system
@@ -333,8 +334,15 @@ backend/
 3. **Test Integration**: `cd backend && node test-api.js` validates all endpoints and Socket.IO events
 4. **Health Check**: `curl http://localhost:3001/health` to verify server status
 5. **Monitor Connections**: Backend logs show real-time connection events with player details
-6. **Mobile Testing**: Update IP address in src/config/server.js for device testing (currently set to 192.168.100.18)
+6. **Mobile Testing**: Update IP address in src/config/server.js for device testing
 7. **Room Management**: 6-digit codes auto-expire after 2 hours of inactivity
+
+### Server Configuration Management
+The project uses a sophisticated server configuration system in `src/config/server.js` with priority-based URL resolution:
+- **Tunnel Mode**: ngrok tunnels for external testing (highest priority)
+- **Manual Configuration**: Local network IP for device testing (middle priority) 
+- **Auto-Detection**: Platform-specific localhost detection (lowest priority)
+- Current configurations support Android emulator (10.0.2.2:3001), iOS simulator (localhost:3001), and real devices
 
 #### Socket.IO Events Architecture
 Key events for game functionality:
@@ -490,3 +498,29 @@ Key events implemented in the system:
 - **ngrok**: Must be installed and run from Windows CMD with Administrator privileges
 - **Metro Cache**: Cache corruption common after installations - automatic fallback to full crawl is normal
 - **IP Configuration**: For mobile device testing, update IP in src/config/server.js to your machine's local network IP (use `ipconfig` to find it)
+
+## Development Quality Standards
+
+### Code Quality Requirements
+- **No Comments Rule**: DO NOT ADD ***ANY*** COMMENTS unless explicitly requested by the user
+- **File Creation Policy**: ALWAYS prefer editing existing files over creating new ones
+- **Documentation Policy**: NEVER proactively create documentation files unless explicitly requested
+
+### Testing and Validation
+- **No Testing Framework**: Project intentionally has no Jest, ESLint, or other testing/linting tools configured
+- **Manual Testing**: Use backend test-api.js and test-client.html for integration testing
+- **Device Testing**: Always test on real devices using local network configuration
+
+## TypeScript Integration
+
+The project includes TypeScript configuration but is primarily JavaScript-based:
+- **TypeScript Version**: 5.8.3 with React types (19.0.10)
+- **Configuration**: Basic tsconfig.json extending expo/tsconfig.base
+- **Usage**: TypeScript is available but most components are .js files
+- **Mixed Codebase**: Can gradually adopt TypeScript for new components
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.

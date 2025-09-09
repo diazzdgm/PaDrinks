@@ -1,0 +1,54 @@
+{
+  "mcpServers": {
+    "memory": {
+      "command": "node",
+      "args": [
+        "/mnt/c/Users/diazd/PaDrinks/mcp-servers/src/memory/dist/index.js"
+      ],
+      "env": {}
+    },
+    "filesystem": {
+      "command": "node",
+      "args": [
+        "/mnt/c/Users/diazd/PaDrinks/mcp-servers/src/filesystem/dist/index.js"
+      ],
+      "env": {}
+    },
+    "everything": {
+      "command": "node",
+      "args": [
+        "/mnt/c/Users/diazd/PaDrinks/mcp-servers/src/everything/dist/index.js"
+      ],
+      "env": {}
+    },
+    "sequential-thinking": {
+      "command": "node", 
+      "args": [
+        "/mnt/c/Users/diazd/PaDrinks/mcp-servers/src/sequentialthinking/dist/index.js"
+      ],
+      "env": {}
+    },
+    "figma-a0hmry-7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.composio.dev/partner/composio/figma/mcp?customerId=3ef0d7c9-1caf-4a83-88e4-611abf54cab2&agent=claude"
+      ],
+      "env": {
+        "npm_config_yes": "true"
+      }
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@rudrasankha/puppeteer-mcp-server"
+      ],
+      "env": {
+        "PUPPETEER_HEADLESS": "true",
+        "PUPPETEER_TIMEOUT": "30000"
+      }
+    }
+  }
+}

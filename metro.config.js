@@ -8,6 +8,8 @@ config.resolver.blockList = [
   // Ignorar node_modules del backend
   /backend\/node_modules\/.*/,
   /backend\/\..*/, // Ignorar archivos ocultos del backend
+  // Ignorar directorios MCP servers
+  /mcp-servers\/.*/,
   // Ignorar directorios problemáticos en Windows
   /node_modules\/\.bin\/.*/,
   /\.bin$/,
