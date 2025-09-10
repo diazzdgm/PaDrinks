@@ -27,6 +27,7 @@ import {
   scaleHeight, 
   scaleText, 
   scaleModerate,
+  scaleByContent,
   getDeviceType,
   isSmallDevice,
   isTablet,
@@ -35,6 +36,7 @@ import {
 } from '../../utils/responsive';
 
 // Obtener información del dispositivo para estilos dinámicos
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const { width, height } = Dimensions.get('window');
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
@@ -624,10 +626,11 @@ const styles = StyleSheet.create({
 
   content: {
     flex: 1,
-    paddingHorizontal: 40,
-    paddingVertical: 10,
-    paddingTop: 40,
-    paddingBottom: 120,
+    justifyContent: Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 'center' : 'flex-start',
+    paddingHorizontal: scaleByContent(40, 'spacing'),
+    paddingVertical: scaleByContent(10, 'spacing'),
+    paddingTop: Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? scaleByContent(20, 'spacing') : scaleByContent(40, 'spacing'),
+    paddingBottom: scaleByContent(120, 'spacing'),
     alignItems: 'center',
   },
 
@@ -638,7 +641,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 32,
+    fontSize: scaleByContent(32, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -647,7 +650,7 @@ const styles = StyleSheet.create({
   },
 
   subtitle: {
-    fontSize: 18,
+    fontSize: scaleByContent(18, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
@@ -695,11 +698,11 @@ const styles = StyleSheet.create({
   },
 
   iconText: {
-    fontSize: 50,
+    fontSize: scaleByContent(50, 'text'),
   },
 
   buttonTitle: {
-    fontSize: 20,
+    fontSize: scaleByContent(20, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -707,7 +710,7 @@ const styles = StyleSheet.create({
   },
 
   buttonDescription: {
-    fontSize: 14,
+    fontSize: scaleByContent(14, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#000000',
     textAlign: 'center',
@@ -739,7 +742,7 @@ const styles = StyleSheet.create({
   },
 
   connectionText: {
-    fontSize: 12,
+    fontSize: scaleByContent(12, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#333',
   },
@@ -765,7 +768,7 @@ const styles = StyleSheet.create({
   },
 
   backButtonText: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
@@ -887,7 +890,7 @@ const styles = StyleSheet.create({
   },
 
   modalTitle: {
-    fontSize: 24,
+    fontSize: scaleByContent(24, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -896,7 +899,7 @@ const styles = StyleSheet.create({
   },
 
   modalSubtitle: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
@@ -909,7 +912,7 @@ const styles = StyleSheet.create({
   },
 
   inputLabel: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#000000',
     marginBottom: 8,
@@ -922,8 +925,8 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderRadius: 12,
     paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
+    paddingVertical: scaleByContent(12, 'spacing'),
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#000000',
   },
@@ -934,8 +937,8 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderRadius: 12,
     paddingHorizontal: 15,
-    paddingVertical: 15,
-    fontSize: 24,
+    paddingVertical: scaleByContent(15, 'spacing'),
+    fontSize: scaleByContent(24, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     letterSpacing: 8,
@@ -962,7 +965,7 @@ const styles = StyleSheet.create({
   },
 
   cancelButtonText: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#000000',
   },
@@ -974,7 +977,7 @@ const styles = StyleSheet.create({
   },
 
   joinButtonText: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#FFF',
   },
@@ -986,7 +989,7 @@ const styles = StyleSheet.create({
   },
 
   errorButtonText: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#FFF',
   },

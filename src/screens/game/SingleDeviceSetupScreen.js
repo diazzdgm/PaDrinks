@@ -21,6 +21,7 @@ import {
   scaleHeight, 
   scaleText, 
   scaleModerate,
+  scaleByContent,
   getDeviceType,
   isSmallDevice,
   isTablet,
@@ -229,10 +230,10 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
       {/* Fondo de papel con líneas */}
       <View style={styles.paperBackground}>
         <View style={styles.notebookLines}>
-          {[...Array(20)].map((_, index) => (
+          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 45 : 20)].map((_, index) => (
             <View 
               key={index} 
-              style={[styles.line, { top: 40 + (index * 25) }]} 
+              style={[styles.line, { top: (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 20 : 40) + (index * (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 18 : 25)) }]} 
             />
           ))}
         </View>
@@ -349,6 +350,7 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
 };
 
 // Obtener información del dispositivo para estilos dinámicos
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const { width, height } = Dimensions.get('window');
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
@@ -443,7 +445,7 @@ const styles = StyleSheet.create({
   },
   
   backButtonText: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
@@ -453,9 +455,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 120,
-    paddingVertical: 20,
-    paddingTop: 80,
+    paddingHorizontal: scaleByContent(120, 'spacing'),
+    paddingVertical: scaleByContent(20, 'spacing'),
+    paddingTop: Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? scaleByContent(20, 'spacing') : scaleByContent(80, 'spacing'),
   },
   
   // Título
@@ -466,7 +468,7 @@ const styles = StyleSheet.create({
   },
   
   title: {
-    fontSize: 26,
+    fontSize: scaleByContent(26, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -475,7 +477,7 @@ const styles = StyleSheet.create({
   },
   
   subtitle: {
-    fontSize: 24,
+    fontSize: scaleByContent(24, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#000000',
     textAlign: 'center',
@@ -508,13 +510,13 @@ const styles = StyleSheet.create({
   },
   
   playerCountNumber: {
-    fontSize: 48,
+    fontSize: scaleByContent(48, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
   },
   
   playerCountLabel: {
-    fontSize: 18,
+    fontSize: scaleByContent(18, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#2E2E2E',
     marginTop: 5,
@@ -553,7 +555,7 @@ const styles = StyleSheet.create({
   },
   
   numberButtonText: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },

@@ -23,6 +23,7 @@ import {
   scaleHeight, 
   scaleText, 
   scaleModerate,
+  scaleByContent,
   getDeviceType,
   isSmallDevice,
   isTablet,
@@ -410,12 +411,12 @@ const MainMenuScreen = ({ navigation }) => {
       <View style={styles.paperBackground}>
         {/* Líneas horizontales de libreta */}
         <View style={styles.notebookLines}>
-          {[...Array(20)].map((_, index) => (
+          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 50 : Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) < 700 ? 16 : 20)].map((_, index) => (
             <View 
               key={index} 
               style={[
                 styles.line, 
-                { top: 40 + (index * 25) }
+                { top: (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 15 : scaleByContent(25, 'spacing')) + (index * (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 15 : scaleByContent(25, 'spacing'))) }
               ]} 
             />
           ))}
@@ -671,7 +672,9 @@ const MainMenuScreen = ({ navigation }) => {
 };
 
 // Obtener información del dispositivo para estilos dinámicos
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const { width, height } = Dimensions.get('window');
+
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
@@ -733,9 +736,9 @@ const styles = StyleSheet.create({
   },
   
   hole: {
-    width: 18,
-    height: 18,
-    borderRadius: 10,
+    width: scaleByContent(18, 'spacing'),
+    height: scaleByContent(18, 'spacing'),
+    borderRadius: scaleByContent(10, 'spacing'),
     backgroundColor: '#FFFFFF',
     borderWidth: 2,
     borderColor: '#D0D0D0',
@@ -760,7 +763,7 @@ const styles = StyleSheet.create({
   
   doodle: {
     position: 'absolute',
-    fontSize: 24,
+    fontSize: scaleByContent(24, 'text'),
     opacity: 0.15,
   },
   
@@ -805,11 +808,11 @@ const styles = StyleSheet.create({
   },
   
   appSubtitle: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#2E2E2E',
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: scaleByContent(10, 'spacing'),
   },
   
   appVersion: {

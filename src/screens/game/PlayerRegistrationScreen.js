@@ -28,11 +28,14 @@ import {
   scaleHeight, 
   scaleText, 
   scaleModerate,
+  scaleByContent,
   getDeviceType,
   isSmallDevice,
   isTablet,
   RESPONSIVE,
-  getDeviceInfo 
+  getDeviceInfo,
+  SCREEN_WIDTH,
+  SCREEN_HEIGHT 
 } from '../../utils/responsive';
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
@@ -581,10 +584,10 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
       {/* Fondo de papel con líneas */}
       <View style={styles.paperBackground}>
         <View style={styles.notebookLines}>
-          {[...Array(20)].map((_, index) => (
+          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 50 : Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) < 700 ? 20 : 25)].map((_, index) => (
             <View 
               key={index} 
-              style={[styles.line, { top: 40 + (index * 25) }]} 
+              style={[styles.line, { top: scaleByContent(40, 'spacing') + (index * scaleByContent(25, 'spacing')) }]} 
             />
           ))}
         </View>
@@ -835,7 +838,7 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
               {[...Array(6)].map((_, index) => (
                 <View 
                   key={index} 
-                  style={[styles.emojiModalLine, { top: 20 + (index * 25) }]} 
+                  style={[styles.emojiModalLine, { top: scaleByContent(20, 'spacing') + (index * scaleByContent(25, 'spacing')) }]} 
                 />
               ))}
               
@@ -955,8 +958,8 @@ const styles = StyleSheet.create({
   notebookLines: {
     position: 'absolute',
     top: 0,
-    left: scaleWidth(isSmallScreen ? 80 : isTabletScreen ? 120 : 100),
-    right: scaleWidth(20),
+    left: scaleByContent(isSmallScreen ? 80 : isTabletScreen ? 120 : 100, 'spacing'),
+    right: scaleByContent(20, 'spacing'),
     bottom: 0,
   },
   
@@ -971,61 +974,61 @@ const styles = StyleSheet.create({
   
   redMarginLine: {
     position: 'absolute',
-    left: scaleWidth(isSmallScreen ? 75 : isTabletScreen ? 115 : 95),
+    left: scaleByContent(isSmallScreen ? 75 : isTabletScreen ? 115 : 95, 'spacing'),
     top: 0,
     bottom: 0,
-    width: scale(2),
+    width: scaleByContent(2, 'spacing'),
     backgroundColor: '#FF6B6B',
     opacity: 0.5,
   },
   
   holesPunch: {
     position: 'absolute',
-    left: scaleWidth(isSmallScreen ? 25 : isTabletScreen ? 35 : 30),
-    top: scaleHeight(60),
-    bottom: scaleHeight(60),
-    width: scaleWidth(25),
+    left: scaleByContent(isSmallScreen ? 25 : isTabletScreen ? 35 : 30, 'spacing'),
+    top: scaleByContent(60, 'spacing'),
+    bottom: scaleByContent(60, 'spacing'),
+    width: scaleByContent(25, 'spacing'),
     justifyContent: 'space-around',
     alignItems: 'center',
   },
   
   hole: {
-    width: scale(isSmallScreen ? 15 : isTabletScreen ? 22 : 18),
-    height: scale(isSmallScreen ? 15 : isTabletScreen ? 22 : 18),
-    borderRadius: scale(isSmallScreen ? 7.5 : isTabletScreen ? 11 : 10),
+    width: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 22 : 18, 'spacing'),
+    height: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 22 : 18, 'spacing'),
+    borderRadius: scaleByContent(isSmallScreen ? 7.5 : isTabletScreen ? 11 : 10, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: scale(2),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
-    shadowOffset: { width: scale(2), height: scale(2) },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.3,
-    shadowRadius: scale(4),
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
   },
   
   // Botón de regreso
   backButton: {
     position: 'absolute',
-    top: scaleHeight(isSmallScreen ? 30 : isTabletScreen ? 50 : 40),
-    left: scaleWidth(isSmallScreen ? 20 : isTabletScreen ? 40 : 30),
+    top: scaleByContent(isSmallScreen ? 30 : isTabletScreen ? 50 : 40, 'spacing'),
+    left: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 40 : 30, 'spacing'),
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: scaleWidth(isSmallScreen ? 15 : isTabletScreen ? 25 : 20),
-    paddingVertical: scaleHeight(isSmallScreen ? 8 : isTabletScreen ? 12 : 10),
-    borderRadius: scale(15),
-    borderTopLeftRadius: scale(5),
-    borderWidth: scale(2),
+    paddingHorizontal: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 25 : 20, 'spacing'),
+    paddingVertical: scaleByContent(isSmallScreen ? 8 : isTabletScreen ? 12 : 10, 'spacing'),
+    borderRadius: scaleByContent(15, 'spacing'),
+    borderTopLeftRadius: scaleByContent(5, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: scale(2), height: scale(2) },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: scale(4),
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
     transform: [{ rotate: '-1deg' }],
     zIndex: 10,
   },
   
   backButtonText: {
-    fontSize: isSmallScreen ? scaleText(14, 12, 16) : isTabletScreen ? scaleText(20, 16, 22) : scaleText(16, 14, 18),
+    fontSize: scaleByContent(isSmallScreen ? 14 : isTabletScreen ? 20 : 16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
@@ -1033,21 +1036,21 @@ const styles = StyleSheet.create({
   // Título
   titleContainer: {
     alignItems: 'center',
-    paddingTop: scaleHeight(20),
-    marginBottom: scaleHeight(15),
+    paddingTop: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 20 : 5, 'spacing'),
+    marginBottom: scaleByContent(15, 'spacing'),
   },
   
   title: {
-    fontSize: isSmallScreen ? scaleText(20, 18, 24) : isTabletScreen ? scaleText(32, 28, 36) : scaleText(24, 22, 28),
+    fontSize: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 32 : 24, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: scaleHeight(3),
+    marginBottom: scaleByContent(3, 'spacing'),
     transform: [{ rotate: '0.5deg' }],
   },
   
   subtitle: {
-    fontSize: isSmallScreen ? scaleText(12, 10, 14) : isTabletScreen ? scaleText(18, 16, 20) : scaleText(14, 12, 16),
+    fontSize: scaleByContent(isSmallScreen ? 12 : isTabletScreen ? 18 : 14, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
@@ -1058,73 +1061,73 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
     flexDirection: 'row',
-    paddingHorizontal: scaleWidth(isSmallScreen ? 90 : isTabletScreen ? 150 : 120),
-    paddingBottom: scaleHeight(isSmallScreen ? 60 : isTabletScreen ? 100 : 80),
+    paddingHorizontal: scaleByContent(isSmallScreen ? 90 : isTabletScreen ? 150 : 120, 'spacing'),
+    paddingBottom: scaleByContent(isSmallScreen ? 80 : isTabletScreen ? 120 : 100, 'spacing'),
   },
   
   // Lado izquierdo - 35% del ancho
   leftSide: {
     flex: isSmallScreen ? 0.4 : 0.35,
-    paddingRight: scaleWidth(isSmallScreen ? 15 : isTabletScreen ? 25 : 20),
-    paddingLeft: scaleWidth(isSmallScreen ? 15 : isTabletScreen ? 25 : 20),
+    paddingRight: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 25 : 20, 'spacing'),
+    paddingLeft: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 25 : 20, 'spacing'),
   },
   
   // Lado derecho - 65% del ancho
   rightSide: {
     flex: isSmallScreen ? 0.6 : 0.65,
-    paddingLeft: scaleWidth(isSmallScreen ? 15 : isTabletScreen ? 25 : 20),
-    paddingTop: scaleHeight(-5),
-    borderLeftWidth: scale(2),
+    paddingLeft: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 25 : 20, 'spacing'),
+    paddingTop: scaleByContent(-5, 'spacing'),
+    borderLeftWidth: scaleByContent(2, 'spacing'),
     borderLeftColor: '#A8C8EC',
     borderLeftStyle: 'dashed',
   },
   
   sectionTitle: {
-    fontSize: isSmallScreen ? scaleText(16, 14, 18) : isTabletScreen ? scaleText(24, 20, 28) : scaleText(18, 16, 20),
+    fontSize: scaleByContent(isSmallScreen ? 16 : isTabletScreen ? 24 : 18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: scaleByContent(15, 'spacing'),
     transform: [{ rotate: '0.5deg' }],
   },
   
   // Contenedor de foto
   photoContainer: {
     width: '100%',
-    height: 150,
+    height: scaleByContent(150, 'interactive'),
     backgroundColor: '#FFFFFF',
-    borderRadius: 15,
-    borderTopLeftRadius: 5,
-    borderWidth: 3,
+    borderRadius: scaleByContent(15, 'spacing'),
+    borderTopLeftRadius: scaleByContent(5, 'spacing'),
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#CCCCCC',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: scaleByContent(15, 'spacing'),
     transform: [{ rotate: '-0.5deg' }],
   },
   
   cameraPlaceholder: {
-    fontSize: 50,
+    fontSize: scaleByContent(50, 'icon'),
     opacity: 0.3,
   },
   
   selectedEmoji: {
-    fontSize: 60,
+    fontSize: scaleByContent(60, 'icon'),
   },
   
   circularPhotoContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: scaleByContent(120, 'interactive'),
+    height: scaleByContent(120, 'interactive'),
+    borderRadius: scaleByContent(60, 'spacing'),
     overflow: 'hidden',
     alignSelf: 'center',
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 5,
   },
   
@@ -1135,21 +1138,21 @@ const styles = StyleSheet.create({
   
   // Botones de foto
   photoButtonsContainer: {
-    gap: 15,
+    gap: scaleByContent(15, 'spacing'),
   },
   
   photoButton: {
     backgroundColor: '#FFE082',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    borderTopLeftRadius: 3,
-    borderWidth: 2,
+    paddingVertical: scaleByContent(12, 'spacing'),
+    paddingHorizontal: scaleByContent(20, 'spacing'),
+    borderRadius: scaleByContent(12, 'spacing'),
+    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.15,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
     transform: [{ rotate: '-0.3deg' }],
   },
@@ -1160,7 +1163,7 @@ const styles = StyleSheet.create({
   },
   
   photoButtonText: {
-    fontSize: 14,
+    fontSize: scaleByContent(14, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -1168,79 +1171,79 @@ const styles = StyleSheet.create({
   
   // Campos del formulario
   fieldContainer: {
-    marginBottom: 10,
+    marginBottom: scaleByContent(10, 'spacing'),
   },
   
   upperFieldContainer: {
-    marginTop: -12,
+    marginTop: scaleByContent(-12, 'spacing'),
   },
   
   orientationFieldContainer: {
-    marginTop: -5,
+    marginTop: scaleByContent(-5, 'spacing'),
   },
   
   genderFieldContainer: {
-    marginTop: -25,
+    marginTop: scaleByContent(-25, 'spacing'),
   },
   
   fieldLabel: {
-    fontSize: 18,
+    fontSize: scaleByContent(18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
-    marginBottom: 10,
+    marginBottom: scaleByContent(10, 'spacing'),
     transform: [{ rotate: '0.3deg' }],
   },
   
   // Input de texto
   textInput: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#CCCCCC',
-    borderRadius: 12,
-    borderTopLeftRadius: 3,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
+    borderRadius: scaleByContent(12, 'spacing'),
+    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    paddingVertical: scaleByContent(12, 'spacing'),
+    paddingHorizontal: scaleByContent(16, 'spacing'),
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#000000',
     transform: [{ rotate: '-0.2deg' }],
   },
   
   charCount: {
-    fontSize: 12,
+    fontSize: scaleByContent(12, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#999999',
     textAlign: 'right',
-    marginTop: 5,
+    marginTop: scaleByContent(5, 'spacing'),
   },
   
   // Botones en fila
   buttonsRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: scaleByContent(10, 'spacing'),
   },
   
   // Botones de opción (género)
   optionButton: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    borderRadius: 12,
-    borderTopLeftRadius: 3,
-    paddingVertical: 15,
+    borderRadius: scaleByContent(12, 'spacing'),
+    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    paddingVertical: scaleByContent(15, 'spacing'),
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.15,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
     transform: [{ rotate: '-0.2deg' }],
   },
   
   selectedButton: {
     borderColor: '#000000',
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     transform: [{ rotate: '0deg' }],
   },
   
@@ -1257,12 +1260,12 @@ const styles = StyleSheet.create({
   },
   
   buttonEmoji: {
-    fontSize: 24,
-    marginBottom: 5,
+    fontSize: scaleByContent(24, 'icon'),
+    marginBottom: scaleByContent(5, 'spacing'),
   },
   
   buttonLabel: {
-    fontSize: 14,
+    fontSize: scaleByContent(14, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
@@ -1270,16 +1273,16 @@ const styles = StyleSheet.create({
   // Botones de orientación (post-it style)
   orientationButton: {
     flex: 1,
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    borderRadius: 12,
-    borderTopLeftRadius: 3,
-    paddingVertical: 15,
+    borderRadius: scaleByContent(12, 'spacing'),
+    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    paddingVertical: scaleByContent(15, 'spacing'),
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.15,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
     transform: [{ rotate: '-0.3deg' }],
   },
@@ -1311,17 +1314,17 @@ const styles = StyleSheet.create({
   },
   
   selectedOrientationButton: {
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     transform: [{ rotate: '0deg' }],
   },
   
   orientationEmoji: {
-    fontSize: 20,
-    marginBottom: 5,
+    fontSize: scaleByContent(20, 'icon'),
+    marginBottom: scaleByContent(5, 'spacing'),
   },
   
   orientationLabel: {
-    fontSize: 14,
+    fontSize: scaleByContent(14, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
@@ -1329,47 +1332,47 @@ const styles = StyleSheet.create({
   // Botón continuar - Flecha circular
   continueArrowButton: {
     position: 'absolute',
-    bottom: 30,
-    right: 30,
-    width: 60,
-    height: 60,
+    bottom: scaleByContent(30, 'spacing'),
+    right: scaleByContent(30, 'spacing'),
+    width: scaleByContent(60, 'interactive'),
+    height: scaleByContent(60, 'interactive'),
     backgroundColor: theme.colors.postItGreen,
-    borderRadius: 30,
-    borderWidth: 3,
+    borderRadius: scaleByContent(30, 'spacing'),
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 4, height: 4 },
+    shadowOffset: { width: scaleByContent(4, 'spacing'), height: scaleByContent(4, 'spacing') },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: scaleByContent(8, 'spacing'),
     elevation: 8,
     transform: [{ rotate: '5deg' }],
     zIndex: 10,
   },
   
   continueArrowImage: {
-    width: 35,
-    height: 35,
+    width: scaleByContent(35, 'icon'),
+    height: scaleByContent(35, 'icon'),
   },
   
   // Estilos para el botón de mute
   sketchMuteButton: {
     position: 'absolute',
-    top: scaleHeight(isSmallScreen ? 20 : isTabletScreen ? 40 : 30),
-    right: scaleWidth(isSmallScreen ? 20 : isTabletScreen ? 40 : 30),
-    width: scaleModerate(isSmallScreen ? 55 : isTabletScreen ? 85 : 70, 0.3),
-    height: scaleModerate(isSmallScreen ? 55 : isTabletScreen ? 85 : 70, 0.3),
-    borderRadius: scaleModerate(isSmallScreen ? 27.5 : isTabletScreen ? 42.5 : 35, 0.3),
+    top: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 40 : 30, 'spacing'),
+    right: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 40 : 30, 'spacing'),
+    width: scaleByContent(isSmallScreen ? 55 : isTabletScreen ? 85 : 70, 'interactive'),
+    height: scaleByContent(isSmallScreen ? 55 : isTabletScreen ? 85 : 70, 'interactive'),
+    borderRadius: scaleByContent(isSmallScreen ? 27.5 : isTabletScreen ? 42.5 : 35, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: scale(3),
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: scale(3), height: scale(3) },
+    shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: scale(4),
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 6,
     transform: [{ rotate: '2deg' }],
     zIndex: 15,
@@ -1414,27 +1417,27 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 30,
-    paddingVertical: 50,
+    paddingHorizontal: scaleByContent(30, 'spacing'),
+    paddingVertical: scaleByContent(50, 'spacing'),
   },
   
   emojiModalContainer: {
     backgroundColor: '#F8F6F0',
-    borderRadius: 25,
-    padding: 15,
-    maxWidth: 350,
+    borderRadius: scaleByContent(25, 'spacing'),
+    padding: scaleByContent(15, 'spacing'),
+    maxWidth: scaleByContent(350, 'interactive'),
     width: '80%',
-    minHeight: 280,
+    minHeight: scaleByContent(280, 'interactive'),
     maxHeight: '65%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 15,
+      height: scaleByContent(15, 'spacing'),
     },
     shadowOpacity: 0.4,
-    shadowRadius: 25,
+    shadowRadius: scaleByContent(25, 'spacing'),
     elevation: 20,
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#000000',
     overflow: 'hidden',
   },
@@ -1445,70 +1448,70 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    borderRadius: 22,
+    borderRadius: scaleByContent(22, 'spacing'),
     backgroundColor: '#F8F6F0',
   },
   
   emojiModalLine: {
     position: 'absolute',
-    left: 45,
-    right: 15,
-    height: 1,
+    left: scaleByContent(45, 'spacing'),
+    right: scaleByContent(15, 'spacing'),
+    height: scaleByContent(1, 'spacing'),
     backgroundColor: '#A8C8EC',
     opacity: 0.4,
   },
   
   emojiModalRedLine: {
     position: 'absolute',
-    left: 40,
-    top: 15,
-    bottom: 15,
-    width: 2,
+    left: scaleByContent(40, 'spacing'),
+    top: scaleByContent(15, 'spacing'),
+    bottom: scaleByContent(15, 'spacing'),
+    width: scaleByContent(2, 'spacing'),
     backgroundColor: '#FF6B6B',
     opacity: 0.4,
   },
   
   emojiModalHoles: {
     position: 'absolute',
-    left: 15,
-    top: 40,
-    bottom: 40,
-    width: 20,
+    left: scaleByContent(15, 'spacing'),
+    top: scaleByContent(40, 'spacing'),
+    bottom: scaleByContent(40, 'spacing'),
+    width: scaleByContent(20, 'spacing'),
     justifyContent: 'space-around',
     alignItems: 'center',
   },
   
   emojiModalHole: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: scaleByContent(14, 'spacing'),
+    height: scaleByContent(14, 'spacing'),
+    borderRadius: scaleByContent(7, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#CCCCCC',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 3,
+    shadowRadius: scaleByContent(3, 'spacing'),
     elevation: 3,
   },
   
   emojiModalContent: {
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingLeft: 15,
-    paddingRight: 15,
-    paddingTop: 5,
-    paddingBottom: 5,
+    paddingLeft: scaleByContent(15, 'spacing'),
+    paddingRight: scaleByContent(15, 'spacing'),
+    paddingTop: scaleByContent(5, 'spacing'),
+    paddingBottom: scaleByContent(5, 'spacing'),
     flex: 1,
     backgroundColor: '#F8F6F0',
   },
   
   emojiModalTitle: {
-    fontSize: 18,
+    fontSize: scaleByContent(18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: scaleByContent(15, 'spacing'),
     transform: [{ rotate: '0.5deg' }],
   },
   
@@ -1516,50 +1519,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 10,
-    marginBottom: 15,
-    maxHeight: 180,
+    gap: scaleByContent(10, 'spacing'),
+    marginBottom: scaleByContent(15, 'spacing'),
+    maxHeight: scaleByContent(180, 'interactive'),
   },
   
   emojiOption: {
-    width: 40,
-    height: 40,
+    width: scaleByContent(40, 'interactive'),
+    height: scaleByContent(40, 'interactive'),
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    borderWidth: 2,
+    borderRadius: scaleByContent(20, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#CCCCCC',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
     transform: [{ rotate: '-1deg' }],
   },
   
   emojiOptionText: {
-    fontSize: 20,
+    fontSize: scaleByContent(20, 'icon'),
   },
   
   emojiModalButton: {
     backgroundColor: '#FFE082',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 15,
-    borderTopLeftRadius: 5,
-    borderWidth: 2,
+    paddingHorizontal: scaleByContent(20, 'spacing'),
+    paddingVertical: scaleByContent(8, 'spacing'),
+    borderRadius: scaleByContent(15, 'spacing'),
+    borderTopLeftRadius: scaleByContent(5, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
     transform: [{ rotate: '-1deg' }],
   },
   
   emojiModalButtonText: {
-    fontSize: 14,
+    fontSize: scaleByContent(14, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
@@ -1574,92 +1577,92 @@ const styles = StyleSheet.create({
 
   modalContainer: {
     width: width * 0.8,
-    maxWidth: 400,
+    maxWidth: scaleByContent(400, 'interactive'),
     backgroundColor: '#F8F6F0',
-    borderRadius: 20,
-    borderWidth: 3,
+    borderRadius: scaleByContent(20, 'spacing'),
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#8B4513',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: scaleByContent(10, 'spacing') },
     shadowOpacity: 0.3,
-    shadowRadius: 20,
+    shadowRadius: scaleByContent(20, 'spacing'),
     elevation: 20,
   },
 
   modalPaper: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 17,
+    borderRadius: scaleByContent(17, 'spacing'),
   },
 
   modalHoles: {
     position: 'absolute',
-    left: 25,
-    top: 40,
+    left: scaleByContent(25, 'spacing'),
+    top: scaleByContent(40, 'spacing'),
     flexDirection: 'column',
   },
 
   modalHole: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: scaleByContent(12, 'spacing'),
+    height: scaleByContent(12, 'spacing'),
+    borderRadius: scaleByContent(6, 'spacing'),
     backgroundColor: '#E0E0E0',
-    marginBottom: 40,
+    marginBottom: scaleByContent(40, 'spacing'),
   },
 
   modalRedLine: {
     position: 'absolute',
-    left: 50,
+    left: scaleByContent(50, 'spacing'),
     top: 0,
     bottom: 0,
-    width: 2,
+    width: scaleByContent(2, 'spacing'),
     backgroundColor: '#FF6B6B',
   },
 
   modalContent: {
-    padding: 30,
-    paddingLeft: 70,
+    padding: scaleByContent(30, 'spacing'),
+    paddingLeft: scaleByContent(70, 'spacing'),
   },
 
   modalTitle: {
-    fontSize: 24,
+    fontSize: scaleByContent(24, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: scaleByContent(8, 'spacing'),
     transform: [{ rotate: '-0.5deg' }],
   },
 
   modalSubtitle: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: scaleByContent(30, 'spacing'),
     transform: [{ rotate: '0.3deg' }],
   },
 
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: scaleByContent(20, 'spacing'),
   },
 
   modalButton: {
     flex: 1,
-    paddingVertical: 15,
-    borderRadius: 12,
+    paddingVertical: scaleByContent(15, 'spacing'),
+    borderRadius: scaleByContent(12, 'spacing'),
     alignItems: 'center',
-    marginHorizontal: 5,
+    marginHorizontal: scaleByContent(5, 'spacing'),
   },
 
   errorButton: {
     backgroundColor: '#FF6B6B',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
   },
 
   errorButtonText: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#FFF',
   },
