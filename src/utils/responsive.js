@@ -145,7 +145,7 @@ export const scaleByContent = (size, contentType = 'default') => {
     // Pixel Tablet (1600x1024 o similar) - reducir más para evitar texto roto
     deviceMultiplier = 0.75;
   } else if (screenSize >= 850) {
-    // Pixel 8 Pro (891x412) - hacer elementos AÚN más grandes
+    // Pixel 8 Pro (891x412) - volver al tamaño original
     deviceMultiplier = 1.35;
   } else if (screenSize < 700) {
     // Pixel 3 y dispositivos pequeños
