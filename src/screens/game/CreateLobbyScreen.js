@@ -1073,7 +1073,8 @@ const CreateLobbyScreen = ({ navigation, route }) => {
   const canStartGame = isHost && connectedPlayers.length >= 2;
 
   // Generar slots vacíos si es necesario
-  const maxSlots = playMethod === 'single' ? playerCount : 10;
+  // En modo single no mostrar slots vacíos para evitar problemas de distribución vertical
+  const maxSlots = playMethod === 'single' ? connectedPlayers.length : 10;
   const emptySlots = Math.max(0, maxSlots - connectedPlayers.length);
 
   return (
@@ -1156,7 +1157,8 @@ const CreateLobbyScreen = ({ navigation, route }) => {
               {connectedPlayers.map((player, index) => (
                 <View key={player.id || `player-${index}`} style={[
                   styles.playerItem,
-                  player.isCurrentUser && styles.currentUserItem
+                  player.isCurrentUser && styles.currentUserItem,
+                  playMethod === 'single' && styles.playerItemFixedSafe
                 ]}>
                   <View style={[
                     styles.playerAvatar,
@@ -1191,19 +1193,21 @@ const CreateLobbyScreen = ({ navigation, route }) => {
                       {player.isCurrentUser && <Text style={styles.youIndicator}>(Tú)</Text>}
                     </View>
                     
-                    {/* Información adicional del jugador */}
-                    <View style={styles.playerDetailsContainer}>
-                      {player.gender && (
-                        <Text style={styles.playerDetail}>
-                          {player.gender === 'man' ? '👨' : player.gender === 'woman' ? '👩' : '🧑'}
-                        </Text>
-                      )}
-                      {player.orientation && (
-                        <Text style={styles.playerDetail}>
-                          {player.orientation === 'men' ? '💙' : player.orientation === 'women' ? '💗' : '💜'}
-                        </Text>
-                      )}
-                    </View>
+                    {/* Información adicional del jugador - solo renderizar si hay datos */}
+                    {(player.gender || player.orientation) && (
+                      <View style={styles.playerDetailsContainer}>
+                        {player.gender && (
+                          <Text style={styles.playerDetail}>
+                            {player.gender === 'man' ? '👨' : player.gender === 'woman' ? '👩' : '🧑'}
+                          </Text>
+                        )}
+                        {player.orientation && (
+                          <Text style={styles.playerDetail}>
+                            {player.orientation === 'men' ? '💙' : player.orientation === 'women' ? '💗' : '💜'}
+                          </Text>
+                        )}
+                      </View>
+                    )}
                   </View>
                   
                   {/* Estado de conexión */}
@@ -1930,7 +1934,6 @@ const styles = StyleSheet.create({
   
   playersListContainer: {
     flex: 1,
-    minHeight: SCREEN_HEIGHT * 0.5,
   },
   
   playersListTitle: {
@@ -1942,7 +1945,6 @@ const styles = StyleSheet.create({
   },
   
   playersScrollView: {
-    flex: 1,
     maxHeight: SCREEN_HEIGHT * 0.65,
   },
   
@@ -1954,7 +1956,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderRadius: scaleByContent(12, 'spacing'),
     borderTopLeftRadius: scaleByContent(3, 'spacing'),
-    paddingVertical: scaleByContent(10, 'spacing'),
+    paddingVertical: scaleByContent(8, 'spacing'),
     paddingHorizontal: scaleByContent(12, 'spacing'),
     marginBottom: scaleByContent(8, 'spacing'),
     shadowColor: '#000',
@@ -1963,6 +1965,18 @@ const styles = StyleSheet.create({
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
     transform: [{ rotate: '-0.2deg' }],
+    position: 'relative',
+  },
+  
+  playerItemFixed: {
+    minHeight: scaleByContent(60, 'interactive'),
+    maxHeight: scaleByContent(60, 'interactive'),
+    overflow: 'visible',
+  },
+  
+  playerItemFixedSafe: {
+    height: scaleByContent(56, 'interactive'),
+    overflow: 'visible',
   },
   
   playerAvatar: {
@@ -2053,6 +2067,10 @@ const styles = StyleSheet.create({
   
   kickButton: {
     padding: scaleByContent(8, 'interactive'),
+    position: 'absolute',
+    right: scaleByContent(8, 'spacing'),
+    top: '50%',
+    transform: [{ translateY: -scaleByContent(12, 'interactive') }],
   },
   
   kickButtonText: {
