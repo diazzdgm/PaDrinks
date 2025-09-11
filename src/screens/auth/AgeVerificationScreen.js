@@ -20,11 +20,14 @@ import {
   scaleHeight, 
   scaleText, 
   scaleModerate,
+  scaleByContent,
   getDeviceType,
   isSmallDevice,
   isTablet,
   RESPONSIVE,
-  getDeviceInfo 
+  getDeviceInfo,
+  SCREEN_WIDTH,
+  SCREEN_HEIGHT 
 } from '../../utils/responsive';
 
 const AgeVerificationScreen = ({ navigation }) => {
@@ -267,12 +270,12 @@ const AgeVerificationScreen = ({ navigation }) => {
       <View style={styles.paperBackground}>
         {/* Líneas de libreta horizontales */}
         <View style={styles.notebookLines}>
-          {[...Array(20)].map((_, index) => (
+          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 50 : Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) < 700 ? 20 : 25)].map((_, index) => (
             <View 
               key={index} 
               style={[
                 styles.line, 
-                { top: 60 + (index * 25) }
+                { top: scaleByContent(60, 'spacing') + (index * scaleByContent(25, 'spacing')) }
               ]} 
             />
           ))}
@@ -416,7 +419,7 @@ const AgeVerificationScreen = ({ navigation }) => {
                   key={index} 
                   style={[
                     styles.modalLine, 
-                    { top: 30 + (index * 20) }
+                    { top: scaleByContent(30, 'spacing') + (index * scaleByContent(20, 'spacing')) }
                   ]} 
                 />
               ))}
@@ -504,8 +507,8 @@ const styles = StyleSheet.create({
   notebookLines: {
     position: 'absolute',
     top: 0,
-    left: 100, // Después de agujeros y margen
-    right: 20,
+    left: scaleByContent(100, 'spacing'),
+    right: scaleByContent(20, 'spacing'),
     bottom: 0,
   },
   
@@ -513,7 +516,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 1,
+    height: scaleByContent(1, 'spacing'),
     backgroundColor: '#A8C8EC',
     opacity: 0.6,
   },
@@ -521,10 +524,10 @@ const styles = StyleSheet.create({
   // Línea roja del margen
   redMarginLine: {
     position: 'absolute',
-    left: 95,
+    left: scaleByContent(95, 'spacing'),
     top: 0,
     bottom: 0,
-    width: 2,
+    width: scaleByContent(2, 'spacing'),
     backgroundColor: '#FF6B6B',
     opacity: 0.5,
   },
@@ -532,57 +535,54 @@ const styles = StyleSheet.create({
   // Agujeros de perforación
   holesPunch: {
     position: 'absolute',
-    left: 30,
-    top: 60,
-    bottom: 60,
-    width: 25,
+    left: scaleByContent(30, 'spacing'),
+    top: scaleByContent(60, 'spacing'),
+    bottom: scaleByContent(60, 'spacing'),
+    width: scaleByContent(25, 'spacing'),
     justifyContent: 'space-around',
     alignItems: 'center',
   },
   
   hole: {
-    width: 18,
-    height: 18,
-    borderRadius: 10,
+    width: scaleByContent(18, 'spacing'),
+    height: scaleByContent(18, 'spacing'),
+    borderRadius: scaleByContent(10, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
     shadowOffset: {
-      width: 2,
-      height: 2,
+      width: scaleByContent(2, 'spacing'),
+      height: scaleByContent(2, 'spacing'),
     },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
   },
   
   content: {
     flex: 1,
-    flexDirection: 'column', // Layout vertical
-    justifyContent: 'flex-start', // Empezar desde arriba
+    flexDirection: 'column',
+    justifyContent: 'center', // Centrar verticalmente
     alignItems: 'center', // Centrar horizontalmente
-    paddingHorizontal: scaleWidth(isSmallScreen ? 40 : isTabletScreen ? 80 : 60),
-    paddingTop: scaleHeight(isSmallScreen ? 8 : isTabletScreen ? 12 : 10), // Reducido aún más para subir todo
-    paddingLeft: scaleWidth(130), // Espacio para el margen de la libreta
-    paddingBottom: scaleHeight(60), // Mantener espacio para el footer
+    paddingHorizontal: 40, // Padding simétrico para centrar correctamente
+    paddingBottom: scaleByContent(60, 'spacing'), // Mantener espacio para el footer
   },
   
   
   // SECCIÓN SUPERIOR - Icono y pregunta
   topSection: {
     alignItems: 'center',
-    marginTop: scaleHeight(isSmallScreen ? 2 : isTabletScreen ? 5 : 3), // Reducido aún más para subir
-    marginBottom: scaleHeight(isSmallScreen ? 4 : isTabletScreen ? 6 : 5), // Reducido más
+    marginBottom: scaleByContent(20, 'spacing'),
   },
   
   // Icono principal
   iconContainer: {
-    marginBottom: scaleHeight(isSmallScreen ? 2 : isTabletScreen ? 4 : 3), // Añadir responsividad
+    marginBottom: scaleByContent(15, 'spacing'),
   },
   
   mainIcon: {
-    fontSize: isSmallScreen ? scaleText(50) : isTabletScreen ? scaleText(70) : scaleText(60),
+    fontSize: scaleByContent(60, 'icon'),
     textAlign: 'center',
   },
   
@@ -592,12 +592,12 @@ const styles = StyleSheet.create({
   },
   
   question: {
-    fontSize: isSmallScreen ? scaleText(20) : isTabletScreen ? scaleText(28) : scaleText(24),
+    fontSize: scaleByContent(24, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
     transform: [{ rotate: '0.5deg' }],
-    lineHeight: isSmallScreen ? scaleHeight(24) : isTabletScreen ? scaleHeight(32) : scaleHeight(28),
+    lineHeight: scaleByContent(28, 'text'),
   },
   
   // SECCIÓN CENTRAL - Botones
@@ -668,21 +668,22 @@ const styles = StyleSheet.create({
   // Footer
   footer: {
     position: 'absolute',
-    bottom: scaleHeight(15),
-    left: scaleWidth(120), // Alineado con el contenido (después del margen de libreta)
-    right: scaleWidth(theme.spacing.sm),
+    bottom: scaleByContent(15, 'spacing'),
+    left: 0,
+    right: 0,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   
   footerText: {
-    fontSize: isSmallScreen ? scaleText(10) : isTabletScreen ? scaleText(16) : scaleText(12),
+    fontSize: scaleByContent(12, 'text'),
     fontFamily: theme.fonts.primary,
     color: theme.colors.error,
     textAlign: 'center',
     backgroundColor: 'rgba(211, 47, 47, 0.1)',
-    paddingHorizontal: scaleWidth(theme.spacing.sm),
-    paddingVertical: scale(2),
-    borderRadius: scale(theme.borderRadius.small),
+    paddingHorizontal: scaleByContent(16, 'spacing'),
+    paddingVertical: scaleByContent(2, 'spacing'),
+    borderRadius: scaleByContent(8, 'spacing'),
     borderWidth: 1,
     borderColor: theme.colors.error,
     borderStyle: 'dashed',
@@ -694,25 +695,25 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 30,
-    paddingVertical: 50,
+    paddingHorizontal: scaleByContent(30, 'spacing'),
+    paddingVertical: scaleByContent(50, 'spacing'),
   },
   
   modalContainer: {
     backgroundColor: '#F8F6F0',
-    borderRadius: 25,
-    padding: 20,
-    maxWidth: 500, // Igual que CreateGameScreen
+    borderRadius: scaleByContent(25, 'spacing'),
+    padding: scaleByContent(20, 'spacing'),
+    maxWidth: scaleByContent(500, 'interactive'), // Igual que CreateGameScreen
     width: '90%',
-    minHeight: 280,
+    minHeight: scaleByContent(280, 'interactive'),
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: scaleByContent(10, 'spacing') },
     shadowOpacity: 0.3,
-    shadowRadius: 20,
+    shadowRadius: scaleByContent(20, 'spacing'),
     elevation: 20,
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#000000',
-    borderTopLeftRadius: 5,
+    borderTopLeftRadius: scaleByContent(5, 'spacing'),
     transform: [{ rotate: '-1deg' }],
     position: 'relative',
   },
@@ -723,116 +724,116 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    borderRadius: 22, // Ligeramente menor que el container
+    borderRadius: scaleByContent(22, 'spacing'), // Ligeramente menor que el container
     backgroundColor: '#F8F6F0', // Asegurar fondo sólido
     zIndex: -1,
   },
   
   modalLine: {
     position: 'absolute',
-    left: 65,
-    right: 15,
-    height: 1,
+    left: scaleByContent(65, 'spacing'),
+    right: scaleByContent(15, 'spacing'),
+    height: scaleByContent(1, 'spacing'),
     backgroundColor: '#A8C8EC',
     opacity: 0.4,
   },
   
   modalRedLine: {
     position: 'absolute',
-    left: 60,
-    top: 15,
-    bottom: 15,
-    width: 2,
+    left: scaleByContent(60, 'spacing'),
+    top: scaleByContent(15, 'spacing'),
+    bottom: scaleByContent(15, 'spacing'),
+    width: scaleByContent(2, 'spacing'),
     backgroundColor: '#FF6B6B',
     opacity: 0.4,
   },
   
   modalHoles: {
     position: 'absolute',
-    left: 25,
-    top: 40,
-    bottom: 40,
-    width: 20,
+    left: scaleByContent(25, 'spacing'),
+    top: scaleByContent(40, 'spacing'),
+    bottom: scaleByContent(40, 'spacing'),
+    width: scaleByContent(20, 'spacing'),
     justifyContent: 'space-around',
     alignItems: 'center',
   },
   
   modalHole: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: scaleByContent(14, 'spacing'),
+    height: scaleByContent(14, 'spacing'),
+    borderRadius: scaleByContent(7, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#CCCCCC',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 3,
+    shadowRadius: scaleByContent(3, 'spacing'),
     elevation: 3,
   },
   
   modalContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingLeft: 50, // Valores fijos como CreateGameScreen
-    paddingRight: 15,
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingLeft: scaleByContent(50, 'spacing'), // Valores fijos como CreateGameScreen
+    paddingRight: scaleByContent(15, 'spacing'),
+    paddingTop: scaleByContent(20, 'spacing'),
+    paddingBottom: scaleByContent(10, 'spacing'),
     flex: 1,
-    minHeight: 250,
+    minHeight: scaleByContent(250, 'spacing'),
   },
   
   modalIcon: {
-    fontSize: 60, // Tamaño fijo apropiado para el modal más ancho
-    marginBottom: 15,
+    fontSize: scaleByContent(60, 'icon'), // Tamaño fijo apropiado para el modal más ancho
+    marginBottom: scaleByContent(15, 'spacing'),
   },
   
   modalTitle: {
-    fontSize: 24, // Tamaño fijo como CreateGameScreen
+    fontSize: scaleByContent(24, 'text'), // Tamaño fijo como CreateGameScreen
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: scaleByContent(15, 'spacing'),
     transform: [{ rotate: '0.5deg' }],
   },
   
   modalMessage: {
-    fontSize: 16, // Tamaño estándar para el modal más ancho
+    fontSize: scaleByContent(16, 'text'), // Tamaño estándar para el modal más ancho
     fontFamily: theme.fonts.primary,
     color: '#333333',
     textAlign: 'center',
-    marginBottom: 10,
-    lineHeight: 22,
+    marginBottom: scaleByContent(10, 'spacing'),
+    lineHeight: scaleByContent(22, 'text'),
   },
   
   modalSubMessage: {
-    fontSize: 14, // Tamaño fijo
+    fontSize: scaleByContent(14, 'text'), // Tamaño fijo
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
-    marginBottom: 25,
+    marginBottom: scaleByContent(25, 'spacing'),
     fontStyle: 'italic',
-    lineHeight: 18,
+    lineHeight: scaleByContent(18, 'text'),
   },
   
   modalButton: {
     backgroundColor: '#FFE082',
-    paddingHorizontal: 30, // Valores fijos apropiados
-    paddingVertical: 12,
-    borderRadius: 15,
-    borderTopLeftRadius: 5,
-    borderWidth: 2,
+    paddingHorizontal: scaleByContent(30, 'interactive'), // Valores fijos apropiados
+    paddingVertical: scaleByContent(12, 'interactive'),
+    borderRadius: scaleByContent(15, 'spacing'),
+    borderTopLeftRadius: scaleByContent(5, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
     transform: [{ rotate: '-1deg' }],
   },
   
   modalButtonText: {
-    fontSize: 16, // Tamaño fijo apropiado
+    fontSize: scaleByContent(16, 'text'), // Tamaño fijo apropiado
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },

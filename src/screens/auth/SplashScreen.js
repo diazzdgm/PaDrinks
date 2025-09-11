@@ -18,23 +18,25 @@ import {
   scaleHeight, 
   scaleText, 
   scaleModerate,
+  scaleByContent,
   getDeviceType,
   isSmallDevice,
   isTablet,
   RESPONSIVE,
-  getDeviceInfo 
+  getDeviceInfo,
+  SCREEN_WIDTH,
+  SCREEN_HEIGHT 
 } from '../../utils/responsive';
 
 // Obtener información del dispositivo para estilos dinámicos
-const { width, height } = Dimensions.get('window');
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
 
 const SplashScreen = ({ navigation }) => {
   // Animaciones
-  const logoTranslateY = useRef(new Animated.Value(-height)).current; // Empieza arriba
-  const logoScale = useRef(new Animated.Value(0)).current;
+  const logoTranslateY = useRef(new Animated.Value(-200)).current; // Empieza menos arriba
+  const logoScale = useRef(new Animated.Value(0.1)).current; // Empieza con tamaño mínimo visible
   const logoRotate = useRef(new Animated.Value(0)).current;
   const paperLinesOpacity = useRef(new Animated.Value(0)).current;
   const paperParallax = useRef(new Animated.Value(0)).current;
@@ -146,16 +148,14 @@ const SplashScreen = ({ navigation }) => {
       
       // 2. Logo CAE desde arriba con bounce dramático (1.2s)
       Animated.parallel([
-        Animated.spring(logoTranslateY, {
+        Animated.timing(logoTranslateY, {
           toValue: 0,
-          tension: 20,  // Más bounce
-          friction: 3,
+          duration: 800,
           useNativeDriver: true,
         }),
-        Animated.spring(logoScale, {
+        Animated.timing(logoScale, {
           toValue: 1,
-          tension: 20,
-          friction: 3,
+          duration: 800,
           useNativeDriver: true,
         }),
       ]),
@@ -230,12 +230,12 @@ const SplashScreen = ({ navigation }) => {
       >
         {/* Líneas de libreta horizontales */}
         <View style={styles.notebookLines}>
-          {[...Array(20)].map((_, index) => (
+          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 50 : Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) < 700 ? 20 : 25)].map((_, index) => (
             <View 
               key={index} 
               style={[
                 styles.line, 
-                { top: 60 + (index * 25) }
+                { top: scaleByContent(60, 'spacing') + (index * scaleByContent(25, 'spacing')) }
               ]} 
             />
           ))}
@@ -285,12 +285,12 @@ const SplashScreen = ({ navigation }) => {
           
         </Animated.View>
         
-        {/* Texto circular girando alrededor del logo - Responsive */}
+        {/* Texto circular girando alrededor del logo - Más cerca */}
         <CircularText 
           text="PADRINKS*PADRINKS*PADRINKS*"
           spinDuration={20000}
-          radius={isSmallScreen ? scale(120) : isTabletScreen ? scale(200) : scale(150)}
-          fontSize={isSmallScreen ? scaleText(24, 20, 28) : isTabletScreen ? scaleText(36, 32, 42) : scaleText(30, 26, 34)}
+          radius={120}
+          fontSize={22}
           style={styles.circularTextContainer}
           enableDancing={true}
         />
@@ -320,8 +320,8 @@ const styles = StyleSheet.create({
   notebookLines: {
     position: 'absolute',
     top: 0,
-    left: 100, // Después de agujeros y margen
-    right: 20,
+    left: scaleByContent(100, 'spacing'), // Después de agujeros y margen
+    right: scaleByContent(20, 'spacing'),
     bottom: 0,
   },
   
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 1,
+    height: scaleByContent(1, 'spacing'),
     backgroundColor: '#A8C8EC',
     opacity: 0.6,
   },
@@ -337,10 +337,10 @@ const styles = StyleSheet.create({
   // Línea roja del margen
   redMarginLine: {
     position: 'absolute',
-    left: 95,
+    left: scaleByContent(95, 'spacing'),
     top: 0,
     bottom: 0,
-    width: 2,
+    width: scaleByContent(2, 'spacing'),
     backgroundColor: '#FF6B6B',
     opacity: 0.5,
   },
@@ -348,28 +348,28 @@ const styles = StyleSheet.create({
   // Agujeros de perforación
   holesPunch: {
     position: 'absolute',
-    left: 30,
-    top: 60,
-    bottom: 60,
-    width: 25,
+    left: scaleByContent(30, 'spacing'),
+    top: scaleByContent(60, 'spacing'),
+    bottom: scaleByContent(60, 'spacing'),
+    width: scaleByContent(25, 'spacing'),
     justifyContent: 'space-around',
     alignItems: 'center',
   },
   
   hole: {
-    width: 18,
-    height: 18,
-    borderRadius: 10,
+    width: scaleByContent(18, 'spacing'),
+    height: scaleByContent(18, 'spacing'),
+    borderRadius: scaleByContent(10, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
     shadowOffset: {
-      width: 2,
-      height: 2,
+      width: scaleByContent(2, 'spacing'),
+      height: scaleByContent(2, 'spacing'),
     },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
   },
   
@@ -387,28 +387,28 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   
-  // Shot container - Responsive
+  // Shot container - Valores más conservadores y visibles
   shotContainer: {
     position: 'relative',
-    width: isSmallScreen ? scale(260) : isTabletScreen ? scale(400) : scale(320),
-    height: isSmallScreen ? scale(320) : isTabletScreen ? scale(500) : scale(400),
+    width: 280,
+    height: 350,
     alignItems: 'center',
     justifyContent: 'center',
   },
   
   shotLogo: {
-    width: isSmallScreen ? scale(260) : isTabletScreen ? scale(400) : scale(320),
-    height: isSmallScreen ? scale(320) : isTabletScreen ? scale(500) : scale(400),
+    width: 280,
+    height: 350,
     zIndex: 1,
   },
   
-  // Container para el texto circular - Responsive y centrado
+  // Container para el texto circular - Más cerca del logo
   circularTextContainer: {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginTop: isSmallScreen ? scale(-120) : isTabletScreen ? scale(-200) : scale(-150),
-    marginLeft: isSmallScreen ? scale(-120) : isTabletScreen ? scale(-200) : scale(-150),
+    marginTop: -120,
+    marginLeft: -120,
     zIndex: 1,
   },
   

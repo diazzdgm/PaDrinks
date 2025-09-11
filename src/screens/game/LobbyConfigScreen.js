@@ -20,11 +20,14 @@ import {
   scaleHeight, 
   scaleText, 
   scaleModerate,
+  scaleByContent,
   getDeviceType,
   isSmallDevice,
   isTablet,
   RESPONSIVE,
-  getDeviceInfo 
+  getDeviceInfo,
+  SCREEN_WIDTH,
+  SCREEN_HEIGHT 
 } from '../../utils/responsive';
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
@@ -246,10 +249,10 @@ const LobbyConfigScreen = ({ navigation, route }) => {
       {/* Fondo de papel con líneas */}
       <View style={styles.paperBackground}>
         <View style={styles.notebookLines}>
-          {[...Array(20)].map((_, index) => (
+          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 50 : Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) < 700 ? 20 : 25)].map((_, index) => (
             <View 
               key={index} 
-              style={[styles.line, { top: 40 + (index * 25) }]} 
+              style={[styles.line, { top: scaleByContent(40, 'spacing') + (index * scaleByContent(25, 'spacing')) }]} 
             />
           ))}
         </View>
@@ -476,7 +479,7 @@ const LobbyConfigScreen = ({ navigation, route }) => {
   );
 };
 
-const { width, height } = Dimensions.get('window');
+// Using SCREEN_WIDTH and SCREEN_HEIGHT from responsive utils instead
 
 const styles = StyleSheet.create({
   container: {
@@ -497,8 +500,8 @@ const styles = StyleSheet.create({
   notebookLines: {
     position: 'absolute',
     top: 0,
-    left: 100,
-    right: 20,
+    left: scaleByContent(100, 'spacing'),
+    right: scaleByContent(20, 'spacing'),
     bottom: 0,
   },
   
@@ -506,68 +509,68 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 1,
+    height: scaleByContent(1, 'spacing'),
     backgroundColor: '#A8C8EC',
     opacity: 0.6,
   },
   
   redMarginLine: {
     position: 'absolute',
-    left: 95,
+    left: scaleByContent(95, 'spacing'),
     top: 0,
     bottom: 0,
-    width: 2,
+    width: scaleByContent(2, 'spacing'),
     backgroundColor: '#FF6B6B',
     opacity: 0.5,
   },
   
   holesPunch: {
     position: 'absolute',
-    left: 30,
-    top: 60,
-    bottom: 60,
-    width: 25,
+    left: scaleByContent(30, 'spacing'),
+    top: scaleByContent(60, 'spacing'),
+    bottom: scaleByContent(60, 'spacing'),
+    width: scaleByContent(25, 'spacing'),
     justifyContent: 'space-around',
     alignItems: 'center',
   },
   
   hole: {
-    width: 18,
-    height: 18,
-    borderRadius: 10,
+    width: scaleByContent(18, 'spacing'),
+    height: scaleByContent(18, 'spacing'),
+    borderRadius: scaleByContent(10, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
   },
   
   // Botón de regreso
   backButton: {
     position: 'absolute',
-    top: 40,
-    left: 30,
+    top: 35,
+    left: 25,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 15,
-    borderTopLeftRadius: 5,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderTopLeftRadius: 4,
     borderWidth: 2,
     borderColor: '#000000',
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: 3,
     elevation: 4,
     transform: [{ rotate: '-1deg' }],
     zIndex: 10,
   },
   
   backButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
@@ -576,33 +579,35 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
     flexDirection: 'row',
-    paddingTop: 60,
-    paddingBottom: 160,
-    paddingHorizontal: 120, // Espacio para agujeros y margen
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: scaleByContent(60, 'spacing'),
+    paddingBottom: scaleByContent(130, 'spacing'),
+    paddingHorizontal: scaleByContent(120, 'spacing'), // Espacio para agujeros y margen
   },
   
   // Lado izquierdo - 50% del ancho
   leftSide: {
     flex: 1,
-    paddingRight: 20,
-    paddingLeft: 20,
+    paddingRight: scaleByContent(20, 'spacing'),
+    paddingLeft: scaleByContent(20, 'spacing'),
   },
   
   // Lado derecho - 50% del ancho
   rightSide: {
     flex: 1,
-    paddingLeft: 20,
-    borderLeftWidth: 2,
+    paddingLeft: scaleByContent(20, 'spacing'),
+    borderLeftWidth: scaleByContent(2, 'spacing'),
     borderLeftColor: '#A8C8EC',
     borderLeftStyle: 'dashed',
   },
   
   sectionTitle: {
-    fontSize: 28,
+    fontSize: 18,
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
     transform: [{ rotate: '0.5deg' }],
   },
   
@@ -612,7 +617,7 @@ const styles = StyleSheet.create({
   },
   
   optionsContainer: {
-    gap: 20,
+    gap: scaleByContent(20, 'spacing'),
   },
   
   disabledContainer: {
@@ -622,23 +627,23 @@ const styles = StyleSheet.create({
   optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
+    padding: 12,
     backgroundColor: '#FFFFFF',
-    borderRadius: 15,
-    borderTopLeftRadius: 5,
+    borderRadius: 12,
+    borderTopLeftRadius: 4,
     borderWidth: 2,
     borderColor: '#CCCCCC',
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.15,
-    shadowRadius: 4,
+    shadowRadius: 3,
     elevation: 3,
     transform: [{ rotate: '-0.3deg' }],
   },
   
   selectedOption: {
     borderColor: '#000000',
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     backgroundColor: '#FFE082',
     transform: [{ rotate: '0deg' }],
     shadowOpacity: 0.25,
@@ -651,20 +656,20 @@ const styles = StyleSheet.create({
   },
   
   radioButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
+    width: scaleByContent(24, 'interactive'),
+    height: scaleByContent(24, 'interactive'),
+    borderRadius: scaleByContent(12, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#666666',
-    marginRight: 15,
+    marginRight: scaleByContent(15, 'spacing'),
     justifyContent: 'center',
     alignItems: 'center',
   },
   
   radioButtonSelected: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: scaleByContent(12, 'spacing'),
+    height: scaleByContent(12, 'spacing'),
+    borderRadius: scaleByContent(6, 'spacing'),
     backgroundColor: '#000000',
   },
   
@@ -678,58 +683,58 @@ const styles = StyleSheet.create({
   },
   
   optionTitle: {
-    fontSize: 18,
+    fontSize: 14,
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   
   optionSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: theme.fonts.primary,
     color: '#666666',
     fontStyle: 'italic',
   },
   
   optionDescription: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: theme.fonts.primary,
     color: '#666666',
   },
   
   wifiIcon: {
-    fontSize: 20,
-    marginRight: 8,
+    fontSize: scaleByContent(20, 'icon'),
+    marginRight: scaleByContent(8, 'spacing'),
   },
   
   bluetoothIcon: {
-    fontSize: 20,
-    marginRight: 8,
+    fontSize: scaleByContent(20, 'icon'),
+    marginRight: scaleByContent(8, 'spacing'),
   },
   
   // Sección de jugadores
   playersSection: {
-    marginHorizontal: 30,
-    marginVertical: 20,
+    marginHorizontal: scaleByContent(30, 'spacing'),
+    marginVertical: scaleByContent(20, 'spacing'),
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 15,
-    borderWidth: 2,
+    borderRadius: scaleByContent(15, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    padding: 20,
+    padding: scaleByContent(20, 'spacing'),
     transform: [{ rotate: '-1deg' }],
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 6,
+    shadowRadius: scaleByContent(6, 'spacing'),
     elevation: 6,
   },
   
   playersSectionTitle: {
-    fontSize: 20,
+    fontSize: scaleByContent(20, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: scaleByContent(15, 'spacing'),
     transform: [{ rotate: '1deg' }],
   },
   
@@ -738,16 +743,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: theme.colors.postItYellow,
-    borderRadius: 12,
-    borderWidth: 2,
+    borderRadius: scaleByContent(12, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    padding: 15,
-    marginVertical: 8,
+    padding: scaleByContent(15, 'spacing'),
+    marginVertical: scaleByContent(8, 'spacing'),
     transform: [{ rotate: '0.5deg' }],
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
   },
   
@@ -758,28 +763,28 @@ const styles = StyleSheet.create({
   },
   
   playerPhoto: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    borderWidth: 2,
+    width: scaleByContent(50, 'interactive'),
+    height: scaleByContent(50, 'interactive'),
+    borderRadius: scaleByContent(25, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    marginRight: 12,
+    marginRight: scaleByContent(12, 'spacing'),
   },
   
   playerEmojiContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    borderWidth: 2,
+    width: scaleByContent(50, 'interactive'),
+    height: scaleByContent(50, 'interactive'),
+    borderRadius: scaleByContent(25, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: scaleByContent(12, 'spacing'),
   },
   
   playerEmoji: {
-    fontSize: 28,
+    fontSize: scaleByContent(28, 'icon'),
   },
   
   playerDetails: {
@@ -787,41 +792,41 @@ const styles = StyleSheet.create({
   },
   
   playerNickname: {
-    fontSize: 18,
+    fontSize: scaleByContent(18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
-    marginBottom: 2,
+    marginBottom: scaleByContent(2, 'spacing'),
   },
   
   playerStatus: {
-    fontSize: 14,
+    fontSize: scaleByContent(14, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666666',
   },
   
   playerBadge: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: scaleByContent(30, 'interactive'),
+    height: scaleByContent(30, 'interactive'),
+    borderRadius: scaleByContent(15, 'spacing'),
     backgroundColor: '#4CAF50',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
   },
   
   playerBadgeText: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#FFFFFF',
   },
   
   waitingMessage: {
-    fontSize: 14,
+    fontSize: scaleByContent(14, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
-    marginTop: 10,
+    marginTop: scaleByContent(10, 'spacing'),
     fontStyle: 'italic',
     transform: [{ rotate: '-0.5deg' }],
   },
@@ -829,30 +834,30 @@ const styles = StyleSheet.create({
   // Botón continuar
   continueButton: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 25,
     alignSelf: 'center',
     left: '30%',
     right: '30%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 30,
+    paddingVertical: 12,
+    paddingHorizontal: 25,
     backgroundColor: theme.colors.postItGreen,
-    borderRadius: 18,
-    borderTopLeftRadius: 5,
-    borderWidth: 3,
+    borderRadius: 15,
+    borderTopLeftRadius: 4,
+    borderWidth: 2,
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 4, height: 4 },
+    shadowOffset: { width: 3, height: 3 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 6,
     elevation: 8,
     transform: [{ rotate: '1deg' }],
   },
   
   continueButtonText: {
-    fontSize: 20,
+    fontSize: 16,
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
     flex: 1,
@@ -860,28 +865,28 @@ const styles = StyleSheet.create({
   },
   
   continueButtonIcon: {
-    fontSize: 24,
+    fontSize: 18,
     color: '#2E2E2E',
-    marginLeft: 10,
+    marginLeft: 8,
   },
   
   // Estilos para el botón de mute
   sketchMuteButton: {
     position: 'absolute',
-    top: 30,
-    right: 30,
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    top: scaleByContent(30, 'spacing'),
+    right: scaleByContent(30, 'spacing'),
+    width: scaleByContent(70, 'interactive'),
+    height: scaleByContent(70, 'interactive'),
+    borderRadius: scaleByContent(35, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 6,
     transform: [{ rotate: '2deg' }],
     zIndex: 15,
@@ -915,27 +920,27 @@ const styles = StyleSheet.create({
   
   mutedLine: {
     width: '80%',
-    height: 3,
-    borderRadius: 2,
+    height: scaleByContent(3, 'spacing'),
+    borderRadius: scaleByContent(2, 'spacing'),
     transform: [{ rotate: '45deg' }],
   },
   
   // Badge "Próximamente" para Bluetooth
   comingSoonBadge: {
     position: 'absolute',
-    top: -10,
-    right: -10,
+    top: scaleByContent(-10, 'spacing'),
+    right: scaleByContent(-10, 'spacing'),
     backgroundColor: '#FF5722',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 2,
+    paddingHorizontal: scaleByContent(10, 'spacing'),
+    paddingVertical: scaleByContent(4, 'spacing'),
+    borderRadius: scaleByContent(12, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
     transform: [{ rotate: '15deg' }],
   },
   
   comingSoonText: {
-    fontSize: 12,
+    fontSize: scaleByContent(12, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#FFFFFF',
   },
