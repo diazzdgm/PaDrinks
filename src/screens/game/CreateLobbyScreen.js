@@ -272,11 +272,11 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       return;
     }
     
-    // Solo crear sala en backend si la conexión es WiFi y está conectado
-    if (connectionType === 'wifi' && (connected || isConnected)) {
+    // Determinar si crear sala online o local basado en playMethod
+    if (playMethod === 'multiple' && connectionType === 'wifi' && (connected || isConnected || SocketService.connected)) {
       try {
         setIsCreatingRoom(true);
-        console.log('🏠 Creando sala en backend...');
+        console.log('🏠 Creando sala ONLINE para múltiples dispositivos...');
         
         const roomData = await createRoom({
           maxPlayers: 8,
@@ -302,7 +302,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
           isHost: roomData.isHost
         }));
 
-        console.log(`🏠 Sala creada exitosamente: ${roomData.roomCode}`);
+        console.log(`🏠 Sala ONLINE creada exitosamente: ${roomData.roomCode}`);
         console.log(`✅ Sala creada: ${roomData.roomCode}`);
         setRoomCode(roomData.roomCode);
         
@@ -315,8 +315,8 @@ const CreateLobbyScreen = ({ navigation, route }) => {
         setIsCreatingRoom(false);
       }
     } else {
-      // Modo local para otras conexiones o sin backend
-      console.log('⚠️ Creando sala local');
+      // Modo local para un dispositivo o sin backend
+      console.log('⚠️ Creando sala LOCAL para un dispositivo');
       generateRoomCode();
     }
   };

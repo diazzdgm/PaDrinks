@@ -16,6 +16,7 @@ import { Audio } from 'expo-av';
 import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { useDispatch } from 'react-redux';
+import { setGameSettings } from '../../store/gameSlice';
 import { theme } from '../../styles/theme';
 import SocketService from '../../services/SocketService';
 import * as FileSystem from 'expo-file-system';
@@ -499,6 +500,12 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
     };
     
     console.log('Datos del jugador:', playerData);
+    
+    // Actualizar configuración del juego en Redux
+    dispatch(setGameSettings({
+      playMethod: playMethod,
+      connectionType: connectionType
+    }));
     
     if (isJoining) {
       try {

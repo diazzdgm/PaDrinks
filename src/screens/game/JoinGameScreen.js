@@ -77,6 +77,7 @@ const JoinGameScreen = ({ navigation }) => {
   const { isConnected, socketId } = useSelector(state => state.connection);
   
   // Socket hooks
+  const { connect, disconnect, connected } = useSocket();
   const { joinRoom, loading: roomLoading, error: roomError } = useRoom();
   
   // Estados
@@ -99,6 +100,21 @@ const JoinGameScreen = ({ navigation }) => {
   // Estado y animación para el botón de mute
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
   const muteButtonScale = useRef(new Animated.Value(1)).current;
+
+  // Función para conectar al backend
+  const initializeBackendConnection = React.useCallback(async () => {
+    // Solo intentar conectar si no está ya conectado
+    if (!isConnected && !connected) {
+      try {
+        console.log('🔌 Iniciando conexión al backend desde JoinGameScreen...');
+        await connect();
+        console.log('✅ Conexión al backend establecida desde JoinGameScreen');
+      } catch (error) {
+        console.error('❌ Error conectando al backend desde JoinGameScreen:', error.message);
+        // No bloquear la funcionalidad, permitir uso offline
+      }
+    }
+  }, [isConnected, connected, connect]);
 
   // Función para reproducir sonido respetando mute
   const playBeerSound = async () => {
@@ -126,6 +142,9 @@ const JoinGameScreen = ({ navigation }) => {
       };
 
       setupAudio();
+      
+      // Conectar al backend automáticamente
+      initializeBackendConnection();
       
       // Iniciar animación de entrada
       Animated.timing(fadeAnim, {
@@ -262,7 +281,7 @@ const JoinGameScreen = ({ navigation }) => {
       return;
     }
 
-    if (!isConnected) {
+    if (!(connected || isConnected || SocketService.connected)) {
       showError('No hay conexión con el servidor. Verifica tu conexión a internet.');
       return;
     }
@@ -271,13 +290,25 @@ const JoinGameScreen = ({ navigation }) => {
       setIsJoining(true);
       console.log('🔍 Validando existencia de sala:', roomCode.trim());
       
-      // Validar sala usando el backend
+      // Validar sala usando el backend con timeout
       const response = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('TIMEOUT'));
+        }, 10000); // 10 segundos de timeout
+        
+        if (!SocketService.socket) {
+          clearTimeout(timeout);
+          reject(new Error('SOCKET_NOT_AVAILABLE'));
+          return;
+        }
+        
         SocketService.socket.emit('validateRoom', { roomCode: roomCode.trim() }, (response) => {
-          if (response.success) {
+          clearTimeout(timeout);
+          
+          if (response && response.success) {
             resolve(response);
           } else {
-            reject(new Error(response.error));
+            reject(new Error(response?.error || 'VALIDATION_FAILED'));
           }
         });
       });
@@ -302,6 +333,12 @@ const JoinGameScreen = ({ navigation }) => {
         errorMessage = 'No se encontró una sala con ese código. Verifica el código e inténtalo de nuevo.';
       } else if (error.message === 'ROOM_FULL') {
         errorMessage = 'La sala está llena. No se pueden agregar más jugadores.';
+      } else if (error.message === 'TIMEOUT') {
+        errorMessage = 'Timeout de conexión. El servidor tardó mucho en responder. Inténtalo de nuevo.';
+      } else if (error.message === 'SOCKET_NOT_AVAILABLE') {
+        errorMessage = 'Socket no disponible. Verifica tu conexión e inténtalo de nuevo.';
+      } else if (error.message === 'VALIDATION_FAILED') {
+        errorMessage = 'Error en la validación de la sala. Inténtalo de nuevo.';
       } else if (error.message.includes('connection')) {
         errorMessage = 'Error de conexión. Verifica tu internet e inténtalo de nuevo.';
       }
@@ -413,10 +450,10 @@ const JoinGameScreen = ({ navigation }) => {
       <View style={styles.connectionIndicator}>
         <View style={[
           styles.connectionDot,
-          { backgroundColor: isConnected ? '#4CAF50' : '#F44336' }
+          { backgroundColor: (connected || isConnected) ? '#4CAF50' : '#F44336' }
         ]} />
         <Text style={styles.connectionText}>
-          {isConnected ? 'Online' : 'Offline'}
+          {(connected || isConnected) ? 'Online' : 'Offline'}
         </Text>
       </View>
 

@@ -144,7 +144,7 @@ Kalam fonts (Regular/Bold) are loaded asynchronously in App.js. Font loading com
 - **Color Palette**: postItYellow (#FFE082), postItGreen (#C8E6C9), postItPink, postItBlue
 - **Visual Style**: Notebook paper backgrounds with holes, red margin lines, and horizontal blue lines
 - **Typography**: Handwritten feel using Kalam font family throughout
-- **Responsive System**: Complete cross-device scaling system for phone-small, phone-large, and tablet devices
+- **Responsive System**: Complete cross-device scaling system for phone-small, phone-large, and tablet devices using `scaleByContent()` function with device-specific multipliers
 
 ### Navigation and State Flow
 ```
@@ -257,6 +257,8 @@ The project uses a feature-based organization:
 - **Real-Time Synchronization**: roomSync events with multiple sync attempts to prevent desynchronization
 - **Player List Management**: Dynamic player display with host crown, "Tú" indicator, avatar/emoji support
 - **Socket Event Management**: Comprehensive event listener system with cleanup on navigation
+- **Responsive Player Items**: `playerItemFixedSafe` style with fixed height for single device mode to maintain consistent box sizing
+- **Absolute Positioned Kick Button**: Kick button uses absolute positioning to float over player items without affecting layout
 
 **JoinGameScreen Integration**:
 - **Room Code Validation**: 6-digit numeric code validation with real-time backend verification
@@ -352,6 +354,21 @@ Key events for game functionality:
 - **Admin Events**: kickPlayer, getServerInfo, heartbeat ping/pong
 - **Sync Events**: roomSync for real-time lobby updates with complete player data
 
+### Responsive Design System Implementation
+
+The project uses an advanced responsive system in `src/utils/responsive.js`:
+- **Device Detection**: Automatic detection of phone-small, phone-large, and tablet categories
+- **Content-Aware Scaling**: `scaleByContent(size, contentType)` function with different scaling for 'text', 'icon', 'interactive', and 'spacing' content types
+- **Device-Specific Multipliers**: Custom multipliers for different screen sizes (e.g., Pixel 8 Pro gets 1.35x scaling)
+- **Implementation Pattern**: Use `isSmallScreen`, `isTabletScreen` constants for conditional styling and `scaleByContent()` for all dimensions
+- **Screen Layout Adaptation**: Automatic line count adjustment for notebook paper backgrounds based on screen size
+
+#### MultiPlayerRegistrationScreen Responsive Patterns
+- **Conditional Flex Values**: Different flex ratios for small screens vs tablets (e.g., `flex: isSmallScreen ? 0.4 : 0.35`)
+- **Device-Specific Positioning**: Back button, mute button, and modal positioning adjusted per device type
+- **Scalable UI Elements**: All padding, margins, font sizes, and component dimensions use `scaleByContent()`
+- **Adaptive Layouts**: Photo containers, input fields, and button grids scale appropriately for different screen densities
+
 ## Important Development Notes
 
 ### Multiplayer Development Patterns
@@ -417,6 +434,13 @@ Comprehensive player management with custom modals and real-time synchronization
 - **Automatic Sync Cancellation**: Cancels pending automatic room synchronization calls to prevent conflicts
 - **Cross-Device Updates**: Host sees immediate player removal, expelled player gets notification modal
 - **Navigation Management**: Proper redirection after expulsion with stack reset patterns
+
+#### UI Layout Patterns for CreateLobbyScreen
+Critical patterns for maintaining consistent player item layouts:
+- **Single Device Mode**: Apply `playerItemFixedSafe` style with exact height (`height: scaleByContent(56, 'interactive')`) to prevent variable box heights
+- **Multiple Device Mode**: Use default `playerItem` styling with natural flex behavior
+- **Kick Button Positioning**: Use absolute positioning (`position: 'absolute'`, `right`, `top: '50%'`) to float kick buttons over player items without affecting container layout
+- **Empty Slots Management**: In single device mode, set `maxSlots = connectedPlayers.length` to eliminate empty slots that cause layout distribution issues
 
 #### Backend Event Architecture for Player Management
 - **validateRoom**: Pre-join room validation without membership requirement

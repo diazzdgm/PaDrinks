@@ -22,6 +22,8 @@ const initialState = {
     minPlayers: 3,
     shotType: 'shot', // 'shot', 'half', 'sip'
     difficulty: 'normal',
+    playMethod: 'multiple', // 'single', 'multiple'
+    connectionType: 'wifi', // 'wifi', 'bluetooth'
   },
   
   // Estadísticas temporales
@@ -40,6 +42,10 @@ const gameSlice = createSlice({
     
     setGameMode: (state, action) => {
       state.gameMode = action.payload;
+    },
+    
+    setGameSettings: (state, action) => {
+      state.gameSettings = { ...state.gameSettings, ...action.payload };
     },
     
     startGame: (state) => {
@@ -94,6 +100,7 @@ const gameSlice = createSlice({
 export const {
   setGameStatus,
   setGameMode,
+  setGameSettings,
   startGame,
   nextRound,
   setCurrentDynamic,
