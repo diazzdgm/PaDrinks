@@ -163,10 +163,12 @@ const MainMenuScreen = ({ navigation }) => {
 
 
   const toggleMute = async () => {
+    playWinePopSound();
+
     try {
       const newMuteState = await audioService.toggleMute();
       setIsMuted(newMuteState);
-      
+
       // Animación del botón mute
       Animated.sequence([
         Animated.timing(muteButtonScale, {
@@ -180,7 +182,7 @@ const MainMenuScreen = ({ navigation }) => {
           useNativeDriver: true,
         }),
       ]).start();
-      
+
     } catch (error) {
       console.log('Error toggling mute:', error);
     }
@@ -193,6 +195,13 @@ const MainMenuScreen = ({ navigation }) => {
       { volume: 0.8 }
     );
     console.log('🍺 Reproduciendo sonido de lata de cerveza...');
+  };
+
+  const playWinePopSound = async () => {
+    await audioService.playSoundEffect(
+      require('../../assets/sounds/wine-pop.mp3'),
+      { volume: 0.8 }
+    );
   };
 
   const startEntranceAnimations = () => {

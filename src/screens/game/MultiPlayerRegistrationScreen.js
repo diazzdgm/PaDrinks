@@ -196,14 +196,22 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
     console.log('🍺 Reproduciendo sonido de lata de cerveza...');
   };
 
+  const playWinePopSound = async () => {
+    await audioService.playSoundEffect(
+      require('../../../assets/sounds/wine-pop.mp3'),
+      { volume: 0.8 }
+    );
+    console.log('🍷 Reproduciendo sonido de wine-pop...');
+  };
+
   const handleGenderSelect = (selectedGender) => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    
-    playBeerSound();
+
+    playWinePopSound();
     setGender(selectedGender);
   };
 
@@ -213,8 +221,8 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    
-    playBeerSound();
+
+    playWinePopSound();
     setOrientation(selectedOrientation);
   };
 
@@ -224,8 +232,8 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    
-    playBeerSound();
+
+    playWinePopSound();
     
     try {
       // Solicitar permisos de cámara
@@ -268,8 +276,8 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    
-    playBeerSound();
+
+    playWinePopSound();
     setShowEmojiModal(true);
     
     // Animar entrada del modal
@@ -289,12 +297,14 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   };
   
   const handleEmojiSelect = (emoji) => {
+    playWinePopSound();
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    
+
     setSelectedEmoji(emoji);
     setPlayerPhoto('emoji');
     setPhotoUri(null); // Limpiar foto si había una seleccionada
@@ -302,6 +312,8 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   };
   
   const handleCloseEmojiModal = () => {
+    playWinePopSound();
+
     // Animar salida del modal
     Animated.parallel([
       Animated.timing(emojiModalScale, {
@@ -342,6 +354,8 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   
   // Función para ocultar modal de error
   const hideErrorModal = () => {
+    playWinePopSound();
+
     Animated.parallel([
       Animated.timing(errorModalScale, {
         toValue: 0,
@@ -360,10 +374,12 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   };
 
   const toggleMute = async () => {
+    playWinePopSound();
+
     try {
       const newMuteState = await audioService.toggleMute();
       setIsMuted(newMuteState);
-      
+
       Animated.sequence([
         Animated.timing(muteButtonScale, {
           toValue: 0.8,
@@ -376,7 +392,7 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
           useNativeDriver: true,
         }),
       ]).start();
-      
+
     } catch (error) {
       console.log('Error toggling mute:', error);
     }
@@ -403,6 +419,8 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   };
 
   const handleGoBack = () => {
+    playBeerSound(); // Es navegación, usa beer sound
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {

@@ -614,11 +614,20 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     console.log('🍺 Reproduciendo sonido de lata de cerveza...');
   };
 
+  const playWinePopSound = async () => {
+    await audioService.playSoundEffect(
+      require('../../../assets/sounds/wine-pop.mp3'),
+      { volume: 0.8 }
+    );
+  };
+
   const toggleMute = async () => {
+    playWinePopSound();
+
     try {
       const newMuteState = await audioService.toggleMute();
       setIsMuted(newMuteState);
-      
+
       Animated.sequence([
         Animated.timing(muteButtonScale, {
           toValue: 0.8,
@@ -631,7 +640,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
           useNativeDriver: true,
         }),
       ]).start();
-      
+
     } catch (error) {
       console.log('Error toggling mute:', error);
     }
@@ -1018,7 +1027,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
             }
           }
           
-          playBeerSound();
+          playWinePopSound();
           
           try {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -1044,7 +1053,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     
     // Mock clipboard functionality
     showCustomModal('📋 Copiado', 'Código de sala copiado al portapapeles', 'success');
-    playBeerSound();
+    playWinePopSound();
   };
 
   const handleStartGame = () => {

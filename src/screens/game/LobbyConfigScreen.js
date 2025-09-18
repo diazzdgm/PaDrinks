@@ -143,10 +143,21 @@ const LobbyConfigScreen = ({ navigation, route }) => {
       require('../../../assets/sounds/beer.can.sound.mp3'),
       { volume: 0.8 }
     );
-    
+
     if (soundObject) {
       beerSound.current = soundObject;
       console.log('🍺 Reproduciendo sonido de lata de cerveza...');
+    }
+  };
+
+  const playWinePopSound = async () => {
+    const soundObject = await audioService.playSoundEffect(
+      require('../../../assets/sounds/wine-pop.mp3'),
+      { volume: 0.8 }
+    );
+
+    if (soundObject) {
+      console.log('🍷 Reproduciendo sonido de wine-pop...');
     }
   };
 
@@ -156,36 +167,38 @@ const LobbyConfigScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    
-    playBeerSound();
+
+    playWinePopSound();
     setPlayMethod(method);
   };
 
   const handleConnectionSelect = (connection) => {
     // No permitir selección si está en modo un dispositivo
     if (playMethod === 'single') return;
-    
+
     // No permitir selección de Bluetooth (próximamente)
     if (connection === 'bluetooth') {
       console.log('🚫 Bluetooth próximamente - selección bloqueada');
       return;
     }
-    
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    
-    playBeerSound();
+
+    playWinePopSound();
     setConnectionType(connection);
   };
 
   const toggleMute = async () => {
+    playWinePopSound();
+
     try {
       const newMuteState = await audioService.toggleMute();
       setIsMuted(newMuteState);
-      
+
       Animated.sequence([
         Animated.timing(muteButtonScale, {
           toValue: 0.8,
@@ -198,19 +211,21 @@ const LobbyConfigScreen = ({ navigation, route }) => {
           useNativeDriver: true,
         }),
       ]).start();
-      
+
     } catch (error) {
       console.log('Error toggling mute:', error);
     }
   };
 
   const handleGoBack = () => {
+    playBeerSound(); // Es navegación, usa beer sound
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    
+
     // Si no hay parámetros de juego válidos, significa que vino de disolver una sala
     // En este caso, ir al MainMenu en lugar de goBack()
     if (!gameMode || (!roomCode && !playerData && !roomData)) {

@@ -94,8 +94,6 @@ const JoinGameScreen = ({ navigation }) => {
   const errorModalScale = useRef(new Animated.Value(0)).current;
   const errorModalOpacity = useRef(new Animated.Value(0)).current;
   
-  // Referencias para sonidos
-  const beerSound = useRef(null);
   
   // Estado y animación para el botón de mute
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
@@ -118,20 +116,17 @@ const JoinGameScreen = ({ navigation }) => {
 
   // Función para reproducir sonido respetando mute
   const playBeerSound = async () => {
-    const soundObject = await audioService.playSoundEffect(
+    await audioService.playSoundEffect(
       require('../../../assets/sounds/beer.can.sound.mp3'),
       { volume: 0.8 }
     );
-    
-    if (soundObject) {
-      // Si ya había un sonido cargado, liberarlo
-      if (beerSound.current) {
-        try {
-          await beerSound.current.unloadAsync();
-        } catch (error) {}
-      }
-      beerSound.current = soundObject;
-    }
+  };
+
+  const playWinePopSound = async () => {
+    await audioService.playSoundEffect(
+      require('../../../assets/sounds/wine-pop.mp3'),
+      { volume: 0.8 }
+    );
   };
 
   // Configurar audio y limpiar al salir
@@ -154,16 +149,15 @@ const JoinGameScreen = ({ navigation }) => {
       }).start();
 
       return () => {
-        // Limpiar sonidos al salir
-        if (beerSound.current) {
-          beerSound.current.unloadAsync().catch(console.error);
-        }
+        // Limpiar sonidos al salir - AudioService maneja la limpieza automáticamente
       };
     }, [])
   );
 
   // Función para manejar el mute
   const handleMuteToggle = async () => {
+    playWinePopSound();
+
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (error) {
@@ -195,7 +189,7 @@ const JoinGameScreen = ({ navigation }) => {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {}
 
-    await playBeerSound();
+    await playWinePopSound();
 
     setShowCodeInput(true);
     
@@ -217,6 +211,8 @@ const JoinGameScreen = ({ navigation }) => {
 
   // Función para ocultar modal
   const hideCodeInput = () => {
+    playWinePopSound();
+
     Animated.parallel([
       Animated.timing(modalScale, {
         toValue: 0,
@@ -257,6 +253,8 @@ const JoinGameScreen = ({ navigation }) => {
 
   // Función para ocultar modal de error
   const hideErrorModal = () => {
+    playWinePopSound();
+
     Animated.parallel([
       Animated.timing(errorModalScale, {
         toValue: 0,
@@ -280,6 +278,9 @@ const JoinGameScreen = ({ navigation }) => {
       showError('Ingresa un código válido de 6 números');
       return;
     }
+
+    // Sonido beer para navegación exitosa
+    await playBeerSound();
 
     if (!(connected || isConnected || SocketService.connected)) {
       showError('No hay conexión con el servidor. Verifica tu conexión a internet.');
@@ -351,6 +352,8 @@ const JoinGameScreen = ({ navigation }) => {
 
   // Función para escanear QR (placeholder por ahora)
   const handleScanQR = async () => {
+    await playWinePopSound();
+
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {}
@@ -363,6 +366,8 @@ const JoinGameScreen = ({ navigation }) => {
   };
 
   const handleGoBack = async () => {
+    await playBeerSound(); // Es navegación, usa beer sound
+
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {}

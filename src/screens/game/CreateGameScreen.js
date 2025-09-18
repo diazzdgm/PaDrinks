@@ -91,8 +91,6 @@ const CreateGameScreen = ({ navigation }) => {
   // SOLO animaciones básicas necesarias
   const fadeAnim = useRef(new Animated.Value(0)).current;
   
-  // Referencias para sonidos
-  const beerSound = useRef(null);
   
   // Estado y animación para el botón de mute
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
@@ -210,31 +208,24 @@ const CreateGameScreen = ({ navigation }) => {
       }).start();
       
       return () => {
-        cleanupSound();
+        // AudioService maneja la limpieza automáticamente
       };
     }, [])
   );
 
-  const cleanupSound = async () => {
-    if (beerSound.current) {
-      try {
-        await beerSound.current.unloadAsync();
-      } catch (error) {
-        console.log('Error cleaning up beer sound:', error);
-      }
-    }
-  };
 
   const playBeerSound = async () => {
-    const soundObject = await audioService.playSoundEffect(
+    await audioService.playSoundEffect(
       require('../../../assets/sounds/beer.can.sound.mp3'),
       { volume: 0.8 }
     );
-    
-    if (soundObject) {
-      beerSound.current = soundObject;
-      console.log('🍺 Reproduciendo sonido de lata de cerveza...');
-    }
+  };
+
+  const playWinePopSound = async () => {
+    await audioService.playSoundEffect(
+      require('../../../assets/sounds/wine-pop.mp3'),
+      { volume: 0.8 }
+    );
   };
 
   // Verificar estado de conexión (la conexión se hace desde MainMenu)
@@ -248,7 +239,7 @@ const CreateGameScreen = ({ navigation }) => {
     }
   }, [connected, isConnecting]);
 
-  const handleModeSelect = (mode, index) => {
+  const handleModeSelect = async (mode, index) => {
     // Prevenir click si acabamos de hacer un swipe
     if (isSwipeInProgress) {
       console.log('Click bloqueado - swipe en progreso');
@@ -263,7 +254,7 @@ const CreateGameScreen = ({ navigation }) => {
       console.log('Haptics not available:', error);
     }
 
-    playBeerSound();
+    await playBeerSound();
     
     if (gameMode.available) {
       setSelectedMode(gameMode.id);
@@ -298,10 +289,12 @@ const CreateGameScreen = ({ navigation }) => {
   };
 
   const toggleMute = async () => {
+    playWinePopSound();
+
     try {
       const newMuteState = await audioService.toggleMute();
       setIsMuted(newMuteState);
-      
+
       Animated.sequence([
         Animated.timing(muteButtonScale, {
           toValue: 0.8,
@@ -314,15 +307,17 @@ const CreateGameScreen = ({ navigation }) => {
           useNativeDriver: true,
         }),
       ]).start();
-      
+
     } catch (error) {
       console.log('Error toggling mute:', error);
     }
   };
 
-  const handleGoBack = () => {
+  const handleGoBack = async () => {
+    await playBeerSound();
+
     try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
       console.log('Haptics not available:', error);
     }

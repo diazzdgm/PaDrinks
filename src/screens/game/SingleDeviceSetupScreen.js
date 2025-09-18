@@ -149,22 +149,31 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
     );
   };
 
+  const playWinePopSound = async () => {
+    await audioService.playSoundEffect(
+      require('../../../assets/sounds/wine-pop.mp3'),
+      { volume: 0.8 }
+    );
+  };
+
   const handlePlayerCountChange = (newCount) => {
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    
-    playBeerSound();
+
+    playWinePopSound();
     setPlayerCount(newCount);
   };
 
   const toggleMute = async () => {
+    playWinePopSound();
+
     try {
       const newMuteState = await audioService.toggleMute();
       setIsMuted(newMuteState);
-      
+
       Animated.sequence([
         Animated.timing(muteButtonScale, {
           toValue: 0.8,
@@ -177,13 +186,15 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
           useNativeDriver: true,
         }),
       ]).start();
-      
+
     } catch (error) {
       console.log('Error toggling mute:', error);
     }
   };
 
   const handleGoBack = () => {
+    playBeerSound(); // Es navegación, usa beer sound
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
@@ -198,8 +209,8 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    
-    playBeerSound();
+
+    playBeerSound(); // Es navegación, mantiene beer sound
     
     // Datos del juego
     const gameData = {
