@@ -952,16 +952,16 @@ const styles = StyleSheet.create({
   // Indicador de conexión
   connectionIndicator: {
     position: 'absolute',
-    top: scaleHeight(isSmallDevice() ? 45 : isTablet() ? 80 : 60),
-    right: scaleWidth(isSmallDevice() ? 15 : isTablet() ? 30 : 20),
+    top: scaleHeight(isSmallDevice() ? 10 : isTablet() ? 15 : 12),
+    right: scaleWidth(isSmallDevice() ? 100 : isTablet() ? 120 : 110), // Lado izquierdo del botón MUTE
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     paddingHorizontal: scaleWidth(12),
     paddingVertical: scaleHeight(6),
     borderRadius: scale(15),
-    borderWidth: 1,
-    borderColor: '#DDD',
+    borderWidth: 2,
+    borderColor: '#000000', // Contorno negro
     zIndex: 1000,
   },
   

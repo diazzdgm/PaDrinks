@@ -758,16 +758,16 @@ const styles = StyleSheet.create({
 
   connectionIndicator: {
     position: 'absolute',
-    top: 60,
-    right: 20,
+    top: 30,
+    right: 110, // Lado izquierdo del botón MUTE
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 15,
-    borderWidth: 1,
-    borderColor: '#DDD',
+    borderWidth: 2,
+    borderColor: '#000000', // Contorno negro
     zIndex: 1000,
   },
 

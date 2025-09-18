@@ -564,16 +564,16 @@ const styles = StyleSheet.create({
   // Indicador de conexión
   connectionIndicator: {
     position: 'absolute',
-    top: scaleByContent(isSmallScreen ? 45 : isTabletScreen ? 80 : 60, 'spacing'),
-    right: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 30 : 20, 'spacing'),
+    top: scaleByContent(30, 'spacing'),
+    right: scaleByContent(isSmallScreen ? 100 : isTabletScreen ? 120 : 110, 'spacing'), // Lado izquierdo del botón MUTE
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     paddingHorizontal: scaleByContent(12, 'spacing'),
     paddingVertical: scaleByContent(6, 'spacing'),
     borderRadius: scaleByContent(15, 'spacing'),
-    borderWidth: scaleByContent(1, 'spacing'),
-    borderColor: '#DDD',
+    borderWidth: scaleByContent(2, 'spacing'),
+    borderColor: '#000000', // Contorno negro
     zIndex: 1000,
   },
   
