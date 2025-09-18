@@ -226,9 +226,9 @@ const LobbyConfigScreen = ({ navigation, route }) => {
       console.log('Haptics not available:', error);
     }
 
-    // Si no hay parámetros de juego válidos, significa que vino de disolver una sala
-    // En este caso, ir al MainMenu en lugar de goBack()
-    if (!gameMode || (!roomCode && !playerData && !roomData)) {
+    // Solo ir al MainMenu si no hay gameMode (significa que vino de disolver una sala)
+    // Si hay gameMode, siempre usar goBack() para volver a la pantalla anterior
+    if (!gameMode) {
       navigation.reset({
         index: 0,
         routes: [{ name: 'MainMenu' }],
