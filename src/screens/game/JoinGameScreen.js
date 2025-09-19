@@ -12,6 +12,7 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
+import { CameraView, Camera } from 'expo-camera';
 import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import audioService from '../../services/AudioService';
@@ -86,6 +87,9 @@ const JoinGameScreen = ({ navigation }) => {
   const [isJoining, setIsJoining] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [hasPermission, setHasPermission] = useState(null);
+  const [scanned, setScanned] = useState(false);
   
   // Animaciones
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -98,6 +102,16 @@ const JoinGameScreen = ({ navigation }) => {
   // Estado y animación para el botón de mute
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
   const muteButtonScale = useRef(new Animated.Value(1)).current;
+
+  // Efecto para solicitar permisos de cámara
+  useEffect(() => {
+    const getCameraPermissions = async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === 'granted');
+    };
+
+    getCameraPermissions();
+  }, []);
 
   // Función para conectar al backend
   const initializeBackendConnection = React.useCallback(async () => {
@@ -350,7 +364,7 @@ const JoinGameScreen = ({ navigation }) => {
     }
   };
 
-  // Función para escanear QR (placeholder por ahora)
+  // Función para escanear QR
   const handleScanQR = async () => {
     await playWinePopSound();
 
@@ -358,11 +372,53 @@ const JoinGameScreen = ({ navigation }) => {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {}
 
-    Alert.alert(
-      '📱 Escanear QR',
-      'Funcionalidad de QR próximamente.\n\nPor ahora puedes usar el código manual.',
-      [{ text: 'OK' }]
-    );
+    if (hasPermission === null) {
+      Alert.alert('Error', 'Solicitando permisos de cámara...');
+      return;
+    }
+    if (hasPermission === false) {
+      Alert.alert(
+        'Sin permisos de cámara',
+        'Por favor permite el acceso a la cámara para escanear códigos QR.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    setScanned(false);
+    setShowQRScanner(true);
+  };
+
+  // Función para manejar el escaneo del código QR
+  const handleBarcodeScanned = async ({ type, data }) => {
+    setScanned(true);
+    setShowQRScanner(false);
+
+    // Validar que sea un código de 6 dígitos
+    if (data && data.length === 6 && /^\d{6}$/.test(data)) {
+      await playWinePopSound();
+
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {}
+
+      // Navegar directamente a PlayerRegistrationScreen con el código para multijugador
+      navigation.navigate('PlayerRegistration', {
+        roomCode: data,
+        isJoining: true,
+        gameMode: 'classic', // Por defecto, pero se obtendrá del backend
+        playMethod: 'multiple',
+        connectionType: 'wifi'
+      });
+    } else {
+      // Código QR inválido
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      } catch (error) {}
+
+      setErrorMessage('Código QR inválido. Debe ser un código de 6 dígitos.');
+      setShowErrorModal(true);
+    }
   };
 
   const handleGoBack = async () => {
@@ -601,6 +657,52 @@ const JoinGameScreen = ({ navigation }) => {
               </View>
             </View>
           </Animated.View>
+        </View>
+      </Modal>
+
+      {/* Modal del Escáner QR */}
+      <Modal
+        visible={showQRScanner}
+        animationType="slide"
+        onRequestClose={() => setShowQRScanner(false)}
+      >
+        <View style={styles.qrScannerContainer}>
+          <CameraView
+            style={StyleSheet.absoluteFillObject}
+            facing="back"
+            onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+            barcodeScannerSettings={{
+              barcodeTypes: ["qr"],
+            }}
+          />
+
+          {/* Overlay con instrucciones */}
+          <View style={styles.qrOverlay}>
+            <View style={styles.qrHeader}>
+              <TouchableOpacity
+                style={styles.qrCloseButton}
+                onPress={() => setShowQRScanner(false)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.qrCloseButtonText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.qrInstructionsContainer}>
+              <Text style={styles.qrInstructionsTitle}>Escanear Código QR</Text>
+              <Text style={styles.qrInstructionsText}>
+                Apunta la cámara hacia el código QR
+              </Text>
+            </View>
+
+            {/* Marco del escáner */}
+            <View style={styles.qrScanFrame}>
+              <View style={styles.qrCorner} />
+              <View style={[styles.qrCorner, styles.qrCornerTopRight]} />
+              <View style={[styles.qrCorner, styles.qrCornerBottomLeft]} />
+              <View style={[styles.qrCorner, styles.qrCornerBottomRight]} />
+            </View>
+          </View>
         </View>
       </Modal>
     </View>
@@ -1034,6 +1136,119 @@ const styles = StyleSheet.create({
     fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#FFF',
+  },
+
+  // Estilos del escáner QR
+  qrScannerContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+
+  qrOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+  },
+
+  qrHeader: {
+    position: 'absolute',
+    top: scaleByContent(50, 'spacing'),
+    right: scaleByContent(20, 'spacing'),
+    zIndex: 1,
+  },
+
+  qrCloseButton: {
+    width: scaleByContent(44, 'interactive'),
+    height: scaleByContent(44, 'interactive'),
+    borderRadius: scaleByContent(22, 'spacing'),
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  qrCloseButtonText: {
+    fontSize: scaleByContent(24, 'text'),
+    color: '#FFF',
+    fontWeight: 'bold',
+  },
+
+  qrInstructionsContainer: {
+    position: 'absolute',
+    top: scaleByContent(120, 'spacing'),
+    left: scaleByContent(20, 'spacing'),
+    right: scaleByContent(20, 'spacing'),
+    alignItems: 'center',
+  },
+
+  qrInstructionsTitle: {
+    fontSize: scaleByContent(24, 'text'),
+    fontFamily: theme.fonts.primaryBold,
+    color: '#FFF',
+    textAlign: 'center',
+    marginBottom: scaleByContent(8, 'spacing'),
+  },
+
+  qrInstructionsText: {
+    fontSize: scaleByContent(16, 'text'),
+    fontFamily: theme.fonts.primary,
+    color: '#FFF',
+    textAlign: 'center',
+  },
+
+  qrScanFrame: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: scaleByContent(250, 'interactive'),
+    height: scaleByContent(250, 'interactive'),
+    marginTop: scaleByContent(-125, 'spacing'),
+    marginLeft: scaleByContent(-125, 'spacing'),
+  },
+
+  qrCorner: {
+    position: 'absolute',
+    width: scaleByContent(30, 'spacing'),
+    height: scaleByContent(30, 'spacing'),
+    borderColor: '#FFF',
+    borderWidth: scaleByContent(3, 'spacing'),
+    top: 0,
+    left: 0,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+  },
+
+  qrCornerTopRight: {
+    top: 0,
+    right: 0,
+    left: 'auto',
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+    borderRightWidth: scaleByContent(3, 'spacing'),
+    borderTopWidth: scaleByContent(3, 'spacing'),
+  },
+
+  qrCornerBottomLeft: {
+    bottom: 0,
+    left: 0,
+    top: 'auto',
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderLeftWidth: scaleByContent(3, 'spacing'),
+    borderBottomWidth: scaleByContent(3, 'spacing'),
+  },
+
+  qrCornerBottomRight: {
+    bottom: 0,
+    right: 0,
+    top: 'auto',
+    left: 'auto',
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    borderRightWidth: scaleByContent(3, 'spacing'),
+    borderBottomWidth: scaleByContent(3, 'spacing'),
   },
 });
 

@@ -11,6 +11,7 @@ import {
   Alert,
   Modal,
 } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import audioService from '../../services/AudioService';
@@ -1263,8 +1264,19 @@ const CreateLobbyScreen = ({ navigation, route }) => {
               {/* Área del QR */}
               <View style={styles.qrContainer}>
                 <View style={styles.qrPlaceholder}>
-                  <Text style={styles.qrPlaceholderText}>📱</Text>
-                  <Text style={styles.qrPlaceholderSubtext}>Código QR</Text>
+                  {playMethod === 'multiple' && roomCode ? (
+                    <QRCode
+                      value={roomCode}
+                      size={scaleByContent(110, 'interactive')}
+                      color="#000000"
+                      backgroundColor="#FFFFFF"
+                    />
+                  ) : (
+                    <>
+                      <Text style={styles.qrPlaceholderText}>📱</Text>
+                      <Text style={styles.qrPlaceholderSubtext}>Código QR</Text>
+                    </>
+                  )}
                 </View>
               </View>
               
