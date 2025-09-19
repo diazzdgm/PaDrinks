@@ -834,12 +834,10 @@ const CreateLobbyScreen = ({ navigation, route }) => {
               routes: [{ name: 'MainMenu' }],
             });
           } else {
-            // En modo online, navegar a LobbyConfigScreen
-            navigation.navigate('LobbyConfig', {
-              gameMode: gameMode || 'classic',
-              playMethod: playMethod || 'multiple',
-              connectionType: connectionType || 'wifi',
-              playerCount: playerCount || 2
+            // En modo online, también navegar al menú principal después de disolver la sala
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'MainMenu' }],
             });
           }
           
@@ -853,11 +851,10 @@ const CreateLobbyScreen = ({ navigation, route }) => {
               routes: [{ name: 'MainMenu' }],
             });
           } else {
-            navigation.navigate('LobbyConfig', {
-              gameMode: gameMode || 'classic',
-              playMethod: playMethod || 'multiple',
-              connectionType: connectionType || 'wifi',
-              playerCount: playerCount || 2
+            // En caso de error, también navegar al menú principal
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'MainMenu' }],
             });
           }
         }
