@@ -150,8 +150,8 @@ const GameScreen = ({ navigation, route }) => {
 
       setIsMuted(audioService.isMusicMuted);
 
-      // Inicializar el juego si viene de SingleDeviceSetup
-      if (route.params?.gameMode === 'single-device' && route.params?.playerCount) {
+      // Inicializar el juego si viene de SingleDeviceSetup pero NO si regresa de agregar jugador
+      if (route.params?.gameMode === 'single-device' && route.params?.playerCount && !route.params?.isReturningFromAddPlayer) {
         initializeGame();
       }
 

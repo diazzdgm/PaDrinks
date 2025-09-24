@@ -46,39 +46,24 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
   const [showKickMode, setShowKickMode] = useState(false);
 
   // Animations
-  const backdropAnim = useRef(new Animated.Value(0)).current;
   const modalAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
       // Entrada
-      Animated.parallel([
-        Animated.timing(backdropAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.spring(modalAnim, {
-          toValue: 1,
-          tension: 100,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      Animated.spring(modalAnim, {
+        toValue: 1,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }).start();
     } else {
       // Salida
-      Animated.parallel([
-        Animated.timing(backdropAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(modalAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      Animated.timing(modalAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
     }
   }, [visible]);
 
@@ -238,35 +223,23 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
       animationType="none"
       onRequestClose={handleClose}
     >
-      <Animated.View
-        style={[
-          styles.backdrop,
-          {
-            opacity: backdropAnim,
-          }
-        ]}
-      >
-        <TouchableOpacity
-          style={styles.backdropTouchable}
-          activeOpacity={1}
-          onPress={handleClose}
+      <View style={styles.modalWrapper}>
+        <Animated.View
+          style={[
+            styles.modalContainer,
+            {
+              transform: [
+                {
+                  scale: modalAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.8, 1],
+                  })
+                }
+              ]
+            }
+          ]}
+          onStartShouldSetResponder={() => true}
         >
-          <Animated.View
-            style={[
-              styles.modalContainer,
-              {
-                transform: [
-                  {
-                    scale: modalAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.8, 1],
-                    })
-                  }
-                ]
-              }
-            ]}
-            onStartShouldSetResponder={() => true}
-          >
             {/* Fondo de papel del modal */}
             <View style={styles.modalPaperBackground}>
               <View style={styles.modalNotebookLines}>
@@ -487,9 +460,8 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
                 </View>
               )}
             </View>
-          </Animated.View>
-        </TouchableOpacity>
-      </Animated.View>
+        </Animated.View>
+      </View>
     </Modal>
   );
 };
@@ -499,12 +471,7 @@ const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
-
-  backdropTouchable: {
+  modalWrapper: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',

@@ -442,7 +442,8 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
       navigation.navigate('GameScreen', {
         gameMode: 'single-device',
         playerCount: currentPlayers.length,
-        registeredPlayers: currentPlayers
+        registeredPlayers: currentPlayers,
+        isReturningFromAddPlayer: true // Flag para indicar que no debe reinicializar
       });
       return;
     }
@@ -583,11 +584,12 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
       const updatedGamePlayers = [...currentPlayers, newPlayerData];
       gameEngine.updatePlayers(updatedGamePlayers);
 
-      // Regresar al GameScreen manteniendo los parámetros originales
+      // Regresar al GameScreen sin reinicializar el juego
       navigation.navigate('GameScreen', {
         gameMode: 'single-device',
         playerCount: currentPlayers.length + 1,
-        registeredPlayers: currentPlayers // Mantener la referencia a los jugadores originales
+        registeredPlayers: currentPlayers, // Mantener la referencia a los jugadores originales
+        isReturningFromAddPlayer: true // Flag para indicar que no debe reinicializar
       });
       return;
     }
