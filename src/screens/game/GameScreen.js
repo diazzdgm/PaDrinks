@@ -74,10 +74,18 @@ const CustomConfigIcon = ({ size }) => {
   const responsiveSize = size || scaleModerate(50, 0.3);
 
   return (
-    <View style={styles.configIconContainer}>
-      <View style={[styles.gear, { width: responsiveSize, height: responsiveSize }]}>
-        <Text style={[styles.gearText, { fontSize: responsiveSize * 0.6 }]}>⚙️</Text>
-      </View>
+    <View style={styles.customIconContainer}>
+      <Image
+        source={require('../../../assets/images/Engranaje.CONFIG.png')}
+        style={[
+          styles.configImage,
+          {
+            width: responsiveSize,
+            height: responsiveSize,
+          }
+        ]}
+        resizeMode="contain"
+      />
     </View>
   );
 };
@@ -697,20 +705,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '-1.5deg' }],
   },
 
-  configIconContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    flex: 1,
-  },
-
-  gear: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  gearText: {
-    color: '#333',
-  },
+  configImage: {},
 
   megaphoneImage: {},
 
