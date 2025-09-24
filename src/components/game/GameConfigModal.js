@@ -30,13 +30,16 @@ import { removePlayer } from '../../store/playersSlice';
 import { endGame, resetGame } from '../../store/gameSlice';
 import { getGameEngine } from '../../game/GameEngine';
 
-const GameConfigModal = ({ visible, onClose, navigation }) => {
+const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], onPlayerRemoved }) => {
   const dispatch = useDispatch();
   const gameEngine = getGameEngine();
 
   // Redux state
   const { playersList } = useSelector(state => state.players);
   const { currentRound, totalRounds } = useSelector(state => state.game);
+
+  // TODOS los jugadores del juego (pasados como prop desde GameScreen)
+  const allPlayers = allGamePlayers;
 
   // Local state
   const [confirmingAction, setConfirmingAction] = useState(null); // 'kick-player-id', 'end-game', 'kick-mode'
@@ -94,6 +97,12 @@ const GameConfigModal = ({ visible, onClose, navigation }) => {
   };
 
   const handleAddPlayer = async () => {
+    // Validar límite máximo de jugadores
+    if (allPlayers.length >= 16) {
+      // No se puede agregar, mostrar feedback
+      return;
+    }
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (error) {
@@ -108,9 +117,9 @@ const GameConfigModal = ({ visible, onClose, navigation }) => {
     setTimeout(() => {
       navigation.navigate('MultiPlayerRegistration', {
         gameMode: 'single-device',
-        playerCount: playersList.length + 1,
+        playerCount: allPlayers.length + 1,
         isAddingPlayer: true,
-        currentPlayers: playersList,
+        currentPlayers: allPlayers, // Pasar TODOS los jugadores del GameEngine
         draftPlayers: {}
       });
     }, 300);
@@ -126,18 +135,37 @@ const GameConfigModal = ({ visible, onClose, navigation }) => {
     playWinePopSound();
 
     // Verificar que queden al menos 3 jugadores después de expulsar
-    if (playersList.length <= 3) {
+    if (allPlayers.length <= 3) {
       // No se puede expulsar, mostrar feedback
       setConfirmingAction(null);
       return;
     }
 
-    // Expulsar jugador del Redux
-    dispatch(removePlayer(playerId));
+    // Usar comparación consistente de tipos para encontrar el jugador
+    const expulsedPlayer = allPlayers.find(p => String(p.id) === String(playerId));
+    console.log('🎮 Jugador a expulsar:', expulsedPlayer?.name || expulsedPlayer?.nickname);
 
-    // Actualizar GameEngine con nueva lista de jugadores
-    const updatedPlayers = playersList.filter(p => p.id !== playerId);
+    // Actualizar GameEngine con nueva lista de jugadores (remover el jugador expulsado)
+    console.log('🎮 ID a remover:', playerId, 'tipo:', typeof playerId);
+    console.log('🎮 IDs en allPlayers:', allPlayers.map(p => ({ id: p.id, tipo: typeof p.id })));
+
+    // Convertir ambos IDs a string para comparación consistente
+    const updatedPlayers = allPlayers.filter(p => String(p.id) !== String(playerId));
     gameEngine.updatePlayers(updatedPlayers);
+
+    // Notificar a GameScreen para remover el jugador específico
+    if (onPlayerRemoved) {
+      onPlayerRemoved(playerId);
+    }
+
+    // Si el jugador estaba en Redux (agregado dinámicamente), también removerlo de Redux
+    const playerInRedux = playersList.find(p => p.id === playerId);
+    if (playerInRedux) {
+      dispatch(removePlayer(playerId));
+    }
+
+    console.log('🎮 Jugador expulsado exitosamente');
+    console.log('🎮 Total jugadores restantes en GameEngine:', updatedPlayers.length);
 
     setConfirmingAction(null);
     onClose();
@@ -271,11 +299,18 @@ const GameConfigModal = ({ visible, onClose, navigation }) => {
                   {/* Botones principales */}
                   <View style={styles.buttonsGrid}>
                     <TouchableOpacity
-                      style={styles.actionButton}
+                      style={[
+                        styles.actionButton,
+                        allPlayers.length >= 16 && styles.actionButtonDisabled
+                      ]}
                       onPress={handleAddPlayer}
-                      activeOpacity={0.8}
+                      activeOpacity={allPlayers.length >= 16 ? 1 : 0.8}
+                      disabled={allPlayers.length >= 16}
                     >
-                      <Text style={styles.actionButtonText}>+ Agregar Jugador</Text>
+                      <Text style={[
+                        styles.actionButtonText,
+                        allPlayers.length >= 16 && styles.actionButtonTextDisabled
+                      ]}>+ Agregar Jugador</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -295,6 +330,18 @@ const GameConfigModal = ({ visible, onClose, navigation }) => {
                   >
                     <Text style={styles.endGameButtonText}>Terminar Juego</Text>
                   </TouchableOpacity>
+
+                  {/* Información de límites */}
+                  <View style={styles.limitsInfo}>
+                    <Text style={styles.limitsInfoText}>
+                      Jugadores: {allPlayers.length}/16 (mínimo 3)
+                    </Text>
+                    {allPlayers.length >= 16 && (
+                      <Text style={styles.maxPlayersWarning}>
+                        Máximo de jugadores alcanzado
+                      </Text>
+                    )}
+                  </View>
                 </>
               )}
 
@@ -312,30 +359,57 @@ const GameConfigModal = ({ visible, onClose, navigation }) => {
                     </TouchableOpacity>
                   </View>
 
-                  <View style={styles.playersGrid}>
-                    {playersList.map((player) => (
-                      <TouchableOpacity
-                        key={player.id}
-                        style={[
-                          styles.playerCard,
-                          playersList.length <= 3 && styles.playerCardDisabled
-                        ]}
-                        onPress={() => playersList.length > 3 ? handleKickPlayer(player.id) : null}
-                        activeOpacity={playersList.length > 3 ? 0.8 : 1}
-                        disabled={playersList.length <= 3}
-                      >
-                        <Text style={styles.playerCardName}>{player.name}</Text>
-                        {player.isHost && (
-                          <Text style={styles.hostIndicator}>👑</Text>
-                        )}
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+                  <ScrollView
+                    style={styles.playersScrollView}
+                    contentContainerStyle={styles.playersScrollContent}
+                    showsVerticalScrollIndicator={true}
+                  >
+                    {(() => {
+                      console.log('🎮 TODOS los jugadores (Props):', allPlayers);
+                      console.log('🎮 Jugadores agregados dinámicamente (Redux):', playersList);
+                      console.log('🎮 Estructura de allPlayers:', allPlayers.map(p => ({
+                        id: p.id,
+                        name: p.name || p.nickname,
+                        isHost: p.isHost
+                      })));
+                      const nonHostPlayers = allPlayers.filter(player => !player.isHost);
+                      console.log('🎮 Jugadores no-host disponibles para expulsar:', nonHostPlayers);
+                      return nonHostPlayers.map((player, index) => (
+                        <TouchableOpacity
+                          key={player.id}
+                          style={[
+                            styles.playerCardList,
+                            { transform: [{ rotate: index % 2 === 0 ? '1deg' : '-1deg' }] },
+                            allPlayers.length <= 3 && styles.playerCardDisabled
+                          ]}
+                          onPress={() => allPlayers.length > 3 ? handleKickPlayer(player.id) : null}
+                          activeOpacity={allPlayers.length > 3 ? 0.8 : 1}
+                          disabled={allPlayers.length <= 3}
+                        >
+                          <Text style={styles.playerCardName}>{player.name || player.nickname}</Text>
+                        </TouchableOpacity>
+                      ));
+                    })()}
+                  </ScrollView>
 
-                  {playersList.length <= 3 && (
+                  {allPlayers.length <= 3 && (
                     <Text style={styles.minPlayersWarning}>
                       Mínimo 3 jugadores requeridos
                     </Text>
+                  )}
+
+                  {allPlayers.filter(player => !player.isHost).length === 0 && (
+                    <View style={styles.noPlayersContainer}>
+                      <Text style={styles.noPlayersWarning}>
+                        No hay jugadores para expulsar
+                      </Text>
+                      <Text style={styles.noPlayersSubtext}>
+                        Total de jugadores: {allPlayers.length}
+                      </Text>
+                      <Text style={styles.noPlayersSubtext}>
+                        Hosts: {allPlayers.filter(p => p.isHost).length}
+                      </Text>
+                    </View>
                   )}
                 </>
               )}
@@ -349,10 +423,11 @@ const GameConfigModal = ({ visible, onClose, navigation }) => {
 
                   {(() => {
                     const playerId = confirmingAction.replace('kick-', '');
-                    const player = playersList.find(p => p.id === playerId);
+                    // Usar comparación consistente de tipos
+                    const player = allPlayers.find(p => String(p.id) === String(playerId));
                     return player ? (
                       <Text style={styles.confirmationText}>
-                        ¿Estás seguro de que quieres expulsar a {player.name}?
+                        ¿Estás seguro de que quieres expulsar a {player.name || player.nickname}?
                       </Text>
                     ) : null;
                   })()}
@@ -575,6 +650,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+  actionButtonDisabled: {
+    backgroundColor: '#F0F0F0',
+    opacity: 0.6,
+  },
+
+  actionButtonTextDisabled: {
+    color: '#999999',
+  },
+
   // Modo kick
   kickModeHeader: {
     flexDirection: 'row',
@@ -613,6 +697,15 @@ const styles = StyleSheet.create({
     marginBottom: scaleByContent(15, 'spacing'),
   },
 
+  playersScrollView: {
+    maxHeight: scaleByContent(200, 'spacing'),
+    marginBottom: scaleByContent(15, 'spacing'),
+  },
+
+  playersScrollContent: {
+    paddingVertical: scaleByContent(10, 'spacing'),
+  },
+
   playerCard: {
     backgroundColor: '#FFFFFF',
     borderWidth: 2,
@@ -622,6 +715,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: scaleByContent(12, 'spacing'),
     minWidth: scaleByContent(80, 'spacing'),
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+
+  playerCardList: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderRadius: 10,
+    paddingVertical: scaleByContent(12, 'spacing'),
+    paddingHorizontal: scaleByContent(15, 'spacing'),
+    marginBottom: scaleByContent(8, 'spacing'),
+    marginHorizontal: scaleByContent(10, 'spacing'),
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.15,
@@ -669,6 +778,52 @@ const styles = StyleSheet.create({
     fontSize: scaleByContent(12, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginTop: scaleByContent(5, 'spacing'),
+  },
+
+  noPlayersWarning: {
+    fontSize: scaleByContent(12, 'text'),
+    fontFamily: theme.fonts.primary,
+    color: '#666',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginTop: scaleByContent(5, 'spacing'),
+  },
+
+  noPlayersContainer: {
+    alignItems: 'center',
+    paddingVertical: scaleByContent(15, 'spacing'),
+  },
+
+  noPlayersSubtext: {
+    fontSize: scaleByContent(10, 'text'),
+    fontFamily: theme.fonts.primary,
+    color: '#999',
+    textAlign: 'center',
+    marginTop: scaleByContent(2, 'spacing'),
+  },
+
+  limitsInfo: {
+    alignItems: 'center',
+    marginTop: scaleByContent(15, 'spacing'),
+    paddingTop: scaleByContent(15, 'spacing'),
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0, 0, 0, 0.1)',
+  },
+
+  limitsInfoText: {
+    fontSize: scaleByContent(12, 'text'),
+    fontFamily: theme.fonts.primary,
+    color: '#666',
+    textAlign: 'center',
+  },
+
+  maxPlayersWarning: {
+    fontSize: scaleByContent(11, 'text'),
+    fontFamily: theme.fonts.primary,
+    color: '#FF6B6B',
     textAlign: 'center',
     fontStyle: 'italic',
     marginTop: scaleByContent(5, 'spacing'),

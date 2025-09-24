@@ -16,6 +16,8 @@ import { Audio } from 'expo-av';
 import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { useDispatch } from 'react-redux';
+import { addPlayer } from '../../store/playersSlice';
+import { getGameEngine } from '../../game/GameEngine';
 import { theme } from '../../styles/theme';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera } from 'expo-camera';
@@ -70,7 +72,15 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   
   // Parámetros de navegación
-  const { gameMode, playerCount, currentPlayer = 1, registeredPlayers = [], draftPlayers = {} } = route.params;
+  const {
+    gameMode,
+    playerCount,
+    currentPlayer = 1,
+    registeredPlayers = [],
+    draftPlayers = {},
+    isAddingPlayer = false,
+    currentPlayers = []
+  } = route.params;
   
   // Estados para el formulario
   const [nickname, setNickname] = useState('');
@@ -426,12 +436,22 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    
+
+    // Si estamos agregando un jugador al juego en curso, regresar al GameScreen
+    if (isAddingPlayer) {
+      navigation.navigate('GameScreen', {
+        gameMode: 'single-device',
+        playerCount: currentPlayers.length,
+        registeredPlayers: currentPlayers
+      });
+      return;
+    }
+
     console.log(`⬅️ BACK PRESSED - Jugador actual: ${currentPlayer}`);
-    console.log(`📝 Datos actuales antes de guardar:`, { 
-      nickname, gender, orientation, playerPhoto, selectedEmoji, photoUri 
+    console.log(`📝 Datos actuales antes de guardar:`, {
+      nickname, gender, orientation, playerPhoto, selectedEmoji, photoUri
     });
-    
+
     if (currentPlayer === 1) {
       // Si es el primer jugador, regresar a SingleDeviceSetup
       // Siempre incluir todos los datos: registeredPlayers + draftPlayers actuales
@@ -507,14 +527,26 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
       return;
     }
     
-    // Validar nombres duplicados en modo local (excluyendo al jugador actual)
-    if (registeredPlayers && registeredPlayers.length > 0) {
-      const duplicateName = registeredPlayers.find(player => 
+    // Validar nombres duplicados
+    if (isAddingPlayer && currentPlayers && currentPlayers.length > 0) {
+      // Si estamos agregando un jugador al juego, validar contra jugadores actuales
+      const duplicateName = currentPlayers.find(player =>
+        player.name &&
+        player.name.toLowerCase().trim() === nickname.toLowerCase().trim()
+      );
+
+      if (duplicateName) {
+        showError(`Ya existe un jugador con el nombre "${nickname.trim()}". Elige un nombre diferente.`);
+        return;
+      }
+    } else if (registeredPlayers && registeredPlayers.length > 0) {
+      // Validar nombres duplicados en modo local normal (excluyendo al jugador actual)
+      const duplicateName = registeredPlayers.find(player =>
         player.playerId !== currentPlayer && // EXCLUIR el jugador actual
-        player.nickname && 
+        player.nickname &&
         player.nickname.toLowerCase().trim() === nickname.toLowerCase().trim()
       );
-      
+
       if (duplicateName) {
         showError(`Ya existe un jugador con el nombre "${nickname.trim()}". Elige un nombre diferente.`);
         return;
@@ -528,8 +560,39 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
     }
     
     playBeerSound();
-    
-    // Datos del jugador actual
+
+    // Si estamos agregando un jugador al juego en curso
+    if (isAddingPlayer) {
+      // Datos del nuevo jugador para Redux y GameEngine
+      const newPlayerData = {
+        id: Date.now().toString(), // Generar ID único
+        name: nickname.trim(),
+        gender,
+        orientation,
+        avatar: playerPhoto === 'photo' ? photoUri : selectedEmoji,
+        isHost: false
+      };
+
+      console.log(`➕ Agregando jugador al juego:`, newPlayerData);
+
+      // Agregar jugador al Redux store
+      dispatch(addPlayer(newPlayerData));
+
+      // Agregar jugador al GameEngine
+      const gameEngine = getGameEngine();
+      const updatedGamePlayers = [...currentPlayers, newPlayerData];
+      gameEngine.updatePlayers(updatedGamePlayers);
+
+      // Regresar al GameScreen manteniendo los parámetros originales
+      navigation.navigate('GameScreen', {
+        gameMode: 'single-device',
+        playerCount: currentPlayers.length + 1,
+        registeredPlayers: currentPlayers // Mantener la referencia a los jugadores originales
+      });
+      return;
+    }
+
+    // Lógica original para registro normal de jugadores
     const currentPlayerData = {
       playerId: currentPlayer,
       nickname: nickname.trim(),
@@ -539,10 +602,10 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
       emoji: selectedEmoji,
       photoUri: photoUri,
     };
-    
+
     // Verificar si el jugador ya existe en la lista (editando jugador existente)
     const existingPlayerIndex = registeredPlayers.findIndex(player => player.playerId === currentPlayer);
-    
+
     let updatedPlayers;
     if (existingPlayerIndex !== -1) {
       // Actualizar jugador existente
@@ -554,12 +617,12 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
       updatedPlayers = [...registeredPlayers, currentPlayerData];
       console.log(`➕ Jugador ${currentPlayer} AGREGADO:`, currentPlayerData);
     }
-    
+
     if (currentPlayer < playerCount) {
       // Limpiar el borrador del jugador actual ya que se ha completado
       const updatedDraftPlayers = { ...draftPlayers };
       delete updatedDraftPlayers[currentPlayer];
-      
+
       // Si no es el último jugador, continuar con el siguiente
       navigation.replace('MultiPlayerRegistration', {
         gameMode,
@@ -571,7 +634,7 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
     } else {
       // Si es el último jugador, finalizar registro
       console.log('Todos los jugadores registrados:', updatedPlayers);
-      
+
       // Navegar a CreateLobbyScreen con todos los jugadores registrados
       navigation.navigate('CreateLobby', {
         gameMode,
@@ -634,8 +697,12 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
 
       {/* Título */}
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>REGISTRA LOS JUGADORES</Text>
-        <Text style={styles.subtitle}>({currentPlayer}/{playerCount})</Text>
+        <Text style={styles.title}>
+          {isAddingPlayer ? 'AGREGAR NUEVO JUGADOR' : 'REGISTRA LOS JUGADORES'}
+        </Text>
+        {!isAddingPlayer && (
+          <Text style={styles.subtitle}>({currentPlayer}/{playerCount})</Text>
+        )}
       </View>
 
       {/* Contenido principal dividido 35/65 */}

@@ -86,6 +86,9 @@ const GameScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const gameEngine = getGameEngine();
 
+  // Parámetros de navegación
+  const { registeredPlayers = [] } = route.params || {};
+
   // Redux state
   const {
     currentQuestion,
@@ -103,6 +106,13 @@ const GameScreen = ({ navigation, route }) => {
   const [gameEnded, setGameEnded] = useState(false);
   const [canExtend, setCanExtend] = useState(false);
 
+  // Estado local para manejar TODOS los jugadores (iniciales + agregados)
+  const [allGamePlayers, setAllGamePlayers] = useState(() => {
+    // Inicializar con jugadores registrados
+    console.log('🎯 Inicializando allGamePlayers con:', registeredPlayers);
+    return [...registeredPlayers];
+  });
+
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const instructionAnim = useRef(new Animated.Value(-30)).current;
@@ -111,8 +121,33 @@ const GameScreen = ({ navigation, route }) => {
   const muteButtonScale = useRef(new Animated.Value(1)).current;
   const configButtonScale = useRef(new Animated.Value(1)).current;
 
+  // Sincronizar allGamePlayers cuando se agreguen jugadores dinámicamente
+  useEffect(() => {
+    setAllGamePlayers(prev => {
+      console.log('🔄 Sincronizando jugadores...');
+      console.log('🔄 Jugadores previos:', prev.map(p => ({ id: p.id, name: p.name || p.nickname })));
+      console.log('🔄 Jugadores de Redux:', playersList.map(p => ({ id: p.id, name: p.name })));
+
+      // Crear un Set con los IDs existentes para evitar duplicados
+      const existingIds = new Set(prev.map(p => p.id));
+      const newPlayers = playersList.filter(p => !existingIds.has(p.id));
+
+      if (newPlayers.length > 0) {
+        const updated = [...prev, ...newPlayers];
+        console.log('🔄 Agregando nuevos jugadores:', newPlayers.map(p => p.name));
+        console.log('🔄 Lista actualizada:', updated.map(p => ({ id: p.id, name: p.name || p.nickname })));
+        return updated;
+      }
+      console.log('🔄 No hay nuevos jugadores que agregar');
+      return prev;
+    });
+  }, [playersList.length]);
+
   useFocusEffect(
     React.useCallback(() => {
+      console.log('🎯 useFocusEffect ejecutado, allGamePlayers actual:', allGamePlayers.length);
+      console.log('🎯 route.params:', route.params);
+
       setIsMuted(audioService.isMusicMuted);
 
       // Inicializar el juego si viene de SingleDeviceSetup
@@ -130,7 +165,8 @@ const GameScreen = ({ navigation, route }) => {
 
   const initializeGame = async () => {
     try {
-      const result = gameEngine.startGame(playersList, {
+      console.log('🎮 Inicializando juego con jugadores:', allGamePlayers);
+      const result = gameEngine.startGame(allGamePlayers, {
         maxRounds: 50,
         gameMode: 'single-device'
       });
@@ -515,6 +551,18 @@ const GameScreen = ({ navigation, route }) => {
         visible={isConfigModalOpen}
         onClose={() => dispatch(setConfigModalOpen(false))}
         navigation={navigation}
+        allGamePlayers={allGamePlayers}
+        onPlayerRemoved={(playerId) => {
+          // Callback específico para remover jugador
+          console.log('🚫 Removiendo jugador con ID:', playerId, 'tipo:', typeof playerId);
+          setAllGamePlayers(prev => {
+            // Convertir ambos IDs a string para comparación consistente
+            const filtered = prev.filter(p => String(p.id) !== String(playerId));
+            console.log('🚫 Jugadores antes de remover:', prev.map(p => ({ id: p.id, idType: typeof p.id, name: p.name || p.nickname })));
+            console.log('🚫 Jugadores después de remover:', filtered.map(p => ({ id: p.id, idType: typeof p.id, name: p.name || p.nickname })));
+            return filtered;
+          });
+        }}
       />
     </Animated.View>
   );
