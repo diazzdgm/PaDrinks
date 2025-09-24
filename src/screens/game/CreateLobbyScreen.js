@@ -1070,11 +1070,23 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Haptics not available:', error);
     }
-    
+
     playBeerSound();
-    
+
     console.log('🎮 Host iniciando partida con jugadores:', connectedPlayers.map(p => p.nickname));
-    showCustomModal('🎮 ¡Iniciando Juego!', `${connectedPlayers.length} jugadores listos para jugar`, 'success');
+
+    if (gameMode === 'single-device') {
+      // Para modo single-device, navegar a GameScreen
+      console.log('🎮 Navegando a GameScreen para modo single-device');
+      navigation.navigate('GameScreen', {
+        gameMode,
+        playerCount: connectedPlayers.length,
+        registeredPlayers: connectedPlayers
+      });
+    } else {
+      // Para modo multijugador, mostrar mensaje de éxito (funcionalidad futura)
+      showCustomModal('🎮 ¡Iniciando Juego!', `${connectedPlayers.length} jugadores listos para jugar`, 'success');
+    }
   };
 
   const canStartGame = isHost && connectedPlayers.length >= 2;

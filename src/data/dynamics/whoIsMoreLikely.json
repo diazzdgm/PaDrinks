@@ -1,0 +1,309 @@
+{
+  "id": "who_is_more_likely",
+  "name": "¿Quién es más probable a...?",
+  "type": "vote_selection",
+  "instruction": "Señalen a la persona a la cuenta de 3",
+  "minPlayers": 3,
+  "questions": [
+    {
+      "id": "wiml_001",
+      "text": "¿Quién es más probable a tapar el baño?",
+      "instruction": "¡Toma shot por plomero improvisado!",
+      "emoji": "🚽"
+    },
+    {
+      "id": "wiml_002",
+      "text": "¿Quién es más probable de abrir un Only Fans?",
+      "instruction": "¡Toma shot emprendedor/a!",
+      "emoji": "📸"
+    },
+    {
+      "id": "wiml_003",
+      "text": "¿Quién es más probable a tatuarse el nombre de su ex?",
+      "instruction": "¡Toma shot por ardido/a!",
+      "emoji": "🖋️"
+    },
+    {
+      "id": "wiml_004",
+      "text": "¿Quién es más probable a que te defienda en una pelea?",
+      "instruction": "¡Reparte shot por guardaespaldas!",
+      "emoji": "🥊"
+    },
+    {
+      "id": "wiml_005",
+      "text": "¿Quién es más probable de extrañar a su ex?",
+      "instruction": "¡Toma shot por llorón/a!",
+      "emoji": "💔"
+    },
+    {
+      "id": "wiml_006",
+      "text": "¿Quién es más probable a que termine siendo presidente?",
+      "instruction": "¡Toma shot por prometer y no cumplir!",
+      "emoji": "🗳️"
+    },
+    {
+      "id": "wiml_007",
+      "text": "¿Quién es más probable en llorar borracho/a?",
+      "instruction": "¡Toma shot de lágrimas!",
+      "emoji": "😭"
+    },
+    {
+      "id": "wiml_008",
+      "text": "¿Quién es más probable a desaparecer en la peda?",
+      "instruction": "¡Toma shot Houdini!",
+      "emoji": "🧙‍♂️"
+    },
+    {
+      "id": "wiml_009",
+      "text": "¿Quién es más probable a no traer dinero para la peda?",
+      "instruction": "¡Toma shot por jodido!",
+      "emoji": "💸"
+    },
+    {
+      "id": "wiml_010",
+      "text": "¿Quién es más probable en perder algo en la peda?",
+      "instruction": "¡Toma shot por distraído!",
+      "emoji": "🔑"
+    },
+    {
+      "id": "wiml_011",
+      "text": "¿Quién es más probable a que pida aventón?",
+      "instruction": "¡Toma shot por pedir Uber humano!",
+      "emoji": "🚗"
+    },
+    {
+      "id": "wiml_012",
+      "text": "¿Quién es más probable a organizar la próxima peda?",
+      "instruction": "¡Reparte shot, organizador oficial!",
+      "emoji": "🎉"
+    },
+    {
+      "id": "wiml_013",
+      "text": "¿Quién es más probable en romper algo en la peda?",
+      "instruction": "¡Toma shot por destructor/a!",
+      "emoji": "🪩"
+    },
+    {
+      "id": "wiml_014",
+      "text": "¿Quién es más probable a que no recuerde de nada al día siguiente?",
+      "instruction": "¡Toma shot por Alzheimer!",
+      "emoji": "🤯"
+    },
+    {
+      "id": "wiml_015",
+      "text": "¿Quién es más probable a llorar con una canción?",
+      "instruction": "¡Toma shot dolido/a!",
+      "emoji": "🎶"
+    },
+    {
+      "id": "wiml_016",
+      "text": "¿Quién es más probable a chocar?",
+      "instruction": "¡Toma shot por conductor de Mario Kart!",
+      "emoji": "🚦"
+    },
+    {
+      "id": "wiml_017",
+      "text": "¿Quién es más probable a no llegar a su casa hoy?",
+      "instruction": "¡Toma shot por vagabundo!",
+      "emoji": "🏚️"
+    },
+    {
+      "id": "wiml_018",
+      "text": "¿Quién es más probable a invitar una botella en la peda o en el antro?",
+      "instruction": "¡Reparte shot por ricachón/a!",
+      "emoji": "🍾"
+    },
+    {
+      "id": "wiml_019",
+      "text": "¿Quién es más probable que termine en el torito?",
+      "instruction": "¡Toma shot por delincuente vial!",
+      "emoji": "🚔"
+    },
+    {
+      "id": "wiml_020",
+      "text": "¿Quién es más probable a que termine en el putero?",
+      "instruction": "¡Toma shot calenturiento/a!",
+      "emoji": "🔥"
+    },
+    {
+      "id": "wiml_021",
+      "text": "¿Quién es más probable a que termine bateado hoy?",
+      "instruction": "¡Toma shot rechazado/a!",
+      "emoji": "❌"
+    },
+    {
+      "id": "wiml_022",
+      "text": "¿Quién es más probable a que se gaste toda su quincena en una fiesta?",
+      "instruction": "¡Toma shot por generoso/a!",
+      "emoji": "💵"
+    },
+    {
+      "id": "wiml_023",
+      "text": "¿Quién es más probable a que llegue su mamá o su pareja recogerlo a la fiesta?",
+      "instruction": "¡Toma shot por niño/a regañado/a!",
+      "emoji": "🚙"
+    },
+    {
+      "id": "wiml_024",
+      "text": "¿Quién es más probable a que termine pintado hoy?",
+      "instruction": "¡Toma shot por lienzo humano!",
+      "emoji": "🎨"
+    },
+    {
+      "id": "wiml_025",
+      "text": "¿Quién es más probable que se caiga en la peda?",
+      "instruction": "¡Toma shot por piso mojado!",
+      "emoji": "🤕"
+    },
+    {
+      "id": "wiml_026",
+      "text": "¿Quién es más probable a que se le caiga la botella?",
+      "instruction": "¡Toma shot por desperdiciar el alcohol!",
+      "emoji": "🥃"
+    },
+    {
+      "id": "wiml_027",
+      "text": "¿Quién es más probable en quedarse dormido en la peda?",
+      "instruction": "¡Toma shot por bella durmiente!",
+      "emoji": "💤"
+    },
+    {
+      "id": "wiml_028",
+      "text": "¿Quién es más probable que vomite en la peda?",
+      "instruction": "¡Toma shot por fuente humana!",
+      "emoji": "🤮"
+    },
+    {
+      "id": "wiml_029",
+      "text": "¿Quién es más probable a que repita outfit?",
+      "instruction": "¡Toma shot por fashion reciclado!",
+      "emoji": "👕"
+    },
+    {
+      "id": "wiml_030",
+      "text": "¿Quién es más probable a dormir en casa ajena después de la peda?",
+      "instruction": "¡Toma shot por vagabundo!",
+      "emoji": "🛏️"
+    },
+    {
+      "id": "wiml_031",
+      "text": "¿Quién es más probable a que sea o fue infiel?",
+      "instruction": "¡Toma shot por doble vida!",
+      "emoji": "💔"
+    },
+    {
+      "id": "wiml_032",
+      "text": "¿Quién es más probable a que le gusten las personas de su mismo sexo en secreto?",
+      "instruction": "¡Toma shot por closet VIP!",
+      "emoji": "🌈"
+    },
+    {
+      "id": "wiml_033",
+      "text": "¿Quién es más probable a ser falso/a o hipócrita?",
+      "instruction": "¡Toma shot por actor de telenovela!",
+      "emoji": "🎭"
+    },
+    {
+      "id": "wiml_034",
+      "text": "¿Quién es más probable a meterse a una pelea en la peda?",
+      "instruction": "¡Toma shot Por Rocky Balboa!",
+      "emoji": "🥊"
+    },
+    {
+      "id": "wiml_035",
+      "text": "¿Quién es más probable a quedar embarazada?",
+      "instruction": "¡Toma shot por futura mamá/papá!",
+      "emoji": "🤰"
+    },
+    {
+      "id": "wiml_036",
+      "text": "¿Quién es más probable a enamorarse rápido?",
+      "instruction": "¡Toma shot por Romeo/Julieta exprés!",
+      "emoji": "💘"
+    },
+    {
+      "id": "wiml_037",
+      "text": "¿Quién es más probable a volverse un actor/actriz porno?",
+      "instruction": "¡Toma shot por estrella XXX!",
+      "emoji": "🎥"
+    },
+    {
+      "id": "wiml_038",
+      "text": "¿Quién es más probable a besar a dos personas en una noche?",
+      "instruction": "¡Toma shot por multikiss!",
+      "emoji": "💋💋"
+    },
+    {
+      "id": "wiml_039",
+      "text": "¿Quién es más probable a hacer el ridículo?",
+      "instruction": "¡Toma shot por payaso/a oficial!",
+      "emoji": "🤡"
+    },
+    {
+      "id": "wiml_040",
+      "text": "¿Quién es más probable a dar un beso de tres?",
+      "instruction": "¡Toma shot por atrevido/a!",
+      "emoji": "🔥"
+    },
+    {
+      "id": "wiml_041",
+      "text": "¿Quién es más probable a hacer un trío?",
+      "instruction": "¡Toma shot por creativo/a!",
+      "emoji": "🍑"
+    },
+    {
+      "id": "wiml_042",
+      "text": "¿Quién es más probable a pedirle dinero a sus papás para la peda?",
+      "instruction": "¡Toma shot por mantenido/a!",
+      "emoji": "🍼"
+    },
+    {
+      "id": "wiml_043",
+      "text": "¿Quién es más probable a confesar un secreto borracho/a?",
+      "instruction": "¡Toma shot por lengua suelta!",
+      "emoji": "👅"
+    },
+    {
+      "id": "wiml_044",
+      "text": "¿Quién es más probable a besar a alguien del mismo grupo?",
+      "instruction": "¡Toma shot por intraequipo!",
+      "emoji": "🫂"
+    },
+    {
+      "id": "wiml_045",
+      "text": "¿Quién es más probable a terminar cargado por sus amigos?",
+      "instruction": "¡Toma shot por costal humano!",
+      "emoji": "🏋️"
+    },
+    {
+      "id": "wiml_046",
+      "text": "¿Quién es más probable a declarar su amor a alguien en la peda?",
+      "instruction": "¡Toma shot por cursi borracho/a!",
+      "emoji": "💌"
+    },
+    {
+      "id": "wiml_047",
+      "text": "¿Quién es más probable a ligarse al mesero/a?",
+      "instruction": "¡Toma shot por cazador/a del servicio!",
+      "emoji": "🍽️"
+    },
+    {
+      "id": "wiml_048",
+      "text": "¿Quién es más probable a besar a su ex en la peda?",
+      "instruction": "¡Toma shot por recaída!",
+      "emoji": "🔄"
+    },
+    {
+      "id": "wiml_049",
+      "text": "¿Quién es más probable a quedarse sin playera en algún punto de la noche?",
+      "instruction": "¡Toma shot por stripper gratis!",
+      "emoji": "👕"
+    },
+    {
+      "id": "wiml_050",
+      "text": "¿Quién es más probable a hacer un \"drunk text\" a su crush?",
+      "instruction": "¡Toma shot por WhatsApp tóxico!",
+      "emoji": "📱"
+    }
+  ]
+}

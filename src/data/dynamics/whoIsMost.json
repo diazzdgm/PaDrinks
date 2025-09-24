@@ -1,0 +1,309 @@
+{
+  "id": "who_is_most",
+  "name": "¿Quién es la persona más...?",
+  "type": "vote_selection",
+  "instruction": "Señalen a la persona a la cuenta de 3",
+  "minPlayers": 3,
+  "questions": [
+    {
+      "id": "wim_001",
+      "text": "¿Quién es la persona más impuntual?",
+      "instruction": "¡Toma shot por llegar tarde siempre!",
+      "emoji": "⏰"
+    },
+    {
+      "id": "wim_002",
+      "text": "¿Quién es la persona más borracha?",
+      "instruction": "¡Toma shot para no perder la costumbre!",
+      "emoji": "🍻"
+    },
+    {
+      "id": "wim_003",
+      "text": "¿Quién es la persona más mala copa?",
+      "instruction": "¡Toma shot arruina pedas!",
+      "emoji": "😡"
+    },
+    {
+      "id": "wim_004",
+      "text": "¿Quién es la persona que siempre pone casa?",
+      "instruction": "¡Reparte shot por salvar la peda!",
+      "emoji": "🏠"
+    },
+    {
+      "id": "wim_005",
+      "text": "¿Quién es la persona más mamona?",
+      "instruction": "¡Toma shot por creído/a!",
+      "emoji": "😎"
+    },
+    {
+      "id": "wim_006",
+      "text": "¿Quién es la persona con más tatuajes?",
+      "instruction": "¡Toma shot por ser lienzo humano!",
+      "emoji": "🖋️"
+    },
+    {
+      "id": "wim_007",
+      "text": "¿Quién es la persona más viciosa?",
+      "instruction": "¡Toma shot por andar de vicioso/a!",
+      "emoji": "🚬"
+    },
+    {
+      "id": "wim_008",
+      "text": "¿Quién es la persona que mejor liga?",
+      "instruction": "¡Toma shot por cada conquista!",
+      "emoji": "💘"
+    },
+    {
+      "id": "wim_009",
+      "text": "¿Quién es la persona más chismosa?",
+      "instruction": "¡Toma shot y suelta el chisme!",
+      "emoji": "🐍"
+    },
+    {
+      "id": "wim_010",
+      "text": "¿Quién es la persona que más vomita en las pedas?",
+      "instruction": "¡Toma shot para reponer lo perdido!",
+      "emoji": "🤮"
+    },
+    {
+      "id": "wim_011",
+      "text": "¿Quién es la persona que tiene a la mamá o papá más guapo/a?",
+      "instruction": "¡Toma shot por herencia de belleza!",
+      "emoji": "😏"
+    },
+    {
+      "id": "wim_012",
+      "text": "¿Quién es la persona más pendeja?",
+      "instruction": "¡Toma shot por menso/a!",
+      "emoji": "🤪"
+    },
+    {
+      "id": "wim_013",
+      "text": "¿Quién es la persona más migajera?",
+      "instruction": "¡Toma shot por no estar donde mereces!",
+      "emoji": "🥖"
+    },
+    {
+      "id": "wim_014",
+      "text": "¿Quién es la persona más inteligente?",
+      "instruction": "¡Reparte shot, genio!",
+      "emoji": "🧠"
+    },
+    {
+      "id": "wim_015",
+      "text": "¿Quién es la persona que nunca quiere tomar?",
+      "instruction": "¡Toma doble shot obligado!",
+      "emoji": "🚫🍺"
+    },
+    {
+      "id": "wim_016",
+      "text": "¿Quién es la persona más buchóna?",
+      "instruction": "¡Toma shot buchón style!",
+      "emoji": "💎"
+    },
+    {
+      "id": "wim_017",
+      "text": "¿Quién es la persona más naca?",
+      "instruction": "¡Toma shot sin pena!",
+      "emoji": "🪅"
+    },
+    {
+      "id": "wim_018",
+      "text": "¿Quién es la persona que toma entre semana?",
+      "instruction": "¡Toma shot por alcohólico/a de calendario!",
+      "emoji": "📅"
+    },
+    {
+      "id": "wim_019",
+      "text": "¿Quién es la persona que siempre forza la peda?",
+      "instruction": "¡Toma shot por necio/a!",
+      "emoji": "🤷‍♂️"
+    },
+    {
+      "id": "wim_020",
+      "text": "¿Quién es la persona que más aguanta tomando?",
+      "instruction": "¡Reparte shot por campeón/a de la peda!",
+      "emoji": "🥇"
+    },
+    {
+      "id": "wim_021",
+      "text": "¿Quién es la persona más bateada?",
+      "instruction": "¡Toma shot por rechazado/a!",
+      "emoji": "💔"
+    },
+    {
+      "id": "wim_022",
+      "text": "¿Quién es la persona más fiel en una relación?",
+      "instruction": "¡Reparte shot por santo/a!",
+      "emoji": "😇"
+    },
+    {
+      "id": "wim_023",
+      "text": "¿Quién es la persona más desmadrosa?",
+      "instruction": "¡Toma shot por loco/a de la fiesta!",
+      "emoji": "🎉"
+    },
+    {
+      "id": "wim_024",
+      "text": "¿Quién es la persona más apestosa?",
+      "instruction": "¡Toma shot por olor raro!",
+      "emoji": "👃"
+    },
+    {
+      "id": "wim_025",
+      "text": "¿Quién es la persona que nunca dejan salir?",
+      "instruction": "¡Toma shot por castigado/a!",
+      "emoji": "🚪"
+    },
+    {
+      "id": "wim_026",
+      "text": "¿Quién es la persona que es la última en irse?",
+      "instruction": "¡Toma shot por cerrar antros!",
+      "emoji": "🌙"
+    },
+    {
+      "id": "wim_027",
+      "text": "¿Quién es la persona más ludópata?",
+      "instruction": "¡Toma shot por apostar hasta los shots!",
+      "emoji": "🎰"
+    },
+    {
+      "id": "wim_028",
+      "text": "¿Quién es la persona más chapulín?",
+      "instruction": "¡Toma shot por mal amigo/a!",
+      "emoji": "🦗"
+    },
+    {
+      "id": "wim_029",
+      "text": "¿Quién es la persona que más come?",
+      "instruction": "¡Toma shot para bajar la comida!",
+      "emoji": "🍔"
+    },
+    {
+      "id": "wim_030",
+      "text": "¿Quién es la persona más obesa?",
+      "instruction": "¡Toma shot doble por comelón/a!",
+      "emoji": "🍩"
+    },
+    {
+      "id": "wim_031",
+      "text": "¿Quién es la persona más flaca?",
+      "instruction": "¡Toma shot aunque desaparezcas!",
+      "emoji": "🪶"
+    },
+    {
+      "id": "wim_032",
+      "text": "¿Quién es la persona más mamada?",
+      "instruction": "¡Toma shot por músculo y resistencia!",
+      "emoji": "💪"
+    },
+    {
+      "id": "wim_033",
+      "text": "¿Quién es la persona que cuida a todos en la peda?",
+      "instruction": "¡Reparte shot, héroe sin capa!",
+      "emoji": "🦸‍♂️"
+    },
+    {
+      "id": "wim_034",
+      "text": "¿Quién es la persona más fashion?",
+      "instruction": "¡Toma shot por modelar en la peda!",
+      "emoji": "👗"
+    },
+    {
+      "id": "wim_035",
+      "text": "¿Quién es la persona más tóxica?",
+      "instruction": "¡Toma shot por dramático/a!",
+      "emoji": "☠️"
+    },
+    {
+      "id": "wim_036",
+      "text": "¿Quién es la persona que más pegue tiene?",
+      "instruction": "¡Toma shot por rompecorazones!",
+      "emoji": "💋"
+    },
+    {
+      "id": "wim_037",
+      "text": "¿Quién es la persona que siempre se va temprano de la peda?",
+      "instruction": "¡Toma shot por aguafiestas!",
+      "emoji": "🌆"
+    },
+    {
+      "id": "wim_038",
+      "text": "¿Quién es la persona que siempre se va sin despedir?",
+      "instruction": "¡Toma shot por fantasma!",
+      "emoji": "👻"
+    },
+    {
+      "id": "wim_039",
+      "text": "¿Quién es la persona que usa memes o stickers para todo?",
+      "instruction": "¡Toma shot por memero/a!",
+      "emoji": "😂"
+    },
+    {
+      "id": "wim_040",
+      "text": "¿Quién es la persona más dos copitas?",
+      "instruction": "¡Toma shot por débil!",
+      "emoji": "🍷🍷"
+    },
+    {
+      "id": "wim_041",
+      "text": "¿Quién es la persona que nunca pone para la fiesta?",
+      "instruction": "¡Toma shot por codo/a!",
+      "emoji": "🪙"
+    },
+    {
+      "id": "wim_042",
+      "text": "¿Quién es la persona más mandilona?",
+      "instruction": "¡Toma shot por controlado/a!",
+      "emoji": "🪢"
+    },
+    {
+      "id": "wim_043",
+      "text": "¿Quién es la persona más graciosa?",
+      "instruction": "¡Reparte shot por payaso/a oficial!",
+      "emoji": "🤡"
+    },
+    {
+      "id": "wim_044",
+      "text": "¿Quién es la persona que más grita?",
+      "instruction": "¡Toma shot por gritón/a!",
+      "emoji": "📢"
+    },
+    {
+      "id": "wim_045",
+      "text": "¿Quién es la persona que más fotos o videos toma en la peda?",
+      "instruction": "¡Toma shot por paparazzi!",
+      "emoji": "📸"
+    },
+    {
+      "id": "wim_046",
+      "text": "¿Quién es la persona que más pone para la peda?",
+      "instruction": "¡Reparte shot por patrocinador/a oficial!",
+      "emoji": "💰"
+    },
+    {
+      "id": "wim_047",
+      "text": "¿Quién es la persona que siempre pelea con su pareja?",
+      "instruction": "¡Toma shot por tóxico/a en vivo!",
+      "emoji": "💥"
+    },
+    {
+      "id": "wim_048",
+      "text": "¿Quién es la persona que más ambiente pone en la peda?",
+      "instruction": "¡Reparte shot por ser el alma de la fiesta!",
+      "emoji": "🔥"
+    },
+    {
+      "id": "wim_049",
+      "text": "¿Quién es la persona que siempre llora en la peda?",
+      "instruction": "¡Toma shot por sentimental!",
+      "emoji": "😢"
+    },
+    {
+      "id": "wim_050",
+      "text": "¿Quién es la persona más probable en terminar bailando arriba de algo (mesa, silla, barra)?",
+      "instruction": "¡Toma shot por showman de la noche!",
+      "emoji": "🕺"
+    }
+  ]
+}

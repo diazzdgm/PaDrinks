@@ -5,31 +5,46 @@ const initialState = {
   gameStatus: 'lobby', // 'lobby', 'playing', 'paused', 'finished'
   gameMode: 'classic',
   currentRound: 0,
-  totalRounds: null, // null = infinito
-  
+  totalRounds: 50, // Rondas totales de la partida
+  maxRounds: 50, // Máximo de rondas configuradas
+
   // Dinámica actual
   currentDynamic: null,
   dynamicType: null,
   dynamicData: null,
-  
+
+  // Sistema de preguntas y dinámicas
+  currentQuestion: null,
+  availableDynamics: [],
+  usedQuestions: {},
+  lastDynamicId: null,
+  questionsRemaining: 0,
+
   // Timer
   timer: 0,
   timerActive: false,
-  
+
   // Configuraciones
   gameSettings: {
     maxPlayers: 10,
     minPlayers: 3,
     shotType: 'shot', // 'shot', 'half', 'sip'
     difficulty: 'normal',
-    playMethod: 'multiple', // 'single', 'multiple'
+    playMethod: 'single', // 'single', 'multiple'
     connectionType: 'wifi', // 'wifi', 'bluetooth'
   },
-  
+
+  // Estado de pausa/configuración
+  gamePhase: 'waiting', // 'waiting', 'playing', 'paused', 'finished', 'extending'
+  isConfigModalOpen: false,
+
   // Estadísticas temporales
   roundHistory: [],
   gameStartTime: null,
   gameEndTime: null,
+
+  // GameEngine state sync
+  gameEngineState: null,
 };
 
 const gameSlice = createSlice({
@@ -48,21 +63,87 @@ const gameSlice = createSlice({
       state.gameSettings = { ...state.gameSettings, ...action.payload };
     },
     
-    startGame: (state) => {
+    startGame: (state, action) => {
+      const { gameEngineState, question } = action.payload || {};
+
       state.gameStatus = 'playing';
+      state.gamePhase = 'playing';
       state.currentRound = 1;
       state.gameStartTime = Date.now();
       state.roundHistory = [];
+      state.currentQuestion = question || null;
+
+      if (gameEngineState) {
+        state.gameEngineState = gameEngineState;
+        state.questionsRemaining = gameEngineState.questionsRemaining || 0;
+      }
     },
-    
-    nextRound: (state) => {
+
+    nextRound: (state, action) => {
+      const { gameEngineState, question } = action.payload || {};
+
       state.currentRound += 1;
+      state.currentQuestion = question || null;
+
+      if (gameEngineState) {
+        state.gameEngineState = gameEngineState;
+        state.questionsRemaining = gameEngineState.questionsRemaining || 0;
+        state.totalRounds = gameEngineState.totalRounds || state.totalRounds;
+      }
     },
-    
+
+    setCurrentQuestion: (state, action) => {
+      state.currentQuestion = action.payload;
+    },
+
     setCurrentDynamic: (state, action) => {
       state.currentDynamic = action.payload.name;
       state.dynamicType = action.payload.type;
       state.dynamicData = action.payload.data;
+    },
+
+    updateGameEngineState: (state, action) => {
+      const gameEngineState = action.payload;
+      state.gameEngineState = gameEngineState;
+
+      if (gameEngineState) {
+        state.currentRound = gameEngineState.currentRound || state.currentRound;
+        state.totalRounds = gameEngineState.totalRounds || state.totalRounds;
+        state.gamePhase = gameEngineState.gamePhase || state.gamePhase;
+        state.questionsRemaining = gameEngineState.questionsRemaining || 0;
+        state.currentQuestion = gameEngineState.currentQuestion || null;
+      }
+    },
+
+    pauseGame: (state) => {
+      state.gameStatus = 'paused';
+      state.gamePhase = 'paused';
+    },
+
+    resumeGame: (state) => {
+      state.gameStatus = 'playing';
+      state.gamePhase = 'playing';
+    },
+
+    setConfigModalOpen: (state, action) => {
+      state.isConfigModalOpen = action.payload;
+      if (action.payload) {
+        state.gamePhase = 'paused';
+      } else if (state.gameStatus === 'playing') {
+        state.gamePhase = 'playing';
+      }
+    },
+
+    extendGame: (state, action) => {
+      const { newTotalRounds, gameEngineState } = action.payload;
+      state.totalRounds = newTotalRounds;
+      state.maxRounds = newTotalRounds;
+
+      if (gameEngineState) {
+        state.gameEngineState = gameEngineState;
+        state.questionsRemaining = gameEngineState.questionsRemaining || 0;
+        state.currentQuestion = gameEngineState.currentQuestion || null;
+      }
     },
     
     setTimer: (state, action) => {
@@ -86,11 +167,18 @@ const gameSlice = createSlice({
       });
     },
     
-    endGame: (state) => {
+    endGame: (state, action) => {
+      const { gameStats } = action.payload || {};
+
       state.gameStatus = 'finished';
+      state.gamePhase = 'finished';
       state.gameEndTime = Date.now();
+
+      if (gameStats) {
+        state.gameStats = gameStats;
+      }
     },
-    
+
     resetGame: (state) => {
       return { ...initialState };
     },
@@ -103,7 +191,13 @@ export const {
   setGameSettings,
   startGame,
   nextRound,
+  setCurrentQuestion,
   setCurrentDynamic,
+  updateGameEngineState,
+  pauseGame,
+  resumeGame,
+  setConfigModalOpen,
+  extendGame,
   setTimer,
   startTimer,
   stopTimer,

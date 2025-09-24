@@ -101,6 +101,7 @@ npm run start:tunnel
 - **Backend Integration**: Node.js + Express + Socket.IO backend server for multiplayer functionality
 - **Image Processing**: expo-image-manipulator for photo compression (150x150px, 30% quality)
 - **AsyncStorage**: Session persistence using @react-native-async-storage/async-storage
+- **QR Code System**: Complete QR generation and scanning for multiplayer room joining using react-native-qrcode-svg and expo-camera
 
 ## Architecture
 
@@ -111,8 +112,8 @@ The app uses a stack-based navigation where each screen replaces the previous on
 
 ### State Management Architecture
 Redux store with three main slices, configured with middleware for persistence (though persistence is not actually implemented):
-- `gameSlice`: Game state and mechanics
-- `playersSlice`: Player management and data  
+- `gameSlice`: Game state and mechanics (expanded for local gameplay with currentQuestion, gamePhase, questionsRemaining)
+- `playersSlice`: Player management and data
 - `connectionSlice`: Network connectivity status, Socket.IO connection state, and room data
 
 ### Screen Architecture Patterns
@@ -157,8 +158,35 @@ App.js (Redux Provider + Font Loading)
     ├── LobbyConfigScreen (Game lobby settings and configuration)
     ├── PlayerRegistrationScreen (Player profile input with photo/emoji)
     ├── CreateLobbyScreen (Real-time multiplayer lobby with Socket.IO)
-    └── JoinGameScreen (Room code input for joining existing games)
+    ├── JoinGameScreen (Room code input for joining existing games)
+    └── GameScreen (Local single-device gameplay)
 ```
+
+### Local Game System Architecture
+
+The project includes a complete local game engine for single-device gameplay:
+
+#### Game Engine Components
+- **GameEngine.js**: Main game controller managing rounds, state, and flow
+  - 50-round base games with 25-round extensions
+  - Game state persistence and recovery
+  - Player management and validation
+- **DynamicsManager.js**: Handles dynamic selection and question management
+  - Random dynamic selection avoiding consecutive repeats
+  - Question tracking to prevent repeats within same game
+  - Dynamic deactivation when questions are exhausted
+
+#### Game Data Structure
+- **JSON-based Dynamics**: Stored in `src/data/dynamics/` with structured format
+- **Question Schema**: Each question has `id`, `text`, `instruction`, `emoji`
+- **Dynamic Types**: Currently supports "vote_selection" type dynamics
+- **Extensible Design**: Easy to add new dynamics by creating new JSON files
+
+#### Game Flow Integration
+**Single-Device Flow**: MainMenu → CreateGame → SingleDeviceSetup → MultiPlayerRegistration → CreateLobby → **"Iniciar Juego" button** → GameScreen
+- **Host Controls**: Only lobby host can start games
+- **Player Validation**: Minimum 2 players required to start
+- **Seamless Transition**: Direct navigation from lobby to active gameplay
 
 ### Key Dependencies Architecture
 - **React Navigation**: Stack navigator with gesture disabling and custom animations
@@ -172,6 +200,29 @@ App.js (Redux Provider + Font Loading)
 - **Socket.IO Client**: Real-time communication with backend server for multiplayer functionality
 - **Expo Screen Orientation**: Landscape orientation enforcement at app level
 - **AsyncStorage**: Session persistence and reconnection data storage
+
+### QR Code Implementation
+
+The app includes a complete QR code system for multiplayer room joining:
+
+#### QR Generation (CreateLobbyScreen)
+- **Conditional Display**: QR codes only appear when `playMethod === 'multiple'` (not for single device mode)
+- **Integration**: Uses `react-native-qrcode-svg` to generate codes from 6-digit room codes
+- **Responsive Sizing**: QR size scales with `scaleByContent(110, 'interactive')` for cross-device compatibility
+- **Visual Integration**: QR replaces placeholder emoji/text within existing post-it styled container
+
+#### QR Scanning (JoinGameScreen)
+- **Camera Integration**: Uses `expo-camera` with `CameraView` for scanning (replaces deprecated expo-barcode-scanner)
+- **Permission Management**: Automatically requests camera permissions via `Camera.requestCameraPermissionsAsync()`
+- **Validation**: Only accepts 6-digit numeric codes matching game room format
+- **Navigation Flow**: Successful scans navigate directly to `PlayerRegistration` with multiplayer parameters
+- **UI Elements**: Custom scanner overlay with instructions, close button, and corner frame indicators
+
+#### Technical Implementation Notes
+- **Dependency Migration**: Project uses expo-camera instead of expo-barcode-scanner for SDK 53 compatibility
+- **Barcode Settings**: Scanner configured specifically for QR codes: `barcodeScannerSettings={{ barcodeTypes: ["qr"] }}`
+- **Error Handling**: Invalid codes show appropriate error messages via custom modals
+- **Integration**: Both manual code entry and QR scanning lead to same registration flow
 
 ## Important Technical Notes
 
@@ -237,11 +288,12 @@ Global audio management service that persists across screen navigation:
 #### Folder Structure Insights
 The project uses a feature-based organization:
 - **Services Layer**: Singleton services like `AudioService.js` for cross-screen functionality
-- **Game Screens**: `src/screens/game/` contains game-specific screens (CreateGameScreen, LobbyConfigScreen, PlayerRegistrationScreen)
+- **Game Screens**: `src/screens/game/` contains game-specific screens (CreateGameScreen, LobbyConfigScreen, PlayerRegistrationScreen, GameScreen)
 - **Redux Store**: Organized by domain - `gameSlice.js`, `playersSlice.js`, `connectionSlice.js`
 - **Theme System**: Centralized styling in `src/styles/theme.js`
 - **Component Architecture**: Common components in `src/components/common/`, specialized components organized by feature
-- **Game Engine**: Separated game logic in `src/game/` with dynamics, engine, and modes subdirectories
+- **Game Engine**: Local game engine in `src/game/` with `GameEngine.js` and `DynamicsManager.js`
+- **Game Data**: Dynamics and questions stored as JSON in `src/data/dynamics/`
 - **Multi-Protocol Connectivity**: Separate service directories for Bluetooth, Firebase, and WiFi implementations
 
 #### Advanced Screen Implementations
@@ -264,6 +316,14 @@ The project uses a feature-based organization:
 - **Room Code Validation**: 6-digit numeric code validation with real-time backend verification
 - **Seamless Navigation**: Direct integration with PlayerRegistrationScreen for profile completion
 - **Error States**: Clear feedback for invalid codes, full rooms, connection failures
+
+**GameScreen Architecture (Local Gameplay)**:
+- **GameEngine Integration**: Direct integration with singleton GameEngine instance
+- **Dynamic Question Display**: Shows instruction + question + action with responsive text sizing
+- **Dual Control Buttons**: "Continuar" (continue) and "Pasar Dinámica" (skip) with post-it styling
+- **In-Game Configuration**: Modal system for adding/removing players mid-game without losing progress
+- **Round Management**: 50-round base with extension system, automatic game completion detection
+- **Responsive Layout**: Question text auto-scales for long questions, maintains aesthetic consistency
 
 ## Multiplayer Implementation
 
@@ -376,6 +436,13 @@ The project uses an advanced responsive system in `src/utils/responsive.js`:
 - **Player Data Consistency**: Ensure all player data (emoji, photo, gender, orientation) flows from registration → backend → lobby synchronization
 - **Room Synchronization**: Use multiple roomSync event calls with delays (immediate, 2s, 5s) for reliable lobby updates
 - **Backend Location**: Run backend from Windows CMD, not WSL, to avoid IP resolution issues with mobile devices
+
+### Local Game Development Patterns
+- **GameEngine Singleton**: Use `getGameEngine()` to access the singleton instance, never create new instances
+- **Dynamic JSON Structure**: Each dynamic requires `id`, `name`, `type`, `instruction`, `minPlayers`, and `questions` array
+- **Question Management**: DynamicsManager automatically handles question deduplication and dynamic rotation
+- **State Synchronization**: Always sync GameEngine state with Redux using appropriate action creators
+- **Modal Integration**: GameConfigModal pauses game automatically; ensure proper cleanup when closing
 
 ### Metro Bundler Configuration
 The project uses custom Metro configuration (metro.config.js) to prevent conflicts between frontend and backend:
@@ -522,6 +589,30 @@ Key events implemented in the system:
 - **ngrok**: Must be installed and run from Windows CMD with Administrator privileges
 - **Metro Cache**: Cache corruption common after installations - automatic fallback to full crawl is normal
 - **IP Configuration**: For mobile device testing, update IP in src/config/server.js to your machine's local network IP (use `ipconfig` to find it)
+
+## MCP (Model Context Protocol) Integration
+
+The project includes MCP server integrations for enhanced AI/LLM capabilities:
+
+### MCP Configuration
+- **Configuration File**: `.claude/claude_desktop_config.json` defines available MCP servers
+- **Metro Bundler Exclusion**: `metro.config.js` explicitly blocks `mcp-servers/` directory to prevent Metro conflicts
+- **Reference Servers**: Local implementations of filesystem, memory, everything, and sequential-thinking servers
+- **External Integrations**: Figma and Puppeteer MCP servers via npm packages
+
+### Available MCP Servers
+- **Filesystem**: Secure file operations with configurable access controls
+- **Memory**: Knowledge graph-based persistent memory system
+- **Everything**: Reference server with prompts, resources, and tools
+- **Sequential Thinking**: Dynamic problem-solving through thought sequences
+- **Figma**: Design tool integration via Composio
+- **Puppeteer**: Browser automation capabilities
+
+### MCP Development Notes
+- **Server Location**: MCP servers located in `mcp-servers/` directory (excluded from React Native bundle)
+- **Built Servers**: MCP servers reference compiled JavaScript files in `dist/` directories
+- **Environment Variables**: MCP servers can be configured with environment variables in the configuration
+- **Metro Exclusion**: Critical to keep MCP servers blocked in Metro config to prevent bundling conflicts
 
 ## Development Quality Standards
 
