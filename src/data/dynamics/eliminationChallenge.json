@@ -1,0 +1,309 @@
+{
+  "id": "elimination_challenge",
+  "name": "Eliminación",
+  "type": "vote_selection",
+  "instruction": "Te toca cumplir",
+  "minPlayers": 3,
+  "questions": [
+    {
+      "id": "ec_001",
+      "text": "Toda persona que no se bañó hoy shot o trago",
+      "instruction": "confirmamos el olor a fiesta",
+      "emoji": "🦨"
+    },
+    {
+      "id": "ec_002",
+      "text": "Toda persona que vista de negro shot o trago",
+      "instruction": "de luto por su hígado",
+      "emoji": "⚫"
+    },
+    {
+      "id": "ec_003",
+      "text": "La última persona que fue al baño shot o trago",
+      "instruction": "apúrate que te toca otra vez",
+      "emoji": "🚽"
+    },
+    {
+      "id": "ec_004",
+      "text": "La persona que esté poniendo la música shot o trago",
+      "instruction": "DJ con pago en shots",
+      "emoji": "🎶"
+    },
+    {
+      "id": "ec_005",
+      "text": "La persona que puso casa hoy reparte shot o trago",
+      "instruction": "el anfitrión decide quien sufre",
+      "emoji": "🏠"
+    },
+    {
+      "id": "ec_006",
+      "text": "Toda persona que tenga gorra hoy shot o trago",
+      "instruction": "levántate rapero de closet",
+      "emoji": "🧢"
+    },
+    {
+      "id": "ec_007",
+      "text": "Toda persona que sepa 3 idiomas shot o trago",
+      "instruction": "pero tómatelo como Ingles",
+      "emoji": "🌍"
+    },
+    {
+      "id": "ec_008",
+      "text": "Toda persona que haya empedado en otro país shot o trago",
+      "instruction": "turista oficial de la peda",
+      "emoji": "✈️"
+    },
+    {
+      "id": "ec_009",
+      "text": "La persona que tenga menos batería en el celular shot o trago",
+      "instruction": "modo avión activado",
+      "emoji": "🔋"
+    },
+    {
+      "id": "ec_010",
+      "text": "La persona que tenga el peor fondo de pantalla shot o trago",
+      "instruction": "ya borra ese/a ex, porfa",
+      "emoji": "📱"
+    },
+    {
+      "id": "ec_011",
+      "text": "La persona que tenga el vaso más lleno doble shot o trago",
+      "instruction": "¿a qué veniste entonces?",
+      "emoji": "🍹"
+    },
+    {
+      "id": "ec_012",
+      "text": "La persona que tenga el vaso vacío que se sirva y reparta trago de su cuba",
+      "instruction": "compartir es vivir",
+      "emoji": "🥃"
+    },
+    {
+      "id": "ec_013",
+      "text": "La persona que más se aproxime a su cumpleaños toma shot o trago",
+      "instruction": "feliz cruda anticipada",
+      "emoji": "🎂"
+    },
+    {
+      "id": "ec_014",
+      "text": "Persona que tenga más tatuajes shot o trago",
+      "instruction": "cada trago cuenta como otro tatuaje",
+      "emoji": "🖋️"
+    },
+    {
+      "id": "ec_015",
+      "text": "Persona que viva más lejos shot o trago",
+      "instruction": "ya ni para el Uber te va a alcanzar",
+      "emoji": "🚕"
+    },
+    {
+      "id": "ec_016",
+      "text": "Enseñen su cuenta de banco y el que más tenga shot o trago",
+      "instruction": "invita la botella la próxima peda",
+      "emoji": "💸"
+    },
+    {
+      "id": "ec_017",
+      "text": "Toda persona que tenga ropa interior roja shot o trago",
+      "instruction": "y si la enseñas repartes shot",
+      "emoji": "🔴"
+    },
+    {
+      "id": "ec_018",
+      "text": "Toda persona que esté fumando shot o trago",
+      "instruction": "con cenicero incluido",
+      "emoji": "🚬"
+    },
+    {
+      "id": "ec_019",
+      "text": "La persona más alta shot o trago",
+      "instruction": "alcánzanos los vasos de arriba",
+      "emoji": "📏"
+    },
+    {
+      "id": "ec_020",
+      "text": "La persona más chaparra shot o trago",
+      "instruction": "el shot les queda de litro",
+      "emoji": "🧃"
+    },
+    {
+      "id": "ec_021",
+      "text": "Toda persona con lentes shot o trago",
+      "instruction": "verás borroso con y sin ellos",
+      "emoji": "🤓"
+    },
+    {
+      "id": "ec_022",
+      "text": "Toda persona con cabello rubio shot o trago",
+      "instruction": "aunque sea de farmacia",
+      "emoji": "💛"
+    },
+    {
+      "id": "ec_023",
+      "text": "Persona con el mejor auto shot o trago",
+      "instruction": "mañana manejamos tu carro",
+      "emoji": "🚗"
+    },
+    {
+      "id": "ec_024",
+      "text": "Toda persona que tenga mascota shot o trago",
+      "instruction": "hasta al fondo firulais",
+      "emoji": "🐶"
+    },
+    {
+      "id": "ec_025",
+      "text": "Toda persona que su nombre tenga la letra \"E\" shot o trago",
+      "instruction": "esta dinámica es con E de exceso",
+      "emoji": "✍️"
+    },
+    {
+      "id": "ec_026",
+      "text": "La persona más grande de edad shot o trago",
+      "instruction": "chavo ruco borracho",
+      "emoji": "👴"
+    },
+    {
+      "id": "ec_027",
+      "text": "La persona más joven de edad shot o trago",
+      "instruction": "bienvenido a la vida de excesos, toma",
+      "emoji": "👶"
+    },
+    {
+      "id": "ec_028",
+      "text": "Personas que tengan novia o novio shot o trago",
+      "instruction": "los casados también beben",
+      "emoji": "💑"
+    },
+    {
+      "id": "ec_029",
+      "text": "Personas solteras shot o trago",
+      "instruction": "para que olviden al ex",
+      "emoji": "💔"
+    },
+    {
+      "id": "ec_030",
+      "text": "Toda persona con ojos azules shot o trago",
+      "instruction": "por buenos genes",
+      "emoji": "👁️"
+    },
+    {
+      "id": "ec_031",
+      "text": "Toda persona que no tenga funda en su celular shot o trago",
+      "instruction": "modo vale madres activado",
+      "emoji": "📱"
+    },
+    {
+      "id": "ec_032",
+      "text": "Toda persona que no tenga iPhone shot o trago",
+      "instruction": "Android gang presente",
+      "emoji": "🤖"
+    },
+    {
+      "id": "ec_033",
+      "text": "Toda persona que no tenga trabajo en este momento shot o trago",
+      "instruction": "que se preocupe el yo de mañana",
+      "emoji": "🥲"
+    },
+    {
+      "id": "ec_034",
+      "text": "Toda persona que estudió o estudia ingeniería shot o trago",
+      "instruction": "resuélvete este shot",
+      "emoji": "📐"
+    },
+    {
+      "id": "ec_035",
+      "text": "Persona que tenga el trago en la mano shot o trago",
+      "instruction": "ahora sí, literal en la mano",
+      "emoji": "✋"
+    },
+    {
+      "id": "ec_036",
+      "text": "La persona más callada shot o trago",
+      "instruction": "el silencio también emborracha",
+      "emoji": "🤫"
+    },
+    {
+      "id": "ec_037",
+      "text": "Personas que sepan tocar un instrumento shot o trago",
+      "instruction": "este va dedicado para la ex",
+      "emoji": "🎸"
+    },
+    {
+      "id": "ec_038",
+      "text": "Persona que traiga collar shot o trago",
+      "instruction": "San Judas incluido vale doble",
+      "emoji": "📿"
+    },
+    {
+      "id": "ec_039",
+      "text": "Personas que sean hijos únicos reparten shot o trago",
+      "instruction": "para que compartan, aunque sea el trago",
+      "emoji": "🍼"
+    },
+    {
+      "id": "ec_040",
+      "text": "Persona que tenga más followers en Instagram shot o trago",
+      "instruction": "influencer de la peda",
+      "emoji": "📸"
+    },
+    {
+      "id": "ec_041",
+      "text": "Personas que tengan menos followers en Instagram shot o trago",
+      "instruction": "pero los reales están aquí",
+      "emoji": "👥"
+    },
+    {
+      "id": "ec_042",
+      "text": "Personas que llegaron en Uber doble shot o trago",
+      "instruction": "hoy no se maneja chicos",
+      "emoji": "🚖"
+    },
+    {
+      "id": "ec_043",
+      "text": "Personas que traigan reloj shot o trago",
+      "instruction": "ya es hora del after",
+      "emoji": "⌚"
+    },
+    {
+      "id": "ec_044",
+      "text": "Personas que fueron al gimnasio ayer o hoy shot o trago",
+      "instruction": "a perder esas calorías mañana",
+      "emoji": "🏋️"
+    },
+    {
+      "id": "ec_045",
+      "text": "La persona que haya tomado la foto más reciente en su galería shot o trago",
+      "instruction": "sube foto de la peda al insta",
+      "emoji": "📷"
+    },
+    {
+      "id": "ec_046",
+      "text": "La persona que tenga hijo reparte shot o trago",
+      "instruction": "reparte la mamila papa/mama",
+      "emoji": "👶"
+    },
+    {
+      "id": "ec_047",
+      "text": "Toda persona que no sepa silbar shot o trago",
+      "instruction": "sílbame esta",
+      "emoji": "😗"
+    },
+    {
+      "id": "ec_048",
+      "text": "Personas que vivan con sus papás shot o trago",
+      "instruction": "salud por ser mantenidos",
+      "emoji": "🏡"
+    },
+    {
+      "id": "ec_049",
+      "text": "La persona que más tragos ha tomado reparte shot o trago",
+      "instruction": "Eso guerrero sigue asi",
+      "emoji": "🥴"
+    },
+    {
+      "id": "ec_050",
+      "text": "Las personas que en su INE el último dígito de su CURP sea 5 shot o trago",
+      "instruction": "suerte del destino",
+      "emoji": "🆔"
+    }
+  ]
+}

@@ -1,13 +1,15 @@
 import whoIsMostData from '../data/dynamics/whoIsMost.json';
 import whoIsMoreLikelyData from '../data/dynamics/whoIsMoreLikely.json';
 import mentionChallengeData from '../data/dynamics/mentionChallenge.json';
+import eliminationChallengeData from '../data/dynamics/eliminationChallenge.json';
 
 class DynamicsManager {
   constructor() {
     this.allDynamics = [
       whoIsMostData,
       whoIsMoreLikelyData,
-      mentionChallengeData
+      mentionChallengeData,
+      eliminationChallengeData
     ];
 
     this.availableDynamics = [...this.allDynamics];
