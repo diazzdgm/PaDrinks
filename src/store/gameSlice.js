@@ -20,6 +20,9 @@ const initialState = {
   lastDynamicId: null,
   questionsRemaining: 0,
 
+  // Mention Challenge specific state
+  lastMentionChallengePlayer: null,
+
   // Timer
   timer: 0,
   timerActive: false,
@@ -72,6 +75,7 @@ const gameSlice = createSlice({
       state.gameStartTime = Date.now();
       state.roundHistory = [];
       state.currentQuestion = question || null;
+      state.lastMentionChallengePlayer = null;
 
       if (gameEngineState) {
         state.gameEngineState = gameEngineState;
@@ -94,6 +98,10 @@ const gameSlice = createSlice({
 
     setCurrentQuestion: (state, action) => {
       state.currentQuestion = action.payload;
+    },
+
+    setLastMentionChallengePlayer: (state, action) => {
+      state.lastMentionChallengePlayer = action.payload;
     },
 
     setCurrentDynamic: (state, action) => {
@@ -192,6 +200,7 @@ export const {
   startGame,
   nextRound,
   setCurrentQuestion,
+  setLastMentionChallengePlayer,
   setCurrentDynamic,
   updateGameEngineState,
   pauseGame,
