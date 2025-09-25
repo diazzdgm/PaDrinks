@@ -113,6 +113,8 @@ const GameScreen = ({ navigation, route }) => {
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
   const [gameEnded, setGameEnded] = useState(false);
   const [canExtend, setCanExtend] = useState(false);
+  const [selectedPlayerForQuestion, setSelectedPlayerForQuestion] = useState(null);
+  const [usedPlayersInMentionChallenge, setUsedPlayersInMentionChallenge] = useState(new Set());
 
   // Estado local para manejar TODOS los jugadores (iniciales + agregados)
   const [allGamePlayers, setAllGamePlayers] = useState(() => {
@@ -144,6 +146,11 @@ const GameScreen = ({ navigation, route }) => {
         const updated = [...prev, ...newPlayers];
         console.log('🔄 Agregando nuevos jugadores:', newPlayers.map(p => p.name));
         console.log('🔄 Lista actualizada:', updated.map(p => ({ id: p.id, name: p.name || p.nickname })));
+
+        // Resetear el sistema de rotación cuando se agregan jugadores
+        console.log('🔄 Reseteando rotación de Mention Challenge por cambio de jugadores');
+        setUsedPlayersInMentionChallenge(new Set());
+
         return updated;
       }
       console.log('🔄 No hay nuevos jugadores que agregar');
@@ -373,6 +380,49 @@ const GameScreen = ({ navigation, route }) => {
     return scaleByContent(isSmallScreen ? 26 : 28, 'text');
   };
 
+  // Efecto para seleccionar jugador aleatorio cuando cambia la pregunta (con rotación para mention_challenge)
+  useEffect(() => {
+    if (currentQuestion?.dynamicType === 'mention_challenge' && allGamePlayers.length > 0) {
+      // Filtrar jugadores que no han sido usados en esta dinámica
+      const availablePlayers = allGamePlayers.filter(player =>
+        !usedPlayersInMentionChallenge.has(player.id)
+      );
+
+      let selectedPlayer;
+
+      if (availablePlayers.length > 0) {
+        // Si hay jugadores disponibles, seleccionar uno aleatorio de los no usados
+        const randomIndex = Math.floor(Math.random() * availablePlayers.length);
+        selectedPlayer = availablePlayers[randomIndex];
+      } else {
+        // Si todos los jugadores ya fueron usados, reiniciar el ciclo y seleccionar aleatorio
+        console.log('🔄 Todos los jugadores han participado en Menciona X cosa, reiniciando ciclo');
+        setUsedPlayersInMentionChallenge(new Set());
+        const randomIndex = Math.floor(Math.random() * allGamePlayers.length);
+        selectedPlayer = allGamePlayers[randomIndex];
+      }
+
+      setSelectedPlayerForQuestion(selectedPlayer);
+
+      // Agregar el jugador seleccionado a la lista de usados
+      setUsedPlayersInMentionChallenge(prev => new Set([...prev, selectedPlayer.id]));
+
+      console.log(`🎯 Mention Challenge: ${selectedPlayer.name || selectedPlayer.nickname} seleccionado`);
+      console.log(`🎯 Jugadores usados: ${Array.from(usedPlayersInMentionChallenge).length + 1}/${allGamePlayers.length}`);
+    } else {
+      setSelectedPlayerForQuestion(null);
+    }
+  }, [currentQuestion?.id, allGamePlayers.length]);
+
+  // Formatear texto de pregunta con nombre del jugador
+  const getFormattedQuestionText = () => {
+    if (currentQuestion?.dynamicType === 'mention_challenge' && selectedPlayerForQuestion) {
+      const playerName = selectedPlayerForQuestion.name || selectedPlayerForQuestion.nickname || 'Jugador';
+      return { playerName, questionText: currentQuestion.text };
+    }
+    return { playerName: null, questionText: currentQuestion?.text };
+  };
+
   if (gameEnded) {
     return (
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
@@ -512,12 +562,31 @@ const GameScreen = ({ navigation, route }) => {
             contentContainerStyle={styles.questionScrollContent}
             showsVerticalScrollIndicator={false}
           >
-            <Text style={[
-              styles.questionText,
-              { fontSize: getQuestionFontSize(currentQuestion?.text) }
-            ]}>
-              {currentQuestion?.text}
-            </Text>
+            {(() => {
+              const formattedText = getFormattedQuestionText();
+              if (formattedText.playerName) {
+                // Dinámica mention_challenge - mostrar nombre subrayado + texto
+                return (
+                  <Text style={[
+                    styles.questionText,
+                    { fontSize: getQuestionFontSize(formattedText.questionText) }
+                  ]}>
+                    <Text style={styles.playerNameUnderlined}>{formattedText.playerName}</Text>
+                    {` ${formattedText.questionText}`}
+                  </Text>
+                );
+              } else {
+                // Otras dinámicas - mostrar texto normal
+                return (
+                  <Text style={[
+                    styles.questionText,
+                    { fontSize: getQuestionFontSize(formattedText.questionText) }
+                  ]}>
+                    {formattedText.questionText}
+                  </Text>
+                );
+              }
+            })()}
 
             <Text style={styles.questionEmoji}>
               {currentQuestion?.emoji}
@@ -568,6 +637,15 @@ const GameScreen = ({ navigation, route }) => {
             const filtered = prev.filter(p => String(p.id) !== String(playerId));
             console.log('🚫 Jugadores antes de remover:', prev.map(p => ({ id: p.id, idType: typeof p.id, name: p.name || p.nickname })));
             console.log('🚫 Jugadores después de remover:', filtered.map(p => ({ id: p.id, idType: typeof p.id, name: p.name || p.nickname })));
+
+            // Remover el jugador también del sistema de rotación de Mention Challenge
+            setUsedPlayersInMentionChallenge(prevUsed => {
+              const newUsed = new Set(prevUsed);
+              newUsed.delete(String(playerId));
+              console.log('🚫 Removiendo jugador del sistema de rotación Mention Challenge');
+              return newUsed;
+            });
+
             return filtered;
           });
         }}
@@ -811,6 +889,12 @@ const styles = StyleSheet.create({
     color: '#2E2E2E',
     textAlign: 'center',
     marginBottom: scaleByContent(15, 'spacing'),
+  },
+
+  playerNameUnderlined: {
+    textDecorationLine: 'underline',
+    textDecorationStyle: 'solid',
+    textDecorationColor: '#2E2E2E',
   },
 
   questionEmoji: {

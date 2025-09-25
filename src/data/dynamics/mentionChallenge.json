@@ -1,0 +1,309 @@
+{
+  "id": "mention_challenge",
+  "name": "Menciona X cosa",
+  "type": "mention_challenge",
+  "instruction": "Menciona lo que se te pide de manera rápida y si no puedes shot o trago",
+  "minPlayers": 2,
+  "questions": [
+    {
+      "id": "mc_001",
+      "text": "Menciona 5 marcas de cigarros",
+      "instruction": "para ver si ya te sabes todas las que se fuman en el peda",
+      "emoji": "🚬"
+    },
+    {
+      "id": "mc_002",
+      "text": "Menciona 5 marcas de condones",
+      "instruction": "el que las sepa, mínimo es cliente frecuente",
+      "emoji": "😏"
+    },
+    {
+      "id": "mc_003",
+      "text": "Menciona 5 tipos de alcohol",
+      "instruction": "la Biblia de cualquier borracho",
+      "emoji": "🍾"
+    },
+    {
+      "id": "mc_004",
+      "text": "Menciona 5 drinks",
+      "instruction": "que no sean los de tu tía en Navidad",
+      "emoji": "🍹"
+    },
+    {
+      "id": "mc_005",
+      "text": "Menciona 8 presidentes de México",
+      "instruction": "a ver si la SEP sirvió de algo",
+      "emoji": "🇲🇽"
+    },
+    {
+      "id": "mc_006",
+      "text": "Menciona 5 películas de terror no cuentan secuelas",
+      "instruction": "esas que te hicieron dormir con la luz prendida",
+      "emoji": "🎥"
+    },
+    {
+      "id": "mc_007",
+      "text": "Menciona 5 ganadores del Balón de Oro",
+      "instruction": "aquí se ve quién sí ve futbol y quién no",
+      "emoji": "⚽"
+    },
+    {
+      "id": "mc_008",
+      "text": "Menciona el nombre de al menos 4 Kardashian",
+      "instruction": "puro talento… pa' hacerse millonarias",
+      "emoji": "💅"
+    },
+    {
+      "id": "mc_009",
+      "text": "Menciona 4 jugadores de la NFL",
+      "instruction": "¡ShotDown!",
+      "emoji": "🏈"
+    },
+    {
+      "id": "mc_010",
+      "text": "Menciona 4 jugadores de la NBA",
+      "instruction": "Encesta el shot!",
+      "emoji": "🏀"
+    },
+    {
+      "id": "mc_011",
+      "text": "Menciona 5 productos de maquillaje",
+      "instruction": "el kit de supervivencia femenina",
+      "emoji": "💄"
+    },
+    {
+      "id": "mc_012",
+      "text": "Menciona 5 marcas de cerveza",
+      "instruction": "la gasolina oficial de México",
+      "emoji": "🍺"
+    },
+    {
+      "id": "mc_013",
+      "text": "Menciona 2 integrantes de One Direction",
+      "instruction": "confiesa que eras Directioner en secreto",
+      "emoji": "🎤"
+    },
+    {
+      "id": "mc_014",
+      "text": "Menciona 3 personajes de Star Wars",
+      "instruction": "que la peda te acompañe",
+      "emoji": "🌌"
+    },
+    {
+      "id": "mc_015",
+      "text": "Menciona 4 marcas de shampoo",
+      "instruction": "para que veamos qué tan brilloso traes el cabello",
+      "emoji": "🧴"
+    },
+    {
+      "id": "mc_016",
+      "text": "Menciona 10 personajes de Disney",
+      "instruction": "saca tu niño sobrio interior",
+      "emoji": "🐭"
+    },
+    {
+      "id": "mc_017",
+      "text": "Menciona 8 marcas de ropa de diseñador",
+      "instruction": "aunque solo las veas en pirata",
+      "emoji": "👗"
+    },
+    {
+      "id": "mc_018",
+      "text": "Menciona 8 superhéroes",
+      "instruction": "tomarse un fondo en 10 segundos no es un superpoder",
+      "emoji": "🦸"
+    },
+    {
+      "id": "mc_019",
+      "text": "Menciona 5 videojuegos",
+      "instruction": "el que diga Candy Crush queda vetado",
+      "emoji": "🎮"
+    },
+    {
+      "id": "mc_020",
+      "text": "Menciona 3 canciones de Taylor Swift",
+      "instruction": "para ver quién es Swiftie de closet",
+      "emoji": "🎶"
+    },
+    {
+      "id": "mc_021",
+      "text": "Menciona 3 canciones de Justin Bieber",
+      "instruction": "sí, tu amor platónico",
+      "emoji": "🎤"
+    },
+    {
+      "id": "mc_022",
+      "text": "Menciona 10 frutas",
+      "instruction": "no vale decir \"plátano verde\" y \"plátano maduro\"",
+      "emoji": "🍎"
+    },
+    {
+      "id": "mc_023",
+      "text": "Menciona 8 actores de Hollywood",
+      "instruction": "los que tu mamá confunde con todos",
+      "emoji": "🎬"
+    },
+    {
+      "id": "mc_024",
+      "text": "Menciona 8 supermercados",
+      "instruction": "el que diga \"la tiendita de la esquina\" pierde",
+      "emoji": "🛒"
+    },
+    {
+      "id": "mc_025",
+      "text": "Menciona 5 continentes",
+      "instruction": "el mundo en 5 tragos",
+      "emoji": "🌍"
+    },
+    {
+      "id": "mc_026",
+      "text": "Menciona 10 platillos mexicanos",
+      "instruction": "nomás de escucharlos te va a dar hambre",
+      "emoji": "🌮"
+    },
+    {
+      "id": "mc_027",
+      "text": "Menciona 5 canciones de Bad Bunny",
+      "instruction": "para que el conejo malo te bendiga",
+      "emoji": "🐰"
+    },
+    {
+      "id": "mc_028",
+      "text": "Menciona 8 marcas de coche",
+      "instruction": "aunque sigas en Uber",
+      "emoji": "🚗"
+    },
+    {
+      "id": "mc_029",
+      "text": "Menciona 8 razas de perro",
+      "instruction": "y no digas \"el de la vecina\"",
+      "emoji": "🐶"
+    },
+    {
+      "id": "mc_030",
+      "text": "Menciona 3 jugadores de fútbol mexicanos",
+      "instruction": "saca el tri-shot, eh",
+      "emoji": "⚽"
+    },
+    {
+      "id": "mc_031",
+      "text": "Menciona 5 formas de decir que alguien está borracho",
+      "instruction": "el diccionario oficial de la peda",
+      "emoji": "🍻"
+    },
+    {
+      "id": "mc_032",
+      "text": "Menciona 10 groserías",
+      "instruction": "sin ofender al que esta enfrente tuyo",
+      "emoji": "🤬"
+    },
+    {
+      "id": "mc_033",
+      "text": "Menciona 5 personajes de Harry Potter",
+      "instruction": "expelliarmus el shot",
+      "emoji": "🧙"
+    },
+    {
+      "id": "mc_034",
+      "text": "Menciona 5 cosas que carga un hombre en su bolsillo",
+      "instruction": "spoiler: no es dinero",
+      "emoji": "👖"
+    },
+    {
+      "id": "mc_035",
+      "text": "Menciona 3 formas de ligar en el antro",
+      "instruction": "la que funciona y las que dan pena ajena",
+      "emoji": "💃"
+    },
+    {
+      "id": "mc_036",
+      "text": "Menciona 5 formas de llamarle al miembro masculino del hombre",
+      "instruction": "el diccionario más creativo de la noche",
+      "emoji": "🍆"
+    },
+    {
+      "id": "mc_037",
+      "text": "Menciona 4 formas diferentes de decir senos",
+      "instruction": "para cultura general, obvio",
+      "emoji": "🍒"
+    },
+    {
+      "id": "mc_038",
+      "text": "Menciona 8 nombres que empiecen con la letra A",
+      "instruction": "sin repetir a tu ex",
+      "emoji": "🔤"
+    },
+    {
+      "id": "mc_039",
+      "text": "Menciona 5 marcas de celular",
+      "instruction": "y no, el Nokia 1100 no es marca",
+      "emoji": "📱"
+    },
+    {
+      "id": "mc_040",
+      "text": "Menciona 5 redes sociales",
+      "instruction": "esas donde stalkeas a tu ex",
+      "emoji": "📲"
+    },
+    {
+      "id": "mc_041",
+      "text": "Menciona el último equipo que ganó la Champions",
+      "instruction": "saquen la reta de fut",
+      "emoji": "🏆"
+    },
+    {
+      "id": "mc_042",
+      "text": "Menciona 5 marcas de maquillaje",
+      "instruction": "el test definitivo de las beauty bloggers",
+      "emoji": "💋"
+    },
+    {
+      "id": "mc_043",
+      "text": "Menciona 6 cosas que guarda una mujer en su bolsa",
+      "instruction": "la dimensión desconocida",
+      "emoji": "👜"
+    },
+    {
+      "id": "mc_044",
+      "text": "Menciona 5 equipos de NFL",
+      "instruction": "el Pumas ni el Toluca cuentan",
+      "emoji": "🏈"
+    },
+    {
+      "id": "mc_045",
+      "text": "Menciona 4 frases que se dicen en la cama",
+      "instruction": "sin ponerse nervioso",
+      "emoji": "😏"
+    },
+    {
+      "id": "mc_046",
+      "text": "Menciona 5 antros",
+      "instruction": "los que cierran más tarde que tu dignidad",
+      "emoji": "🎶"
+    },
+    {
+      "id": "mc_047",
+      "text": "Menciona 10 deportes",
+      "instruction": "y no digas \"levantamiento de tarro\"",
+      "emoji": "🏅"
+    },
+    {
+      "id": "mc_048",
+      "text": "Menciona a 3 famosos con los que te acostarías",
+      "instruction": "honestidad ante todo",
+      "emoji": "🌟"
+    },
+    {
+      "id": "mc_049",
+      "text": "Menciona 5 marcas de cereal",
+      "instruction": "los que desayunabas con caricaturas",
+      "emoji": "🥣"
+    },
+    {
+      "id": "mc_050",
+      "text": "Menciona 5 posiciones sexuales",
+      "instruction": "todo un mago en la cama",
+      "emoji": "🧙"
+    }
+  ]
+}
