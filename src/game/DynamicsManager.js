@@ -3,6 +3,7 @@ import whoIsMoreLikelyData from '../data/dynamics/whoIsMoreLikely.json';
 import mentionChallengeData from '../data/dynamics/mentionChallenge.json';
 import eliminationChallengeData from '../data/dynamics/eliminationChallenge.json';
 import INeverNeverData from '../data/dynamics/INeverNever.json';
+import awkwardQuestionsData from '../data/dynamics/awkwardQuestions.json';
 
 class DynamicsManager {
   constructor() {
@@ -11,7 +12,8 @@ class DynamicsManager {
       whoIsMoreLikelyData,
       mentionChallengeData,
       eliminationChallengeData,
-      INeverNeverData
+      INeverNeverData,
+      awkwardQuestionsData
     ];
 
     this.availableDynamics = [...this.allDynamics];

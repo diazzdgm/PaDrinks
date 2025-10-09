@@ -39,7 +39,7 @@ import {
   setConfigModalOpen,
   extendGame,
   endGame,
-  setLastMentionChallengePlayer,
+  setMentionChallengePlayer,
 } from '../../store/gameSlice';
 import GameConfigModal from '../../components/game/GameConfigModal';
 
@@ -106,7 +106,7 @@ const GameScreen = ({ navigation, route }) => {
     gamePhase,
     isConfigModalOpen,
     questionsRemaining,
-    lastMentionChallengePlayer
+    mentionChallengeTracking
   } = useSelector(state => state.game);
 
   const { playersList } = useSelector(state => state.players);
@@ -116,7 +116,6 @@ const GameScreen = ({ navigation, route }) => {
   const [gameEnded, setGameEnded] = useState(false);
   const [canExtend, setCanExtend] = useState(false);
   const [selectedPlayerForQuestion, setSelectedPlayerForQuestion] = useState(null);
-  const [usedPlayersInMentionChallenge, setUsedPlayersInMentionChallenge] = useState(new Set());
 
   // Estado local para manejar TODOS los jugadores (iniciales + agregados)
   const [allGamePlayers, setAllGamePlayers] = useState(() => {
@@ -150,7 +149,7 @@ const GameScreen = ({ navigation, route }) => {
         console.log('🔄 Lista actualizada:', updated.map(p => ({ id: p.id, name: p.name || p.nickname })));
 
         // NO resetear el sistema de rotación - mantener el estado actual
-        // Los nuevos jugadores automáticamente estarán disponibles ya que no están en usedPlayersInMentionChallenge
+        // Los nuevos jugadores automáticamente estarán disponibles ya que no están en el tracking de cada dinámica
         console.log('🔄 Nuevos jugadores agregados - manteniendo estado de rotación mention_challenge');
 
         return updated;
@@ -382,86 +381,65 @@ const GameScreen = ({ navigation, route }) => {
     return scaleByContent(isSmallScreen ? 26 : 28, 'text');
   };
 
-  // Efecto para seleccionar jugador aleatorio cuando cambia la pregunta (con rotación para mention_challenge)
+  // Efecto para seleccionar jugador aleatorio cuando cambia la pregunta (con rotación independiente por dinámica)
   useEffect(() => {
     if (currentQuestion?.dynamicType === 'mention_challenge' && allGamePlayers.length > 0) {
-      console.log(`🎯 === NUEVA PREGUNTA MENTION CHALLENGE ===`);
+      const dynamicId = currentQuestion.dynamicName || 'unknown';
+      const tracking = mentionChallengeTracking[dynamicId] || { lastPlayer: null, usedPlayerIds: [] };
+
+      console.log(`🎯 === NUEVA PREGUNTA: ${dynamicId} ===`);
       console.log(`🎯 Total jugadores: ${allGamePlayers.length}`);
       console.log(`🎯 Jugadores: ${allGamePlayers.map(p => p.name || p.nickname).join(', ')}`);
-      console.log(`🎯 Último jugador seleccionado: ${lastMentionChallengePlayer ? `${lastMentionChallengePlayer.name}(${lastMentionChallengePlayer.id})` : 'ninguno'}`);
-      console.log(`🎯 Estado Redux lastMentionChallengePlayer:`, lastMentionChallengePlayer);
-      console.log(`🎯 IDs usados antes: [${Array.from(usedPlayersInMentionChallenge).join(', ')}]`);
+      console.log(`🎯 Último jugador de esta dinámica: ${tracking.lastPlayer ? `${tracking.lastPlayer.name}(${tracking.lastPlayer.id})` : 'ninguno'}`);
+      console.log(`🎯 IDs usados en esta dinámica: [${tracking.usedPlayerIds.join(', ')}]`);
 
-      // Filtrar jugadores que no han sido usados en esta dinámica
+      const usedPlayerIdsSet = new Set(tracking.usedPlayerIds);
+
+      // Filtrar jugadores que no han sido usados en ESTA dinámica específica
       const availablePlayers = allGamePlayers.filter(player =>
-        !usedPlayersInMentionChallenge.has(player.id)
+        !usedPlayerIdsSet.has(player.id)
       );
 
       console.log(`🎯 Jugadores disponibles: ${availablePlayers.length}`);
       console.log(`🎯 Disponibles: ${availablePlayers.map(p => `${p.name || p.nickname}(${p.id})`).join(', ')}`);
 
-      // Log extra para verificar nuevos jugadores
-      const unusedPlayerIds = availablePlayers.map(p => p.id);
-      const usedPlayerIds = Array.from(usedPlayersInMentionChallenge);
-      console.log(`🎯 IDs disponibles: [${unusedPlayerIds.join(', ')}]`);
-      console.log(`🎯 IDs ya usados: [${usedPlayerIds.join(', ')}]`);
-
       let selectedPlayer;
-      let newUsedSet;
+      let newUsedPlayerIds;
 
       if (availablePlayers.length > 0) {
-        // Si hay jugadores disponibles, seleccionar uno aleatorio de los no usados
-        // PERO evitar seleccionar el mismo jugador que en la pregunta anterior
-        let eligiblePlayers = availablePlayers;
-        if (lastMentionChallengePlayer && availablePlayers.length > 1) {
-          eligiblePlayers = availablePlayers.filter(player => player.id !== lastMentionChallengePlayer.id);
-          console.log(`🎯 Evitando repetir ${lastMentionChallengePlayer.name}, elegibles: ${eligiblePlayers.length}`);
-        }
-
-        // Si después de filtrar no hay elegibles, usar todos los disponibles
-        if (eligiblePlayers.length === 0) {
-          eligiblePlayers = availablePlayers;
-          console.log(`🎯 No hay elegibles sin repetir, usando todos los disponibles`);
-        }
-
-        const randomIndex = Math.floor(Math.random() * eligiblePlayers.length);
-        selectedPlayer = eligiblePlayers[randomIndex];
-        // Crear nuevo set agregando el jugador seleccionado
-        newUsedSet = new Set([...usedPlayersInMentionChallenge, selectedPlayer.id]);
+        // Hay jugadores disponibles, seleccionar uno aleatorio
+        const randomIndex = Math.floor(Math.random() * availablePlayers.length);
+        selectedPlayer = availablePlayers[randomIndex];
+        newUsedPlayerIds = [...tracking.usedPlayerIds, selectedPlayer.id];
         console.log(`🎯 Seleccionado de disponibles: ${selectedPlayer.name || selectedPlayer.nickname}(${selectedPlayer.id})`);
       } else {
-        // Si todos los jugadores ya fueron usados, reiniciar el ciclo
-        console.log('🔄 Todos los jugadores han participado en Menciona X cosa, reiniciando ciclo');
+        // Todos los jugadores ya fueron usados, reiniciar el ciclo
+        console.log(`🔄 Todos los jugadores han participado en ${dynamicId}, reiniciando ciclo`);
 
         // Al reiniciar, evitar seleccionar inmediatamente el último jugador que participó
         let eligibleForRestart = allGamePlayers;
-        if (lastMentionChallengePlayer && allGamePlayers.length > 1) {
-          eligibleForRestart = allGamePlayers.filter(player => player.id !== lastMentionChallengePlayer.id);
-          console.log(`🔄 Al reiniciar, evitando inmediatamente a ${lastMentionChallengePlayer.name}`);
+        if (tracking.lastPlayer && allGamePlayers.length > 1) {
+          eligibleForRestart = allGamePlayers.filter(player => player.id !== tracking.lastPlayer.id);
+          console.log(`🔄 Al reiniciar, evitando inmediatamente a ${tracking.lastPlayer.name || tracking.lastPlayer.nickname}`);
         }
 
         const randomIndex = Math.floor(Math.random() * eligibleForRestart.length);
         selectedPlayer = eligibleForRestart[randomIndex];
-        // Crear nuevo set solo con el jugador seleccionado
-        newUsedSet = new Set([selectedPlayer.id]);
+        newUsedPlayerIds = [selectedPlayer.id];
         console.log(`🎯 Seleccionado después de reiniciar: ${selectedPlayer.name || selectedPlayer.nickname}(${selectedPlayer.id})`);
       }
 
       setSelectedPlayerForQuestion(selectedPlayer);
-      dispatch(setLastMentionChallengePlayer(selectedPlayer));
+      dispatch(setMentionChallengePlayer({
+        dynamicId,
+        player: selectedPlayer,
+        usedPlayerIds: newUsedPlayerIds
+      }));
 
-      // Usar función callback para asegurar que el estado se actualice correctamente
-      setUsedPlayersInMentionChallenge(prevUsed => {
-        console.log(`🎯 Actualizando de [${Array.from(prevUsed).join(', ')}] a [${Array.from(newUsedSet).join(', ')}]`);
-        return newUsedSet;
-      });
-
-      console.log(`🎯 IDs que se guardarán: [${Array.from(newUsedSet).join(', ')}]`);
-      console.log(`🎯 Progreso: ${newUsedSet.size}/${allGamePlayers.length}`);
+      console.log(`🎯 IDs guardados para ${dynamicId}: [${newUsedPlayerIds.join(', ')}]`);
+      console.log(`🎯 Progreso en ${dynamicId}: ${newUsedPlayerIds.length}/${allGamePlayers.length}`);
       console.log(`🎯 ==========================================`);
     } else {
-      // Solo limpiar selectedPlayerForQuestion, pero mantener lastMentionChallengePlayer
-      // para futuras preguntas de mention_challenge
       setSelectedPlayerForQuestion(null);
     }
   }, [currentQuestion?.id, allGamePlayers.length]);

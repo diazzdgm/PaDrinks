@@ -1,0 +1,129 @@
+{
+  "id": "awkward_questions",
+  "name": "Pregunta Incómoda",
+  "type": "mention_challenge",
+  "instruction": "Contesta la pregunta, si no quieres shot",
+  "minPlayers": 2,
+  "questions": [
+    {
+      "id": "aq_001",
+      "text": "¿Quién es la persona con el peor outfit el día de hoy?",
+      "instruction": "¡Ni el espejo quiso verte esta noche!",
+      "emoji": "👕"
+    },
+    {
+      "id": "aq_002",
+      "text": "¿Quién trae los tenis más feos?",
+      "instruction": "¡Esos tenis gritan 'estoy cansado jefe'!",
+      "emoji": "👟"
+    },
+    {
+      "id": "aq_003",
+      "text": "¿Quién es el/la más feo/a del grupo?",
+      "instruction": "¡No hay filtros que te salven, compa!",
+      "emoji": "😬"
+    },
+    {
+      "id": "aq_004",
+      "text": "¿Con quién te casarías de aquí?",
+      "instruction": "¡Solo recuerda… el divorcio no está incluido!",
+      "emoji": "💍"
+    },
+    {
+      "id": "aq_005",
+      "text": "¿Dónde ha sido el lugar más raro donde has tenido relaciones?",
+      "instruction": "¡Esperemos que no haya cámaras de seguridad ahí!",
+      "emoji": "🫣"
+    },
+    {
+      "id": "aq_006",
+      "text": "¿Quién es tu celebrity crush?",
+      "instruction": "¡No te emociones, esa persona ni sabe que existes!",
+      "emoji": "😍"
+    },
+    {
+      "id": "aq_007",
+      "text": "¿Cuál es tu fantasía sexual?",
+      "instruction": "Prepárate… que en una de esas se cumple.",
+      "emoji": "😏"
+    },
+    {
+      "id": "aq_008",
+      "text": "Muestra lo último que has buscado en Google",
+      "instruction": "¡Esperemos que no sea 'cómo ocultar un cuerpo'!",
+      "emoji": "🔍"
+    },
+    {
+      "id": "aq_009",
+      "text": "Muestra la última foto de tu galería",
+      "instruction": "¡No digas que no te advertimos!",
+      "emoji": "📸"
+    },
+    {
+      "id": "aq_010",
+      "text": "Muestra el último video de tu galería",
+      "instruction": "¡Sin miedo!",
+      "emoji": "🎥"
+    },
+    {
+      "id": "aq_011",
+      "text": "¿Cuándo fue la última vez que tuviste relaciones?",
+      "instruction": "¡Si tienes que pensarlo… ya fue hace mucho!",
+      "emoji": "⏰"
+    },
+    {
+      "id": "aq_012",
+      "text": "¿Quién fue la última persona que besaste?",
+      "instruction": "Esperemos que no haya sido por reto…",
+      "emoji": "💋"
+    },
+    {
+      "id": "aq_013",
+      "text": "¿Perdonarías una infidelidad?",
+      "instruction": "Solo si viene con descuento emocional.",
+      "emoji": "💔"
+    },
+    {
+      "id": "aq_014",
+      "text": "¿Quién crees que nunca se vaya a casar?",
+      "instruction": "¡Ni Tinder los quiere ya!",
+      "emoji": "💍"
+    },
+    {
+      "id": "aq_015",
+      "text": "Muestra tu última conversación en WhatsApp",
+      "instruction": "¡Modo FBI activado, cuidado con lo que mandaste!",
+      "emoji": "💬"
+    },
+    {
+      "id": "aq_016",
+      "text": "Enseña una foto de ti de joven o niño",
+      "instruction": "¡Qué tierno! Y pensar que ese angelito se volvió esto…",
+      "emoji": "👶"
+    },
+    {
+      "id": "aq_017",
+      "text": "¿Quién te cae peor de este grupo?",
+      "instruction": "¡No mires tan directo, ya se notó!",
+      "emoji": "😒"
+    },
+    {
+      "id": "aq_018",
+      "text": "¿Quién del grupo sería el/la primero en ser infiel?",
+      "instruction": "¡No lo digas muy fuerte, capaz y ya lo fue!",
+      "emoji": "😈"
+    },
+    {
+      "id": "aq_019",
+      "text": "¿Quién de aquí es el/la más hipócrita?",
+      "instruction": "¡A ver si sonríen igual después de esto!",
+      "emoji": "😏"
+    },
+    {
+      "id": "aq_020",
+      "text": "¿Quién del grupo te cae mejor borracho/a que sobrio/a?",
+      "instruction": "¡Sobrio es un 3, borracho es un 10 en diversión!",
+      "emoji": "🍻"
+    }
+  ]
+}
