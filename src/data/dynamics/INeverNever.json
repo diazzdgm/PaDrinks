@@ -1,0 +1,309 @@
+{
+  "id": "inever_never",
+  "name": "Yo NUNCA NUNCA",
+  "type": "vote_selection",
+  "instruction": "Yo NUNCA NUNCA, si lo haz hecho toma un shot/trago",
+  "minPlayers": 3,
+  "questions": [
+    {
+      "id": "inn_001",
+      "text": "Yo nunca me he descargado Tinder o una app de citas",
+      "instruction": "el amor moderno empieza con un swipe",
+      "emoji": "💔📱"
+    },
+    {
+      "id": "inn_002",
+      "text": "Yo nunca he stalkeado a mi ex",
+      "instruction": "Detective de la colonia",
+      "emoji": "🕵️‍♂️👀"
+    },
+    {
+      "id": "inn_003",
+      "text": "Yo nunca he hecho ghosting a alguien",
+      "instruction": "más desaparecido que Houdini",
+      "emoji": "👻💨"
+    },
+    {
+      "id": "inn_004",
+      "text": "Yo nunca he recibido una multa por exceso de velocidad",
+      "instruction": "Rápido y Furioso versión pobre",
+      "emoji": "🚗💸"
+    },
+    {
+      "id": "inn_005",
+      "text": "Yo nunca me ha gustado un/a profesor/a",
+      "instruction": "profe, ¿puede repetir la clase en mi casa?",
+      "emoji": "🍎😉"
+    },
+    {
+      "id": "inn_006",
+      "text": "Yo nunca he robado en una tienda",
+      "instruction": "el que nunca se ha olvidado de pagar un chicle",
+      "emoji": "🛒🤫"
+    },
+    {
+      "id": "inn_007",
+      "text": "Yo nunca he estado en una patrulla",
+      "instruction": "Uber gratis pero versión traumática",
+      "emoji": "🚔😅"
+    },
+    {
+      "id": "inn_008",
+      "text": "Yo nunca he hecho un trío",
+      "instruction": "matemáticas básicas: 1+1+1 = desastre",
+      "emoji": "➕3️⃣🔥"
+    },
+    {
+      "id": "inn_009",
+      "text": "Yo nunca he tapado el baño en casa ajena",
+      "instruction": "ese miedo de que no baje el agua…",
+      "emoji": "🚽😳"
+    },
+    {
+      "id": "inn_010",
+      "text": "Yo nunca he visto a mis padres teniendo relaciones sexuales",
+      "instruction": "ese trauma no lo cura ni el psicólogo",
+      "emoji": "😵‍💫🚷"
+    },
+    {
+      "id": "inn_011",
+      "text": "Yo nunca he creado una cuenta falsa en redes sociales",
+      "instruction": "modo FBI activado",
+      "emoji": "🕶️💻"
+    },
+    {
+      "id": "inn_012",
+      "text": "Yo nunca me he escapado de mi casa",
+      "instruction": "solo voy por unas tortillas, mamá",
+      "emoji": "🏃‍♂️🌙"
+    },
+    {
+      "id": "inn_013",
+      "text": "Yo nunca he sido malacopa",
+      "instruction": "todos tenemos un Hulk interior",
+      "emoji": "🍺🤬"
+    },
+    {
+      "id": "inn_014",
+      "text": "Yo nunca he guardado un secreto a alguien de este grupo",
+      "instruction": "chisme chisme … aquí huele a hipocresía",
+      "emoji": "🤐🙊"
+    },
+    {
+      "id": "inn_015",
+      "text": "Yo nunca he ocultado algo muy fuerte a alguien de aquí",
+      "instruction": "la intriga nivel telenovela",
+      "emoji": "📺😏"
+    },
+    {
+      "id": "inn_016",
+      "text": "Yo nunca le he roto el corazón a nadie",
+      "instruction": "Cupido disparó, pero con escopeta",
+      "emoji": "💘💔"
+    },
+    {
+      "id": "inn_017",
+      "text": "Yo nunca me he besado a dos personas la misma noche",
+      "instruction": "combo 2x1 de besos",
+      "emoji": "😘💋"
+    },
+    {
+      "id": "inn_018",
+      "text": "Yo nunca he dejado plantado a alguien en una cita",
+      "instruction": "modo fantasma activado",
+      "emoji": "⏳🪦"
+    },
+    {
+      "id": "inn_019",
+      "text": "Yo nunca he salido con más de una persona a la vez",
+      "instruction": "experto en multitasking emocional",
+      "emoji": "📅😬"
+    },
+    {
+      "id": "inn_020",
+      "text": "Yo nunca me he acostado con alguien que me dobla la edad",
+      "instruction": "la experiencia cuenta dicen…",
+      "emoji": "🧓🔥"
+    },
+    {
+      "id": "inn_021",
+      "text": "Yo nunca he vuelto con un ex",
+      "instruction": "error 404: dignidad no encontrada",
+      "emoji": "🔄💔"
+    },
+    {
+      "id": "inn_022",
+      "text": "Yo nunca he sido infiel",
+      "instruction": "karma, te estoy viendo",
+      "emoji": "👀⚡"
+    },
+    {
+      "id": "inn_023",
+      "text": "Yo nunca he querido huir de una cita",
+      "instruction": "camarero, la cuenta por favor",
+      "emoji": "🚪🏃‍♀️"
+    },
+    {
+      "id": "inn_024",
+      "text": "Yo nunca he mentido para no ir a trabajar",
+      "instruction": "jefe tengo COVID… otra vez",
+      "emoji": "🤧📞"
+    },
+    {
+      "id": "inn_025",
+      "text": "Yo nunca he dejado a alguien por Whatsapp",
+      "instruction": "rompiendo corazones con emojis",
+      "emoji": "📲💔"
+    },
+    {
+      "id": "inn_026",
+      "text": "Yo nunca he besado al hermano/a de un amigo/a",
+      "instruction": "la traición nivel 1000",
+      "emoji": "🤝➡️💋"
+    },
+    {
+      "id": "inn_027",
+      "text": "Yo nunca me han echado de un bar o antro",
+      "instruction": "no me fui, me corrieron con estilo",
+      "emoji": "🚷🍸"
+    },
+    {
+      "id": "inn_028",
+      "text": "Yo nunca me han engañado",
+      "instruction": "Netflix presenta: La Rosa de Guadalupe",
+      "emoji": "🎬💔"
+    },
+    {
+      "id": "inn_029",
+      "text": "Yo nunca he tenido relaciones en la primera cita",
+      "instruction": "eficiencia nivel turbo",
+      "emoji": "⚡🔥"
+    },
+    {
+      "id": "inn_030",
+      "text": "Yo nunca me han cachado mis padres teniendo relaciones",
+      "instruction": "ni las cortinas salvaron la dignidad",
+      "emoji": "😳🚪"
+    },
+    {
+      "id": "inn_031",
+      "text": "Yo nunca me he hecho una operación estética",
+      "instruction": "retoque Photoshop pero en carne y hueso",
+      "emoji": "💉💄"
+    },
+    {
+      "id": "inn_032",
+      "text": "Yo nunca he estado más de una semana sin ducharme",
+      "instruction": "el primo de Shrek confirmado",
+      "emoji": "🧅🦖"
+    },
+    {
+      "id": "inn_033",
+      "text": "Yo nunca le debo nada de dinero a nadie de aquí",
+      "instruction": "BBVA estaría orgulloso",
+      "emoji": "💵🙌"
+    },
+    {
+      "id": "inn_034",
+      "text": "Yo nunca he tenido sexo en un lugar público",
+      "instruction": "todos somos descarados",
+      "emoji": "🌳👀"
+    },
+    {
+      "id": "inn_035",
+      "text": "Yo nunca he vuelto con un ex",
+      "instruction": "sí, otra vez, porque algunos nunca aprenden",
+      "emoji": "🔄😂"
+    },
+    {
+      "id": "inn_036",
+      "text": "Yo nunca he tenido que ocultar un chupetón",
+      "instruction": "el suéter en pleno verano",
+      "emoji": "🧣🥵"
+    },
+    {
+      "id": "inn_037",
+      "text": "Yo nunca he tenido un fetiche extraño",
+      "instruction": "pies, disfraces… mejor no preguntemos",
+      "emoji": "🦶🎭"
+    },
+    {
+      "id": "inn_038",
+      "text": "Yo nunca he hecho cosas indecentes en el cine",
+      "instruction": "Netflix & Chill, pero en Cinépolis",
+      "emoji": "🍿🙈"
+    },
+    {
+      "id": "inn_039",
+      "text": "Yo nunca he tenido relación en el coche",
+      "instruction": "rápido, antes de que llegue la policía",
+      "emoji": "🚗💦"
+    },
+    {
+      "id": "inn_040",
+      "text": "Yo nunca he tenido sexo en la ducha",
+      "instruction": "resbalón nivel Mortal Kombat",
+      "emoji": "🚿😅"
+    },
+    {
+      "id": "inn_041",
+      "text": "Yo nunca he tenido sexo con alguien de otro país",
+      "instruction": "intercambio cultural extremo",
+      "emoji": "🌍🔥"
+    },
+    {
+      "id": "inn_042",
+      "text": "Yo nunca he tenido sexo en la cama de mis padres",
+      "instruction": "más prohibido que robar el coche",
+      "emoji": "🛏️🚫"
+    },
+    {
+      "id": "inn_043",
+      "text": "Yo nunca he tomado la pastilla del día después",
+      "instruction": "ese por si acaso histórico",
+      "emoji": "💊😬"
+    },
+    {
+      "id": "inn_044",
+      "text": "Yo nunca he tenido un amor a distancia",
+      "instruction": "WiFi lento, relación lenta",
+      "emoji": "🌐💔"
+    },
+    {
+      "id": "inn_045",
+      "text": "Yo nunca me he quedado dormido en la peda",
+      "instruction": "la banca o el baño, la cama de campeones",
+      "emoji": "🛋️😴"
+    },
+    {
+      "id": "inn_046",
+      "text": "Yo nunca he ido al baño del sexo opuesto en una peda",
+      "instruction": "ups, no era aquí",
+      "emoji": "🚻🙃"
+    },
+    {
+      "id": "inn_047",
+      "text": "Yo nunca he tenido un casi algo que me marcó más que un ex",
+      "instruction": "la historia que Netflix aún no graba",
+      "emoji": "🎬💔"
+    },
+    {
+      "id": "inn_048",
+      "text": "Yo nunca he pedido dinero para gastármelo en la peda",
+      "instruction": "inversión de alto riesgo",
+      "emoji": "💰🍹"
+    },
+    {
+      "id": "inn_049",
+      "text": "Yo nunca he robado un vaporizador o una cajetilla de cigarros en la peda",
+      "instruction": "manos largas nivel fiesta",
+      "emoji": "🚬🤭"
+    },
+    {
+      "id": "inn_050",
+      "text": "Yo nunca he vomitado en un antro o en un bar",
+      "instruction": "el baño termino siendo fuente",
+      "emoji": "🤮🎶"
+    }
+  ]
+}
