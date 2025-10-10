@@ -21,6 +21,10 @@ class GameEngine {
     this.roundHistory = [];
     this.players = players;
 
+    // Reset DynamicsManager para nuevo juego
+    this.dynamicsManager.reset();
+    console.log('🎮 DynamicsManager reseteado para nuevo juego');
+
     this.currentQuestion = this.getNextQuestion();
 
     return {

@@ -4,6 +4,7 @@ import mentionChallengeData from '../data/dynamics/mentionChallenge.json';
 import eliminationChallengeData from '../data/dynamics/eliminationChallenge.json';
 import INeverNeverData from '../data/dynamics/INeverNever.json';
 import awkwardQuestionsData from '../data/dynamics/awkwardQuestions.json';
+import armWrestlingData from '../data/dynamics/armWrestling.json';
 
 class DynamicsManager {
   constructor() {
@@ -13,7 +14,8 @@ class DynamicsManager {
       mentionChallengeData,
       eliminationChallengeData,
       INeverNeverData,
-      awkwardQuestionsData
+      awkwardQuestionsData,
+      armWrestlingData
     ];
 
     this.availableDynamics = [...this.allDynamics];
@@ -67,7 +69,10 @@ class DynamicsManager {
     const randomIndex = Math.floor(Math.random() * availableQuestions.length);
     const selectedQuestion = availableQuestions[randomIndex];
 
-    this.markQuestionAsUsed(dynamicId, selectedQuestion.id);
+    // Para dinámicas tipo paired_challenge, NO marcar como usada (se reutiliza con diferentes parejas)
+    if (dynamic.type !== 'paired_challenge') {
+      this.markQuestionAsUsed(dynamicId, selectedQuestion.id);
+    }
 
     return {
       ...selectedQuestion,

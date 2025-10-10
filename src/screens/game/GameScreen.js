@@ -40,7 +40,12 @@ import {
   extendGame,
   endGame,
   setMentionChallengePlayer,
+  addPairedChallengeParticipants,
+  removePairedChallengeParticipant,
+  resetPairedChallengeParticipants,
+  resetGame,
 } from '../../store/gameSlice';
+import { clearAllPlayers } from '../../store/playersSlice';
 import GameConfigModal from '../../components/game/GameConfigModal';
 
 const CustomMuteIcon = ({ size, isMuted = false }) => {
@@ -106,7 +111,8 @@ const GameScreen = ({ navigation, route }) => {
     gamePhase,
     isConfigModalOpen,
     questionsRemaining,
-    mentionChallengeTracking
+    mentionChallengeTracking,
+    pairedChallengeParticipants
   } = useSelector(state => state.game);
 
   const { playersList } = useSelector(state => state.players);
@@ -116,6 +122,7 @@ const GameScreen = ({ navigation, route }) => {
   const [gameEnded, setGameEnded] = useState(false);
   const [canExtend, setCanExtend] = useState(false);
   const [selectedPlayerForQuestion, setSelectedPlayerForQuestion] = useState(null);
+  const [selectedPairedPlayers, setSelectedPairedPlayers] = useState({ player1: null, player2: null });
 
   // Estado local para manejar TODOS los jugadores (iniciales + agregados)
   const [allGamePlayers, setAllGamePlayers] = useState(() => {
@@ -123,6 +130,9 @@ const GameScreen = ({ navigation, route }) => {
     console.log('🎯 Inicializando allGamePlayers con:', registeredPlayers);
     return [...registeredPlayers];
   });
+
+  // Ref para prevenir re-procesamiento de la misma pregunta después de reset
+  const lastSkippedPairedQuestionId = useRef(null);
 
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -364,6 +374,14 @@ const GameScreen = ({ navigation, route }) => {
   };
 
   const handleEndGame = () => {
+    // Limpiar todos los jugadores y el estado del juego
+    dispatch(clearAllPlayers());
+    dispatch(resetGame());
+
+    // Resetear el GameEngine
+    const gameEngine = getGameEngine();
+    gameEngine.resetGame();
+
     navigation.navigate('MainMenu');
   };
 
@@ -444,13 +462,164 @@ const GameScreen = ({ navigation, route }) => {
     }
   }, [currentQuestion?.id, allGamePlayers.length]);
 
+  // Efecto para limpiar el ID bloqueado cuando cambia el número de jugadores o cuando cambia a otra dinámica
+  useEffect(() => {
+    // Limpiar cuando cambia el número de jugadores
+    lastSkippedPairedQuestionId.current = null;
+  }, [allGamePlayers.length]);
+
+  useEffect(() => {
+    // Limpiar cuando la pregunta actual NO es paired_challenge
+    if (currentQuestion?.dynamicType !== 'paired_challenge') {
+      lastSkippedPairedQuestionId.current = null;
+    }
+  }, [currentQuestion?.id]);
+
+  // Efecto para seleccionar pareja de jugadores para paired_challenge (arm wrestling)
+  useEffect(() => {
+    if (currentQuestion?.dynamicType === 'paired_challenge' && allGamePlayers.length >= 2) {
+      // Si esta pregunta fue saltada recientemente, no volver a procesarla
+      if (lastSkippedPairedQuestionId.current === currentQuestion.id) {
+        console.log(`💪 ⏸️ Saltando procesamiento - esta pregunta ya fue procesada`);
+        setSelectedPairedPlayers({ player1: null, player2: null });
+        return;
+      }
+
+      console.log(`💪 === NUEVA PREGUNTA: ARM WRESTLING ===`);
+      console.log(`💪 Total jugadores: ${allGamePlayers.length}`);
+      console.log(`💪 Jugadores que ya participaron: [${pairedChallengeParticipants.join(', ')}]`);
+
+      // Verificar si TODOS los jugadores ya participaron
+      const allParticipated = allGamePlayers.every(p =>
+        pairedChallengeParticipants.includes(p.id || p.playerId)
+      );
+
+      if (allParticipated) {
+        console.log(`💪 ✅ Todos los jugadores ya participaron en arm wrestling - SALTAR DINÁMICA`);
+        setSelectedPairedPlayers({ player1: null, player2: null });
+
+        // Marcar el ID de esta pregunta como saltada
+        lastSkippedPairedQuestionId.current = currentQuestion.id;
+
+        // NO resetear el tracking - solo saltar la dinámica
+        // El tracking se limpiará al iniciar nuevo juego o al cambiar significativamente los jugadores
+        console.log(`💪 ⏭️ Manteniendo tracking - jugadores solo podrán volver a participar en nueva partida`);
+
+        // Saltar automáticamente esta dinámica de forma instantánea
+        const skipResult = gameEngine.skipDynamic();
+        if (skipResult.success) {
+          dispatch(setCurrentQuestion(skipResult.question));
+          console.log(`💪 ⏭️ Dinámica saltada automáticamente porque todos ya participaron`);
+        }
+        return;
+      }
+
+      // Obtener jugadores que NO han participado
+      const nonParticipants = allGamePlayers.filter(p =>
+        !pairedChallengeParticipants.includes(p.id || p.playerId)
+      );
+
+      console.log(`💪 Jugadores sin participar: ${nonParticipants.length}`);
+      console.log(`💪 Sin participar: ${nonParticipants.map(p => `${p.name || p.nickname}(${p.gender})`).join(', ')}`);
+
+      // Agrupar jugadores por género
+      const playersByGender = {};
+      allGamePlayers.forEach(player => {
+        const gender = player.gender;
+        if (!playersByGender[gender]) {
+          playersByGender[gender] = [];
+        }
+        playersByGender[gender].push(player);
+      });
+
+      console.log(`💪 Jugadores por género:`, Object.keys(playersByGender).map(g => `${g}: ${playersByGender[g].length}`).join(', '));
+
+      let player1, player2;
+
+      // Seleccionar primer jugador aleatorio de los que NO han participado
+      const randomIndex1 = Math.floor(Math.random() * nonParticipants.length);
+      player1 = nonParticipants[randomIndex1];
+      const gender1 = player1.gender;
+
+      console.log(`💪 Primer jugador seleccionado: ${player1.name || player1.nickname}(${gender1})`);
+
+      // Buscar todos los jugadores del mismo género (sin importar si participaron)
+      const allSameGender = playersByGender[gender1] || [];
+      const otherSameGender = allSameGender.filter(p =>
+        (p.id || p.playerId) !== (player1.id || player1.playerId)
+      );
+
+      if (otherSameGender.length === 0) {
+        // No hay otro jugador del mismo género, saltar esta pregunta
+        console.log(`💪 ⚠️ No hay otro jugador del género ${gender1} disponible, saltando pregunta`);
+        setSelectedPairedPlayers({ player1: null, player2: null });
+
+        // Guardar el ID para evitar loop (se limpiará cuando se agreguen jugadores)
+        lastSkippedPairedQuestionId.current = currentQuestion.id;
+
+        // Forzar skip de esta dinámica de forma instantánea
+        const skipResult = gameEngine.skipDynamic();
+        if (skipResult.success) {
+          dispatch(setCurrentQuestion(skipResult.question));
+          console.log(`💪 ⏭️ Pregunta saltada automáticamente, nueva pregunta cargada`);
+        }
+        return;
+      }
+
+      // Priorizar jugadores del mismo género que NO han participado
+      const sameGenderNonParticipants = otherSameGender.filter(p =>
+        !pairedChallengeParticipants.includes(p.id || p.playerId)
+      );
+
+      if (sameGenderNonParticipants.length > 0) {
+        // Hay jugadores del mismo género sin participar
+        const randomIndex2 = Math.floor(Math.random() * sameGenderNonParticipants.length);
+        player2 = sameGenderNonParticipants[randomIndex2];
+        console.log(`💪 Segundo jugador (mismo género, sin participar): ${player2.name || player2.nickname}(${player2.gender})`);
+      } else {
+        // Todos del mismo género ya participaron, seleccionar cualquiera
+        const randomIndex2 = Math.floor(Math.random() * otherSameGender.length);
+        player2 = otherSameGender[randomIndex2];
+        console.log(`💪 Segundo jugador (mismo género, YA PARTICIPÓ): ${player2.name || player2.nickname}(${player2.gender})`);
+      }
+
+      // Guardar los jugadores seleccionados
+      setSelectedPairedPlayers({ player1, player2 });
+      dispatch(addPairedChallengeParticipants({
+        player1Id: player1.id || player1.playerId,
+        player2Id: player2.id || player2.playerId
+      }));
+
+      console.log(`💪 Pareja seleccionada: ${player1.name || player1.nickname} vs ${player2.name || player2.nickname}`);
+      console.log(`💪 ==========================================`);
+    } else {
+      setSelectedPairedPlayers({ player1: null, player2: null });
+    }
+  }, [currentQuestion?.id, allGamePlayers.length]);
+
   // Formatear texto de pregunta con nombre del jugador
   const getFormattedQuestionText = () => {
     if (currentQuestion?.dynamicType === 'mention_challenge' && selectedPlayerForQuestion) {
       const playerName = selectedPlayerForQuestion.name || selectedPlayerForQuestion.nickname || 'Jugador';
-      return { playerName, questionText: currentQuestion.text };
+      return { type: 'mention_challenge', playerName, questionText: currentQuestion.text };
     }
-    return { playerName: null, questionText: currentQuestion?.text };
+    if (currentQuestion?.dynamicType === 'paired_challenge') {
+      if (selectedPairedPlayers.player1 && selectedPairedPlayers.player2) {
+        const player1Name = selectedPairedPlayers.player1.name || selectedPairedPlayers.player1.nickname || 'Jugador 1';
+        const player2Name = selectedPairedPlayers.player2.name || selectedPairedPlayers.player2.nickname || 'Jugador 2';
+        return {
+          type: 'paired_challenge',
+          player1Name,
+          player2Name,
+          template: currentQuestion.text
+        };
+      } else {
+        // Si no hay jugadores seleccionados, mostrar template sin reemplazar
+        console.log('⚠️ paired_challenge sin jugadores seleccionados, mostrando template');
+        return { type: 'default', questionText: 'Esperando selección de jugadores...' };
+      }
+    }
+    return { type: 'default', questionText: currentQuestion?.text };
   };
 
   if (gameEnded) {
@@ -594,7 +763,8 @@ const GameScreen = ({ navigation, route }) => {
           >
             {(() => {
               const formattedText = getFormattedQuestionText();
-              if (formattedText.playerName) {
+
+              if (formattedText.type === 'mention_challenge') {
                 // Dinámica mention_challenge - mostrar nombre subrayado + texto
                 return (
                   <Text style={[
@@ -603,6 +773,28 @@ const GameScreen = ({ navigation, route }) => {
                   ]}>
                     <Text style={styles.playerNameUnderlined}>{formattedText.playerName}</Text>
                     {` ${formattedText.questionText}`}
+                  </Text>
+                );
+              } else if (formattedText.type === 'paired_challenge') {
+                // Dinámica paired_challenge - mostrar dos nombres subrayados con template
+                const parts = formattedText.template.split('{player1}');
+                const beforePlayer1 = parts[0];
+                const afterPlayer1Parts = parts[1].split('{player2}');
+                const betweenPlayers = afterPlayer1Parts[0];
+                const afterPlayer2 = afterPlayer1Parts[1];
+
+                const fullText = `${beforePlayer1}${formattedText.player1Name}${betweenPlayers}${formattedText.player2Name}${afterPlayer2}`;
+
+                return (
+                  <Text style={[
+                    styles.questionText,
+                    { fontSize: getQuestionFontSize(fullText) }
+                  ]}>
+                    {beforePlayer1}
+                    <Text style={styles.playerNameUnderlined}>{formattedText.player1Name}</Text>
+                    {betweenPlayers}
+                    <Text style={styles.playerNameUnderlined}>{formattedText.player2Name}</Text>
+                    {afterPlayer2}
                   </Text>
                 );
               } else {
@@ -668,16 +860,11 @@ const GameScreen = ({ navigation, route }) => {
             console.log('🚫 Jugadores antes de remover:', prev.map(p => ({ id: p.id, idType: typeof p.id, name: p.name || p.nickname })));
             console.log('🚫 Jugadores después de remover:', filtered.map(p => ({ id: p.id, idType: typeof p.id, name: p.name || p.nickname })));
 
-            // Remover el jugador también del sistema de rotación de Mention Challenge
-            setUsedPlayersInMentionChallenge(prevUsed => {
-              const newUsed = new Set(prevUsed);
-              newUsed.delete(String(playerId));
-              console.log('🚫 Removiendo jugador del sistema de rotación Mention Challenge');
-              return newUsed;
-            });
-
             return filtered;
           });
+
+          // Limpiar el jugador del tracking de paired challenge
+          dispatch(removePairedChallengeParticipant(playerId));
         }}
       />
     </Animated.View>

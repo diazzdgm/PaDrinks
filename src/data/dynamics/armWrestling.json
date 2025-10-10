@@ -1,0 +1,15 @@
+{
+  "id": "arm_wrestling",
+  "name": "Fuercitas",
+  "type": "paired_challenge",
+  "instruction": "¡El jugador que pierda toma shot!",
+  "minPlayers": 2,
+  "questions": [
+    {
+      "id": "aw_001",
+      "text": "{player1} juega contra {player2} fuercitas sobre la mesa y el/la que pierda toma shot",
+      "instruction": "¡A demostrar quién es más fuerte!",
+      "emoji": "💪"
+    }
+  ]
+}

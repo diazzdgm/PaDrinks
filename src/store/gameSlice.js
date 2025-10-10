@@ -23,6 +23,9 @@ const initialState = {
   // Mention Challenge specific state (per dynamic tracking)
   mentionChallengeTracking: {},
 
+  // Paired Challenge specific state (arm wrestling tracking)
+  pairedChallengeParticipants: [],
+
   // Timer
   timer: 0,
   timerActive: false,
@@ -76,6 +79,7 @@ const gameSlice = createSlice({
       state.roundHistory = [];
       state.currentQuestion = question || null;
       state.mentionChallengeTracking = {};
+      state.pairedChallengeParticipants = [];
 
       if (gameEngineState) {
         state.gameEngineState = gameEngineState;
@@ -110,6 +114,27 @@ const gameSlice = createSlice({
       }
       state.mentionChallengeTracking[dynamicId].lastPlayer = player;
       state.mentionChallengeTracking[dynamicId].usedPlayerIds = usedPlayerIds;
+    },
+
+    addPairedChallengeParticipants: (state, action) => {
+      const { player1Id, player2Id } = action.payload;
+      if (!state.pairedChallengeParticipants.includes(player1Id)) {
+        state.pairedChallengeParticipants.push(player1Id);
+      }
+      if (!state.pairedChallengeParticipants.includes(player2Id)) {
+        state.pairedChallengeParticipants.push(player2Id);
+      }
+    },
+
+    removePairedChallengeParticipant: (state, action) => {
+      const playerId = action.payload;
+      state.pairedChallengeParticipants = state.pairedChallengeParticipants.filter(
+        id => String(id) !== String(playerId)
+      );
+    },
+
+    resetPairedChallengeParticipants: (state) => {
+      state.pairedChallengeParticipants = [];
     },
 
     setCurrentDynamic: (state, action) => {
@@ -209,6 +234,9 @@ export const {
   nextRound,
   setCurrentQuestion,
   setMentionChallengePlayer,
+  addPairedChallengeParticipants,
+  removePairedChallengeParticipant,
+  resetPairedChallengeParticipants,
   setCurrentDynamic,
   updateGameEngineState,
   pauseGame,
