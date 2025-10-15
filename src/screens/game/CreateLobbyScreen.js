@@ -20,6 +20,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../../styles/theme';
 import { useSocket, useRoom } from '../../hooks/useSocket';
 import { setRoomData } from '../../store/connectionSlice';
+import { clearAllPlayers } from '../../store/playersSlice';
+import { resetGame } from '../../store/gameSlice';
 import SocketService from '../../services/SocketService';
 import { 
   scale, 
@@ -1076,6 +1078,11 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     console.log('🎮 Host iniciando partida con jugadores:', connectedPlayers.map(p => p.nickname));
 
     if (gameMode === 'single-device') {
+      // Limpiar Redux ANTES de iniciar nueva partida para evitar jugadores de partidas anteriores
+      console.log('🧹 Limpiando Redux antes de iniciar nueva partida');
+      dispatch(clearAllPlayers());
+      dispatch(resetGame());
+
       // Para modo single-device, navegar a GameScreen
       console.log('🎮 Navegando a GameScreen para modo single-device');
       navigation.navigate('GameScreen', {

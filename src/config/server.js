@@ -58,7 +58,7 @@ export const MANUAL_SERVER_URL = 'http://192.168.100.18:3001'; // Tu IP actual (
  * Configuración para modo túnel
  * Cuando uses túnel de Expo, también necesitas túnel para el backend
  */
-export const TUNNEL_SERVER_URL = 'https://7cde17cd2eb8.ngrok-free.app'; // URL de ngrok
+export const TUNNEL_SERVER_URL = 'https://3bf8d6a6af82.ngrok-free.app'; // URL de ngrok
 // export const TUNNEL_SERVER_URL = null; // Descomenta esta línea para deshabilitar el túnel
 
 /**

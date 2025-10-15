@@ -43,6 +43,7 @@ import {
   addPairedChallengeParticipants,
   removePairedChallengeParticipant,
   resetPairedChallengeParticipants,
+  resetPairedChallengeForDynamic,
   resetGame,
 } from '../../store/gameSlice';
 import { clearAllPlayers } from '../../store/playersSlice';
@@ -112,7 +113,7 @@ const GameScreen = ({ navigation, route }) => {
     isConfigModalOpen,
     questionsRemaining,
     mentionChallengeTracking,
-    pairedChallengeParticipants
+    pairedChallengeTracking
   } = useSelector(state => state.game);
 
   const { playersList } = useSelector(state => state.players);
@@ -131,8 +132,17 @@ const GameScreen = ({ navigation, route }) => {
     return [...registeredPlayers];
   });
 
-  // Ref para prevenir re-procesamiento de la misma pregunta después de reset
-  const lastSkippedPairedQuestionId = useRef(null);
+  // Ref para controlar si el componente está montado (DEBE IR PRIMERO)
+  const isMountedRef = useRef(true);
+
+  // Ref para prevenir re-procesamiento de dinámicas que ya fueron saltadas porque todos participaron
+  const skippedPairedDynamicIds = useRef(new Set());
+
+  // Ref para rastrear el ID de la última pregunta procesada (prevenir loop infinito)
+  const lastProcessedQuestionId = useRef(null);
+
+  // Ref para rastrear si el juego ya fue inicializado (evita sincronización prematura con Redux)
+  const gameInitialized = useRef(false);
 
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -142,8 +152,48 @@ const GameScreen = ({ navigation, route }) => {
   const muteButtonScale = useRef(new Animated.Value(1)).current;
   const configButtonScale = useRef(new Animated.Value(1)).current;
 
-  // Sincronizar allGamePlayers cuando se agreguen jugadores dinámicamente
+  // Resetear allGamePlayers cuando cambian los registeredPlayers de route params (nueva partida)
   useEffect(() => {
+    // NO resetear si el juego está en curso (usar Redux en lugar de ref que se resetea al remontar)
+    if (gamePhase === 'playing' || gamePhase === 'paused') {
+      console.log('🔄 ⏸️ Ignorando reseteo - juego en curso (fase:', gamePhase, ')');
+      return;
+    }
+
+    // NO resetear cuando se está regresando de agregar jugador a media partida
+    if (route.params?.isReturningFromAddPlayer) {
+      console.log('🔄 ⏸️ Ignorando reseteo - regresando de agregar jugador');
+      return;
+    }
+
+    if (registeredPlayers && registeredPlayers.length > 0 && route.params?.gameMode === 'single-device') {
+      console.log('🔄 NUEVA PARTIDA - Reseteando allGamePlayers con nuevos registeredPlayers:', registeredPlayers);
+      setAllGamePlayers([...registeredPlayers]);
+      // Resetear flag de inicialización para permitir nueva inicialización
+      gameInitialized.current = false;
+    }
+  }, [route.params?.gameMode, route.params?.playerCount, gamePhase]);
+
+  // Sincronizar allGamePlayers cuando se agreguen jugadores dinámicamente SOLO después de inicializar
+  useEffect(() => {
+    // NO ejecutar si el componente no está montado
+    if (!isMountedRef.current) {
+      console.log('🔄 ⏸️ Sincronización cancelada - componente desmontado');
+      return;
+    }
+
+    // SOLO sincronizar si el juego ya fue inicializado (usar Redux en lugar de ref que se resetea al remontar)
+    if (gamePhase !== 'playing' && gamePhase !== 'paused') {
+      console.log('🔄 ⏸️ Sincronización pausada - juego no iniciado (fase:', gamePhase, ')');
+      return;
+    }
+
+    // Si Redux está vacío, significa que el juego terminó y se limpió - NO sincronizar
+    if (playersList.length === 0) {
+      console.log('🔄 ⏸️ Redux vacío - juego terminó o no hay jugadores');
+      return;
+    }
+
     setAllGamePlayers(prev => {
       console.log('🔄 Sincronizando jugadores...');
       console.log('🔄 Jugadores previos:', prev.map(p => ({ id: p.id, name: p.name || p.nickname })));
@@ -167,7 +217,32 @@ const GameScreen = ({ navigation, route }) => {
       console.log('🔄 No hay nuevos jugadores que agregar');
       return prev;
     });
-  }, [playersList.length]);
+  }, [playersList.length, gamePhase]);
+
+  // Cleanup cuando el componente se desmonta COMPLETAMENTE
+  useEffect(() => {
+    isMountedRef.current = true;
+    console.log('🎮 GameScreen MONTADO');
+
+    return () => {
+      isMountedRef.current = false;
+      console.log('🎮 GameScreen DESMONTADO - limpiando estado');
+
+      // Limpiar todo el estado local
+      setAllGamePlayers([]);
+      setSelectedPlayerForQuestion(null);
+      setSelectedPairedPlayers({ player1: null, player2: null });
+      setGameEnded(false);
+      setCanExtend(false);
+
+      // Limpiar refs
+      skippedPairedDynamicIds.current.clear();
+      lastProcessedQuestionId.current = null;
+      gameInitialized.current = false;
+
+      console.log('🎮 Estado local limpiado en desmontaje');
+    };
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -202,6 +277,10 @@ const GameScreen = ({ navigation, route }) => {
           gameEngineState: result.gameState,
           question: result.question
         }));
+
+        // Marcar juego como inicializado para permitir sincronización con Redux
+        gameInitialized.current = true;
+        console.log('✅ Juego inicializado - sincronización con Redux activada');
       }
     } catch (error) {
       console.error('Error initializing game:', error);
@@ -374,15 +453,44 @@ const GameScreen = ({ navigation, route }) => {
   };
 
   const handleEndGame = () => {
-    // Limpiar todos los jugadores y el estado del juego
-    dispatch(clearAllPlayers());
-    dispatch(resetGame());
+    console.log('🧹 === INICIANDO LIMPIEZA COMPLETA DEL JUEGO ===');
 
-    // Resetear el GameEngine
+    // 1. Limpiar currentQuestion PRIMERO para evitar que useEffect procese datos viejos
+    dispatch(setCurrentQuestion(null));
+    console.log('🧹 Pregunta actual limpiada');
+
+    // 2. Limpiar estado local
+    setAllGamePlayers([]);
+    setSelectedPlayerForQuestion(null);
+    setSelectedPairedPlayers({ player1: null, player2: null });
+    setGameEnded(false);
+    setCanExtend(false);
+    console.log('🧹 Estado local de jugadores limpiado');
+
+    // 3. Limpiar refs
+    skippedPairedDynamicIds.current.clear();
+    lastProcessedQuestionId.current = null;
+    gameInitialized.current = false;
+    console.log('🧹 Refs de dinámicas bloqueadas limpiadas');
+
+    // 4. Resetear el GameEngine
     const gameEngine = getGameEngine();
     gameEngine.resetGame();
+    console.log('🧹 GameEngine reseteado');
 
-    navigation.navigate('MainMenu');
+    // 5. Limpiar Redux AL FINAL
+    dispatch(clearAllPlayers());
+    dispatch(resetGame());
+    console.log('🧹 Redux limpiado');
+
+    console.log('🧹 === LIMPIEZA COMPLETA TERMINADA ===');
+
+    // 6. RESETEAR el stack de navegación para desmontar completamente GameScreen
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'MainMenu' }],
+    });
+    console.log('🧹 Stack de navegación reseteado - GameScreen desmontado');
   };
 
   // Obtener información del dispositivo para estilos dinámicos
@@ -401,6 +509,12 @@ const GameScreen = ({ navigation, route }) => {
 
   // Efecto para seleccionar jugador aleatorio cuando cambia la pregunta (con rotación independiente por dinámica)
   useEffect(() => {
+    // NO ejecutar si el componente no está montado
+    if (!isMountedRef.current) {
+      console.log('⏸️ mention_challenge useEffect cancelado - componente desmontado');
+      return;
+    }
+
     if (currentQuestion?.dynamicType === 'mention_challenge' && allGamePlayers.length > 0) {
       const dynamicId = currentQuestion.dynamicName || 'unknown';
       const tracking = mentionChallengeTracking[dynamicId] || { lastPlayer: null, usedPlayerIds: [] };
@@ -462,135 +576,279 @@ const GameScreen = ({ navigation, route }) => {
     }
   }, [currentQuestion?.id, allGamePlayers.length]);
 
-  // Efecto para limpiar el ID bloqueado cuando cambia el número de jugadores o cuando cambia a otra dinámica
+  // Efecto para desbloquear dinámicas automáticamente cuando se agregan nuevos jugadores
   useEffect(() => {
-    // Limpiar cuando cambia el número de jugadores
-    lastSkippedPairedQuestionId.current = null;
+    // Desbloquear dinámicas paired_challenge cuando se agregan jugadores
+    if (allGamePlayers.length > 0 && skippedPairedDynamicIds.current.size > 0) {
+      console.log('🔓 DESBLOQUEO AUTOMÁTICO - Nuevos jugadores detectados');
+      console.log('🔓 Total jugadores actual:', allGamePlayers.length);
+      console.log('🔓 Dinámicas bloqueadas antes:', Array.from(skippedPairedDynamicIds.current));
+
+      skippedPairedDynamicIds.current.clear();
+
+      console.log('🔓 ✅ Todas las dinámicas paired_challenge han sido desbloqueadas');
+      console.log('🔓 Dinámicas bloqueadas después:', Array.from(skippedPairedDynamicIds.current));
+    }
   }, [allGamePlayers.length]);
 
+  // Efecto para limpiar lastProcessedQuestionId cuando cambia la pregunta
   useEffect(() => {
-    // Limpiar cuando la pregunta actual NO es paired_challenge
-    if (currentQuestion?.dynamicType !== 'paired_challenge') {
-      lastSkippedPairedQuestionId.current = null;
-    }
+    // Cuando cambia la pregunta, permitir que se procese la nueva
+    lastProcessedQuestionId.current = null;
   }, [currentQuestion?.id]);
 
-  // Efecto para seleccionar pareja de jugadores para paired_challenge (arm wrestling)
+  // Efecto para seleccionar pareja de jugadores para paired_challenge (arm wrestling + rock paper scissors)
   useEffect(() => {
+    // NO ejecutar si el componente no está montado
+    if (!isMountedRef.current) {
+      console.log('⏸️ paired_challenge useEffect cancelado - componente desmontado');
+      return;
+    }
+
     if (currentQuestion?.dynamicType === 'paired_challenge' && allGamePlayers.length >= 2) {
-      // Si esta pregunta fue saltada recientemente, no volver a procesarla
-      if (lastSkippedPairedQuestionId.current === currentQuestion.id) {
-        console.log(`💪 ⏸️ Saltando procesamiento - esta pregunta ya fue procesada`);
-        setSelectedPairedPlayers({ player1: null, player2: null });
+      const dynamicId = currentQuestion.dynamicId;
+      const dynamicName = currentQuestion.dynamicName || 'paired challenge';
+      const requiresSameGender = dynamicId === 'arm_wrestling';
+
+      console.log(`💪 === NUEVA PREGUNTA: ${dynamicName.toUpperCase()} ===`);
+      console.log(`💪 Dynamic ID: ${dynamicId}`);
+      console.log(`💪 Question ID: ${currentQuestion.id}`);
+      console.log(`💪 Requiere mismo género: ${requiresSameGender}`);
+      console.log(`💪 Total jugadores: ${allGamePlayers.length}`);
+      console.log(`💪 🔍 Dinámicas bloqueadas: [${Array.from(skippedPairedDynamicIds.current).join(', ')}]`);
+
+      // Prevenir loop infinito: si ya procesamos esta pregunta específica, no procesarla de nuevo
+      if (lastProcessedQuestionId.current === currentQuestion.id) {
+        console.log(`💪 ⏸️ Pregunta ${currentQuestion.id} ya fue procesada, evitando re-procesamiento`);
         return;
       }
 
-      console.log(`💪 === NUEVA PREGUNTA: ARM WRESTLING ===`);
-      console.log(`💪 Total jugadores: ${allGamePlayers.length}`);
-      console.log(`💪 Jugadores que ya participaron: [${pairedChallengeParticipants.join(', ')}]`);
+      // Si esta dinámica ya fue saltada porque todos participaron, saltarla automáticamente
+      if (skippedPairedDynamicIds.current.has(dynamicId)) {
+        console.log(`💪 🚫 Dinámica ${dynamicName} bloqueada - todos ya participaron, saltando automáticamente`);
 
-      // Verificar si TODOS los jugadores ya participaron
-      const allParticipated = allGamePlayers.every(p =>
-        pairedChallengeParticipants.includes(p.id || p.playerId)
-      );
-
-      if (allParticipated) {
-        console.log(`💪 ✅ Todos los jugadores ya participaron en arm wrestling - SALTAR DINÁMICA`);
-        setSelectedPairedPlayers({ player1: null, player2: null });
-
-        // Marcar el ID de esta pregunta como saltada
-        lastSkippedPairedQuestionId.current = currentQuestion.id;
-
-        // NO resetear el tracking - solo saltar la dinámica
-        // El tracking se limpiará al iniciar nuevo juego o al cambiar significativamente los jugadores
-        console.log(`💪 ⏭️ Manteniendo tracking - jugadores solo podrán volver a participar en nueva partida`);
-
-        // Saltar automáticamente esta dinámica de forma instantánea
         const skipResult = gameEngine.skipDynamic();
         if (skipResult.success) {
           dispatch(setCurrentQuestion(skipResult.question));
-          console.log(`💪 ⏭️ Dinámica saltada automáticamente porque todos ya participaron`);
+          lastProcessedQuestionId.current = null;
+          console.log(`💪 ⏭️ Dinámica saltada, limpiando lastProcessedQuestionId para permitir futuros saltos`);
         }
         return;
       }
 
-      // Obtener jugadores que NO han participado
+      const participantsForThisDynamic = pairedChallengeTracking[dynamicId] || [];
+      console.log(`💪 Jugadores que ya participaron en ${dynamicName}: [${participantsForThisDynamic.join(', ')}]`);
+
+      // Obtener jugadores que NO han participado en ESTA dinámica
       const nonParticipants = allGamePlayers.filter(p =>
-        !pairedChallengeParticipants.includes(p.id || p.playerId)
+        !participantsForThisDynamic.includes(p.id || p.playerId)
       );
 
       console.log(`💪 Jugadores sin participar: ${nonParticipants.length}`);
       console.log(`💪 Sin participar: ${nonParticipants.map(p => `${p.name || p.nickname}(${p.gender})`).join(', ')}`);
 
-      // Agrupar jugadores por género
-      const playersByGender = {};
-      allGamePlayers.forEach(player => {
-        const gender = player.gender;
-        if (!playersByGender[gender]) {
-          playersByGender[gender] = [];
-        }
-        playersByGender[gender].push(player);
-      });
-
-      console.log(`💪 Jugadores por género:`, Object.keys(playersByGender).map(g => `${g}: ${playersByGender[g].length}`).join(', '));
-
       let player1, player2;
+      let shouldSkip = false;
 
-      // Seleccionar primer jugador aleatorio de los que NO han participado
-      const randomIndex1 = Math.floor(Math.random() * nonParticipants.length);
-      player1 = nonParticipants[randomIndex1];
-      const gender1 = player1.gender;
+      if (requiresSameGender) {
+        // ARM WRESTLING - Requiere mismo género
+        console.log(`💪 === LÓGICA ARM WRESTLING (mismo género requerido) ===`);
 
-      console.log(`💪 Primer jugador seleccionado: ${player1.name || player1.nickname}(${gender1})`);
+        // Agrupar TODOS los jugadores por género
+        const playersByGender = {};
+        allGamePlayers.forEach(player => {
+          const gender = player.gender;
+          if (!playersByGender[gender]) {
+            playersByGender[gender] = [];
+          }
+          playersByGender[gender].push(player);
+        });
 
-      // Buscar todos los jugadores del mismo género (sin importar si participaron)
-      const allSameGender = playersByGender[gender1] || [];
-      const otherSameGender = allSameGender.filter(p =>
-        (p.id || p.playerId) !== (player1.id || player1.playerId)
-      );
+        // Agrupar jugadores SIN PARTICIPAR por género
+        const nonParticipantsByGender = {};
+        nonParticipants.forEach(player => {
+          const gender = player.gender;
+          if (!nonParticipantsByGender[gender]) {
+            nonParticipantsByGender[gender] = [];
+          }
+          nonParticipantsByGender[gender].push(player);
+        });
 
-      if (otherSameGender.length === 0) {
-        // No hay otro jugador del mismo género, saltar esta pregunta
-        console.log(`💪 ⚠️ No hay otro jugador del género ${gender1} disponible, saltando pregunta`);
+        console.log(`💪 Jugadores por género:`, Object.keys(playersByGender).map(g => `${g}: ${playersByGender[g].length}`).join(', '));
+        console.log(`💪 Sin participar por género:`, Object.keys(nonParticipantsByGender).map(g => `${g}: ${nonParticipantsByGender[g].length}`).join(', '));
+
+        // PASO 1: Intentar encontrar género con al menos 2 jugadores SIN PARTICIPAR
+        let selectedGender = null;
+        for (const gender in nonParticipantsByGender) {
+          if (nonParticipantsByGender[gender].length >= 2) {
+            selectedGender = gender;
+            console.log(`💪 ⭐ PASO 1: Encontrado género ${gender} con ${nonParticipantsByGender[gender].length} jugadores sin participar`);
+            break;
+          }
+        }
+
+        if (selectedGender) {
+          // CASO IDEAL: Dos jugadores sin participar del mismo género
+          const genderNonParticipants = nonParticipantsByGender[selectedGender];
+          const randomIndex1 = Math.floor(Math.random() * genderNonParticipants.length);
+          player1 = genderNonParticipants[randomIndex1];
+
+          const remainingNonParticipants = genderNonParticipants.filter(p =>
+            (p.id || p.playerId) !== (player1.id || player1.playerId)
+          );
+          const randomIndex2 = Math.floor(Math.random() * remainingNonParticipants.length);
+          player2 = remainingNonParticipants[randomIndex2];
+
+          console.log(`💪 ✅ CASO IDEAL: Dos jugadores sin participar del mismo género`);
+          console.log(`💪 Jugador 1: ${player1.name || player1.nickname}(${player1.gender}) - SIN PARTICIPAR`);
+          console.log(`💪 Jugador 2: ${player2.name || player2.nickname}(${player2.gender}) - SIN PARTICIPAR`);
+        } else if (nonParticipants.length > 0) {
+          // PASO 2: Hay jugadores sin participar pero no 2+ del mismo género
+          // Seleccionar 1 jugador aleatorio sin participar
+          const randomIndex1 = Math.floor(Math.random() * nonParticipants.length);
+          player1 = nonParticipants[randomIndex1];
+          const gender1 = player1.gender;
+
+          console.log(`💪 🎯 PASO 2: Jugador prioritario (sin participar): ${player1.name || player1.nickname}(${gender1})`);
+
+          // Buscar TODOS los jugadores del mismo género (excluyendo player1)
+          const allSameGender = (playersByGender[gender1] || []).filter(p =>
+            (p.id || p.playerId) !== (player1.id || player1.playerId)
+          );
+
+          if (allSameGender.length === 0) {
+            // No hay otro jugador del mismo género - SALTAR
+            console.log(`💪 ⚠️ No hay otro jugador del género ${gender1} disponible - SALTAR pregunta`);
+            shouldSkip = true;
+          } else {
+            // Priorizar otros sin participar del mismo género
+            const sameGenderNonParticipants = allSameGender.filter(p =>
+              !participantsForThisDynamic.includes(p.id || p.playerId)
+            );
+
+            if (sameGenderNonParticipants.length > 0) {
+              const randomIndex2 = Math.floor(Math.random() * sameGenderNonParticipants.length);
+              player2 = sameGenderNonParticipants[randomIndex2];
+              console.log(`💪 ✅ Jugador 2 (mismo género, SIN PARTICIPAR): ${player2.name || player2.nickname}(${player2.gender})`);
+            } else {
+              // Todos del mismo género ya participaron - emparejar con uno que ya participó
+              const randomIndex2 = Math.floor(Math.random() * allSameGender.length);
+              player2 = allSameGender[randomIndex2];
+              console.log(`💪 ⚠️ Jugador 2 (mismo género, YA PARTICIPÓ): ${player2.name || player2.nickname}(${player2.gender})`);
+            }
+          }
+        } else {
+          // PASO 3: NO hay jugadores sin participar - verificar si podemos bloquear
+          console.log(`💪 🔍 PASO 3: Verificando si se debe bloquear la dinámica`);
+
+          // Contar cuántos géneros tienen al menos 2 jugadores
+          let gendersWithMultiplePlayers = 0;
+          for (const gender in playersByGender) {
+            if (playersByGender[gender].length >= 2) {
+              gendersWithMultiplePlayers++;
+            }
+          }
+
+          if (gendersWithMultiplePlayers === 0) {
+            // No hay ningún género con 2+ jugadores - SALTAR sin bloquear
+            console.log(`💪 ⚠️ No hay ningún género con 2+ jugadores - SALTAR sin bloquear`);
+            shouldSkip = true;
+          } else {
+            // Hay al menos un género con 2+ jugadores Y todos ya participaron - BLOQUEAR
+            console.log(`💪 ✅ Todos los jugadores elegibles han participado - BLOQUEAR DINÁMICA`);
+            console.log(`💪 🚫 Agregando ${dynamicId} a dinámicas bloqueadas`);
+
+            skippedPairedDynamicIds.current.add(dynamicId);
+
+            const skipResult = gameEngine.skipDynamic();
+            if (skipResult.success) {
+              dispatch(setCurrentQuestion(skipResult.question));
+              lastProcessedQuestionId.current = null;
+              console.log(`💪 ⏭️ Dinámica bloqueada y saltada automáticamente`);
+            }
+            return;
+          }
+        }
+      } else {
+        // ROCK PAPER SCISSORS - Sin restricción de género
+        console.log(`🪨📄✂️ === LÓGICA ROCK PAPER SCISSORS (sin restricción de género) ===`);
+
+        if (nonParticipants.length >= 2) {
+          // CASO IDEAL: Dos jugadores sin participar
+          const randomIndex1 = Math.floor(Math.random() * nonParticipants.length);
+          player1 = nonParticipants[randomIndex1];
+
+          const remainingNonParticipants = nonParticipants.filter(p =>
+            (p.id || p.playerId) !== (player1.id || player1.playerId)
+          );
+          const randomIndex2 = Math.floor(Math.random() * remainingNonParticipants.length);
+          player2 = remainingNonParticipants[randomIndex2];
+
+          console.log(`🪨📄✂️ ✅ CASO IDEAL: Dos jugadores sin participar`);
+          console.log(`🪨📄✂️ Jugador 1: ${player1.name || player1.nickname}(${player1.gender}) - SIN PARTICIPAR`);
+          console.log(`🪨📄✂️ Jugador 2: ${player2.name || player2.nickname}(${player2.gender}) - SIN PARTICIPAR`);
+        } else if (nonParticipants.length === 1) {
+          // PASO 2: Solo 1 jugador sin participar - emparejarlo con cualquier otro
+          player1 = nonParticipants[0];
+          console.log(`🪨📄✂️ 🎯 Jugador prioritario (sin participar): ${player1.name || player1.nickname}(${player1.gender})`);
+
+          const otherPlayers = allGamePlayers.filter(p =>
+            (p.id || p.playerId) !== (player1.id || player1.playerId)
+          );
+
+          if (otherPlayers.length === 0) {
+            // Solo hay 1 jugador total - SALTAR
+            console.log(`🪨📄✂️ ⚠️ Solo hay 1 jugador total - SALTAR pregunta`);
+            shouldSkip = true;
+          } else {
+            const randomIndex2 = Math.floor(Math.random() * otherPlayers.length);
+            player2 = otherPlayers[randomIndex2];
+            console.log(`🪨📄✂️ ✅ Jugador 2 (YA PARTICIPÓ): ${player2.name || player2.nickname}(${player2.gender})`);
+          }
+        } else {
+          // PASO 3: NO hay jugadores sin participar - BLOQUEAR
+          console.log(`🪨📄✂️ ✅ Todos los jugadores han participado - BLOQUEAR DINÁMICA`);
+          console.log(`🪨📄✂️ 🚫 Agregando ${dynamicId} a dinámicas bloqueadas`);
+
+          skippedPairedDynamicIds.current.add(dynamicId);
+
+          const skipResult = gameEngine.skipDynamic();
+          if (skipResult.success) {
+            dispatch(setCurrentQuestion(skipResult.question));
+            lastProcessedQuestionId.current = null;
+            console.log(`🪨📄✂️ ⏭️ Dinámica bloqueada y saltada automáticamente`);
+          }
+          return;
+        }
+      }
+
+      // Si debemos saltar la pregunta (sin bloquear dinámica)
+      if (shouldSkip) {
         setSelectedPairedPlayers({ player1: null, player2: null });
 
-        // Guardar el ID para evitar loop (se limpiará cuando se agreguen jugadores)
-        lastSkippedPairedQuestionId.current = currentQuestion.id;
-
-        // Forzar skip de esta dinámica de forma instantánea
         const skipResult = gameEngine.skipDynamic();
         if (skipResult.success) {
           dispatch(setCurrentQuestion(skipResult.question));
-          console.log(`💪 ⏭️ Pregunta saltada automáticamente, nueva pregunta cargada`);
+          lastProcessedQuestionId.current = null;
+          console.log(`💪 ⏭️ Pregunta saltada automáticamente (sin bloquear dinámica)`);
         }
         return;
       }
 
-      // Priorizar jugadores del mismo género que NO han participado
-      const sameGenderNonParticipants = otherSameGender.filter(p =>
-        !pairedChallengeParticipants.includes(p.id || p.playerId)
-      );
-
-      if (sameGenderNonParticipants.length > 0) {
-        // Hay jugadores del mismo género sin participar
-        const randomIndex2 = Math.floor(Math.random() * sameGenderNonParticipants.length);
-        player2 = sameGenderNonParticipants[randomIndex2];
-        console.log(`💪 Segundo jugador (mismo género, sin participar): ${player2.name || player2.nickname}(${player2.gender})`);
-      } else {
-        // Todos del mismo género ya participaron, seleccionar cualquiera
-        const randomIndex2 = Math.floor(Math.random() * otherSameGender.length);
-        player2 = otherSameGender[randomIndex2];
-        console.log(`💪 Segundo jugador (mismo género, YA PARTICIPÓ): ${player2.name || player2.nickname}(${player2.gender})`);
-      }
-
-      // Guardar los jugadores seleccionados
+      // Guardar la pareja seleccionada
       setSelectedPairedPlayers({ player1, player2 });
       dispatch(addPairedChallengeParticipants({
+        dynamicId,
         player1Id: player1.id || player1.playerId,
         player2Id: player2.id || player2.playerId
       }));
 
-      console.log(`💪 Pareja seleccionada: ${player1.name || player1.nickname} vs ${player2.name || player2.nickname}`);
+      // Marcar esta pregunta como procesada para evitar re-procesamiento en este ciclo
+      lastProcessedQuestionId.current = currentQuestion.id;
+
+      console.log(`💪 ✅ Pareja seleccionada: ${player1.name || player1.nickname} vs ${player2.name || player2.nickname}`);
+      console.log(`💪 📊 Participantes actuales: [${participantsForThisDynamic.join(', ')}]`);
+      console.log(`💪 📊 Después de esta ronda: ${participantsForThisDynamic.length + 2}/${allGamePlayers.length} jugadores habrán participado`);
       console.log(`💪 ==========================================`);
     } else {
       setSelectedPairedPlayers({ player1: null, player2: null });
@@ -614,9 +872,13 @@ const GameScreen = ({ navigation, route }) => {
           template: currentQuestion.text
         };
       } else {
-        // Si no hay jugadores seleccionados, mostrar template sin reemplazar
-        console.log('⚠️ paired_challenge sin jugadores seleccionados, mostrando template');
-        return { type: 'default', questionText: 'Esperando selección de jugadores...' };
+        // Si no hay jugadores seleccionados aún, mostrar el template con placeholders
+        return {
+          type: 'paired_challenge',
+          player1Name: 'Jugador 1',
+          player2Name: 'Jugador 2',
+          template: currentQuestion.text
+        };
       }
     }
     return { type: 'default', questionText: currentQuestion?.text };
@@ -776,7 +1038,12 @@ const GameScreen = ({ navigation, route }) => {
                   </Text>
                 );
               } else if (formattedText.type === 'paired_challenge') {
-                // Dinámica paired_challenge - mostrar dos nombres subrayados con template
+                // Dinámica paired_challenge - solo mostrar si hay jugadores seleccionados
+                if (!selectedPairedPlayers.player1 || !selectedPairedPlayers.player2) {
+                  // No mostrar texto hasta que se seleccionen los jugadores
+                  return null;
+                }
+
                 const parts = formattedText.template.split('{player1}');
                 const beforePlayer1 = parts[0];
                 const afterPlayer1Parts = parts[1].split('{player2}');

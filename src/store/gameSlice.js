@@ -23,8 +23,8 @@ const initialState = {
   // Mention Challenge specific state (per dynamic tracking)
   mentionChallengeTracking: {},
 
-  // Paired Challenge specific state (arm wrestling tracking)
-  pairedChallengeParticipants: [],
+  // Paired Challenge specific state (tracking per dynamic: arm_wrestling, rock_paper_scissors)
+  pairedChallengeTracking: {},
 
   // Timer
   timer: 0,
@@ -79,7 +79,7 @@ const gameSlice = createSlice({
       state.roundHistory = [];
       state.currentQuestion = question || null;
       state.mentionChallengeTracking = {};
-      state.pairedChallengeParticipants = [];
+      state.pairedChallengeTracking = {};
 
       if (gameEngineState) {
         state.gameEngineState = gameEngineState;
@@ -117,24 +117,36 @@ const gameSlice = createSlice({
     },
 
     addPairedChallengeParticipants: (state, action) => {
-      const { player1Id, player2Id } = action.payload;
-      if (!state.pairedChallengeParticipants.includes(player1Id)) {
-        state.pairedChallengeParticipants.push(player1Id);
+      const { dynamicId, player1Id, player2Id } = action.payload;
+      if (!state.pairedChallengeTracking[dynamicId]) {
+        state.pairedChallengeTracking[dynamicId] = [];
       }
-      if (!state.pairedChallengeParticipants.includes(player2Id)) {
-        state.pairedChallengeParticipants.push(player2Id);
+      if (!state.pairedChallengeTracking[dynamicId].includes(player1Id)) {
+        state.pairedChallengeTracking[dynamicId].push(player1Id);
+      }
+      if (!state.pairedChallengeTracking[dynamicId].includes(player2Id)) {
+        state.pairedChallengeTracking[dynamicId].push(player2Id);
       }
     },
 
     removePairedChallengeParticipant: (state, action) => {
       const playerId = action.payload;
-      state.pairedChallengeParticipants = state.pairedChallengeParticipants.filter(
-        id => String(id) !== String(playerId)
-      );
+      Object.keys(state.pairedChallengeTracking).forEach(dynamicId => {
+        state.pairedChallengeTracking[dynamicId] = state.pairedChallengeTracking[dynamicId].filter(
+          id => String(id) !== String(playerId)
+        );
+      });
     },
 
     resetPairedChallengeParticipants: (state) => {
-      state.pairedChallengeParticipants = [];
+      state.pairedChallengeTracking = {};
+    },
+
+    resetPairedChallengeForDynamic: (state, action) => {
+      const dynamicId = action.payload;
+      if (state.pairedChallengeTracking[dynamicId]) {
+        state.pairedChallengeTracking[dynamicId] = [];
+      }
     },
 
     setCurrentDynamic: (state, action) => {
@@ -237,6 +249,7 @@ export const {
   addPairedChallengeParticipants,
   removePairedChallengeParticipant,
   resetPairedChallengeParticipants,
+  resetPairedChallengeForDynamic,
   setCurrentDynamic,
   updateGameEngineState,
   pauseGame,

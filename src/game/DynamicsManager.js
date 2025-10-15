@@ -5,6 +5,7 @@ import eliminationChallengeData from '../data/dynamics/eliminationChallenge.json
 import INeverNeverData from '../data/dynamics/INeverNever.json';
 import awkwardQuestionsData from '../data/dynamics/awkwardQuestions.json';
 import armWrestlingData from '../data/dynamics/armWrestling.json';
+import rockPaperScissorsData from '../data/dynamics/rockPaperScissors.json';
 
 class DynamicsManager {
   constructor() {
@@ -15,7 +16,8 @@ class DynamicsManager {
       eliminationChallengeData,
       INeverNeverData,
       awkwardQuestionsData,
-      armWrestlingData
+      armWrestlingData,
+      rockPaperScissorsData
     ];
 
     this.availableDynamics = [...this.allDynamics];
@@ -76,6 +78,7 @@ class DynamicsManager {
 
     return {
       ...selectedQuestion,
+      dynamicId: dynamic.id,
       dynamicName: dynamic.name,
       dynamicInstruction: dynamic.instruction,
       dynamicType: dynamic.type

@@ -26,8 +26,8 @@ import {
   RESPONSIVE,
   getDeviceInfo
 } from '../../utils/responsive';
-import { removePlayer } from '../../store/playersSlice';
-import { endGame, resetGame } from '../../store/gameSlice';
+import { removePlayer, clearAllPlayers } from '../../store/playersSlice';
+import { endGame, resetGame, setCurrentQuestion } from '../../store/gameSlice';
 import { getGameEngine } from '../../game/GameEngine';
 
 const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], onPlayerRemoved }) => {
@@ -180,7 +180,22 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
 
     playBeerSound();
 
+    console.log('🧹 === INICIANDO LIMPIEZA COMPLETA DESDE MODAL DE CONFIG ===');
+
+    // 1. Clear currentQuestion FIRST to prevent useEffect processing old data
+    dispatch(setCurrentQuestion(null));
+    console.log('🧹 Pregunta actual limpiada desde modal');
+
+    // 2. End game in GameEngine
     const result = gameEngine.endGame('manual');
+    console.log('🧹 GameEngine.endGame() ejecutado');
+
+    // 3. Clear Redux state
+    dispatch(clearAllPlayers());
+    console.log('🧹 Todos los jugadores eliminados de Redux');
+
+    dispatch(resetGame());
+    console.log('🧹 Estado del juego reseteado en Redux');
 
     if (result.success) {
       dispatch(endGame({
@@ -189,10 +204,17 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
       }));
     }
 
+    console.log('🧹 === LIMPIEZA COMPLETA TERMINADA DESDE MODAL ===');
+
     onClose();
 
     setTimeout(() => {
-      navigation.navigate('MainMenu');
+      // RESETEAR el stack de navegación para desmontar completamente GameScreen
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainMenu' }],
+      });
+      console.log('🧹 Stack de navegación reseteado desde modal - GameScreen desmontado');
     }, 500);
   };
 

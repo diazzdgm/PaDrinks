@@ -178,9 +178,19 @@ The project includes a complete local game engine for single-device gameplay:
 
 #### Game Data Structure
 - **JSON-based Dynamics**: Stored in `src/data/dynamics/` with structured format
+  - `whoIsMost.json`: Vote-based questions asking "Who is most likely to..."
+  - `whoIsMoreLikely.json`: Comparative vote questions
+  - `mentionChallenge.json`: Individual challenges requiring players to mention items from categories
+  - `eliminationChallenge.json`: Elimination-style questions
+  - `INeverNever.json`: "I never never" confession questions (50 questions)
+  - `awkwardQuestions.json`: Awkward questions with player selection (20 questions)
+  - `armWrestling.json`: Paired challenge for arm wrestling matches (paired_challenge type)
 - **Question Schema**: Each question has `id`, `text`, `instruction`, `emoji`
-- **Dynamic Types**: Currently supports "vote_selection" type dynamics
-- **Extensible Design**: Easy to add new dynamics by creating new JSON files
+- **Dynamic Types**:
+  - `vote_selection`: Group voting dynamics (whoIsMost, whoIsMoreLikely, INeverNever)
+  - `mention_challenge`: Individual player challenges with rotation system (mentionChallenge, awkwardQuestions)
+  - `paired_challenge`: Two-player challenges with gender-based pairing (armWrestling)
+- **Extensible Design**: Easy to add new dynamics by creating new JSON files and updating DynamicsManager
 
 #### Game Flow Integration
 **Single-Device Flow**: MainMenu → CreateGame → SingleDeviceSetup → MultiPlayerRegistration → CreateLobby → **"Iniciar Juego" button** → GameScreen
@@ -324,6 +334,13 @@ The project uses a feature-based organization:
 - **In-Game Configuration**: Modal system for adding/removing players mid-game without losing progress
 - **Round Management**: 50-round base with extension system, automatic game completion detection
 - **Responsive Layout**: Question text auto-scales for long questions, maintains aesthetic consistency
+- **Game State Persistence**: Modal automatically pauses game when opened, proper state recovery when closed
+- **Player Management**: Add/remove players mid-game with automatic validation and game engine synchronization
+- **Real-Time Player Control**: GameConfigModal with scrolleable player list, host exclusion, and limits validation (3-16 players)
+- **State Synchronization**: Complex navigation parameter passing to preserve player data across MultiPlayerRegistration flows
+- **Mention Challenge Integration**: Automatic player selection with underlined names, rotation system, and formatted display (player name at top, emoji in middle, instruction at bottom)
+- **Paired Challenge Integration**: Gender-based automatic pairing with template-based rendering showing both player names underlined
+- **Clean State Management**: clearAllPlayers() and resetGame() called on game termination to prevent data carryover
 
 ## Multiplayer Implementation
 
@@ -443,6 +460,29 @@ The project uses an advanced responsive system in `src/utils/responsive.js`:
 - **Question Management**: DynamicsManager automatically handles question deduplication and dynamic rotation
 - **State Synchronization**: Always sync GameEngine state with Redux using appropriate action creators
 - **Modal Integration**: GameConfigModal pauses game automatically; ensure proper cleanup when closing
+- **Mid-Game Configuration**: Players can be added/removed during active gameplay without losing progress or current question state
+- **State Validation**: Always validate player counts against game requirements when modifying player list during gameplay
+- **ID Type Consistency**: Use `String(p.id) !== String(playerId)` for player comparisons due to mixed number/string ID types (original vs dynamic players)
+- **Navigation Parameter Preservation**: Always pass `registeredPlayers` in navigation params to prevent state loss when returning from MultiPlayerRegistration
+
+### Mention Challenge Anti-Repetition System
+- **Redux State Management**: `mentionChallengeTracking` object in gameSlice with per-dynamic tracking (keyed by dynamicId)
+- **Independent Tracking**: Each mention_challenge dynamic maintains its own rotation state (lastPlayer, usedPlayerIds)
+- **Rotation Logic**: Players must participate once before anyone can repeat; when cycle resets, avoids immediate repetition of last player
+- **Player Addition Handling**: When new players are added mid-game, rotation state is preserved (not reset) so new players are automatically available
+- **State Persistence**: Anti-repetition state persists between questions even when other dynamics appear in between
+- **Multiple Dynamics**: awkwardQuestions and mentionChallenge track separately - player can appear in both without conflict
+
+### Paired Challenge System (ARM WRESTLING)
+- **Gender-Based Pairing**: Automatically selects two players of the same gender for fair matches
+- **Anti-Repetition**: Each player participates once per game using `pairedChallengeParticipants` array in Redux
+- **Smart Selection**: Prioritizes non-participants, falls back to participants of same gender if needed
+- **Auto-Skip Logic**: Skips dynamic when no matching gender pair available or all players participated
+- **Question Reusability**: paired_challenge questions NOT marked as used (can appear with different player pairs)
+- **Loop Prevention**: Uses `lastSkippedPairedQuestionId` ref to prevent immediate re-processing after skip
+- **ID Cleanup**: Clears blocked question ID when switching to non-paired dynamics or when player count changes
+- **Tracking Persistence**: Tracking only resets on new game start, not mid-game when all players participate
+- **Player Management**: Automatically removes player IDs from tracking when players are kicked mid-game
 
 ### Metro Bundler Configuration
 The project uses custom Metro configuration (metro.config.js) to prevent conflicts between frontend and backend:
