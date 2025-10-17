@@ -26,6 +26,17 @@ const initialState = {
   // Paired Challenge specific state (tracking per dynamic: arm_wrestling, rock_paper_scissors)
   pairedChallengeTracking: {},
 
+  // Preference Vote specific state
+  preferenceVoteState: {
+    phase: null,
+    eligiblePlayers: [],
+    currentPlayerIndex: 0,
+    playerVotes: [],
+    option1: '',
+    option2: '',
+    questionData: null,
+  },
+
   // Timer
   timer: 0,
   timerActive: false,
@@ -149,6 +160,52 @@ const gameSlice = createSlice({
       }
     },
 
+    initializePreferenceVote: (state, action) => {
+      const { eligiblePlayers, option1, option2, questionData } = action.payload;
+      state.preferenceVoteState = {
+        phase: 'passing_phone',
+        eligiblePlayers,
+        currentPlayerIndex: 0,
+        playerVotes: [],
+        option1,
+        option2,
+        questionData,
+      };
+    },
+
+    setPreferenceVotePhase: (state, action) => {
+      state.preferenceVoteState.phase = action.payload;
+    },
+
+    recordPreferenceVote: (state, action) => {
+      const { playerId, playerName, selectedOption } = action.payload;
+      state.preferenceVoteState.playerVotes.push({
+        playerId,
+        playerName,
+        selectedOption,
+      });
+    },
+
+    nextPreferenceVotePlayer: (state) => {
+      state.preferenceVoteState.currentPlayerIndex += 1;
+    },
+
+    skipPreferenceVotePlayer: (state) => {
+      state.preferenceVoteState.currentPlayerIndex += 1;
+    },
+
+    resetPreferenceVoteState: (state) => {
+      state.preferenceVoteState = {
+        phase: null,
+        eligiblePlayers: [],
+        currentPlayerIndex: 0,
+        playerVotes: [],
+        option1: '',
+        option2: '',
+        questionData: null,
+      };
+    },
+
     setCurrentDynamic: (state, action) => {
       state.currentDynamic = action.payload.name;
       state.dynamicType = action.payload.type;
@@ -250,6 +307,12 @@ export const {
   removePairedChallengeParticipant,
   resetPairedChallengeParticipants,
   resetPairedChallengeForDynamic,
+  initializePreferenceVote,
+  setPreferenceVotePhase,
+  recordPreferenceVote,
+  nextPreferenceVotePlayer,
+  skipPreferenceVotePlayer,
+  resetPreferenceVoteState,
   setCurrentDynamic,
   updateGameEngineState,
   pauseGame,

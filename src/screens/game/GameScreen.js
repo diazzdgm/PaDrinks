@@ -48,6 +48,7 @@ import {
 } from '../../store/gameSlice';
 import { clearAllPlayers } from '../../store/playersSlice';
 import GameConfigModal from '../../components/game/GameConfigModal';
+import PreferenceVoteDisplay from '../../components/game/PreferenceVoteDisplay';
 
 const CustomMuteIcon = ({ size, isMuted = false }) => {
   const responsiveSize = size || scaleModerate(50, 0.3);
@@ -998,27 +999,37 @@ const GameScreen = ({ navigation, route }) => {
 
       {/* Contenido principal */}
       <View style={styles.content}>
-        {/* Instrucción de la dinámica */}
-        {currentQuestion?.dynamicInstruction && (
-          <Animated.View
-            style={[
-              styles.instructionContainer,
-              { transform: [{ translateY: instructionAnim }] }
-            ]}
-          >
-            <Text style={styles.instructionText}>
-              {currentQuestion.dynamicInstruction}
-            </Text>
-          </Animated.View>
-        )}
+        {/* Renderizar PreferenceVoteDisplay si es preference_vote */}
+        {currentQuestion?.dynamicType === 'preference_vote' ? (
+          <PreferenceVoteDisplay
+            question={currentQuestion}
+            allGamePlayers={allGamePlayers}
+            onComplete={handleContinue}
+            onSkipDynamic={handleSkipDynamic}
+          />
+        ) : (
+          <>
+            {/* Instrucción de la dinámica */}
+            {currentQuestion?.dynamicInstruction && (
+              <Animated.View
+                style={[
+                  styles.instructionContainer,
+                  { transform: [{ translateY: instructionAnim }] }
+                ]}
+              >
+                <Text style={styles.instructionText}>
+                  {currentQuestion.dynamicInstruction}
+                </Text>
+              </Animated.View>
+            )}
 
-        {/* Pregunta principal */}
-        <Animated.View
-          style={[
-            styles.questionContainer,
-            { transform: [{ translateY: questionAnim }] }
-          ]}
-        >
+            {/* Pregunta principal */}
+            <Animated.View
+              style={[
+                styles.questionContainer,
+                { transform: [{ translateY: questionAnim }] }
+              ]}
+            >
           <ScrollView
             contentContainerStyle={styles.questionScrollContent}
             showsVerticalScrollIndicator={false}
@@ -1087,29 +1098,31 @@ const GameScreen = ({ navigation, route }) => {
           </ScrollView>
         </Animated.View>
 
-        {/* Botones de acción */}
-        <Animated.View
-          style={[
-            styles.buttonsContainer,
-            { transform: [{ translateY: buttonsAnim }] }
-          ]}
-        >
-          <TouchableOpacity
-            style={styles.skipButton}
-            onPress={handleSkipDynamic}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.skipButtonText}>Pasar Dinámica</Text>
-          </TouchableOpacity>
+            {/* Botones de acción */}
+            <Animated.View
+              style={[
+                styles.buttonsContainer,
+                { transform: [{ translateY: buttonsAnim }] }
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.skipButton}
+                onPress={handleSkipDynamic}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.skipButtonText}>Pasar Dinámica</Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={handleContinue}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.continueButtonText}>Continuar</Text>
-          </TouchableOpacity>
-        </Animated.View>
+              <TouchableOpacity
+                style={styles.continueButton}
+                onPress={handleContinue}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.continueButtonText}>Continuar</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </>
+        )}
       </View>
 
       {/* Modal de configuración */}

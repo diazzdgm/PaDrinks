@@ -1,0 +1,459 @@
+{
+  "id": "whatDoYouPrefer",
+  "name": "¿Qué prefieres?",
+  "type": "preference_vote",
+  "instruction": "Los jugadores que voten por la opción menos votada toman shot",
+  "minPlayers": 3,
+  "questions": [
+    {
+      "id": 1,
+      "text": "¿Qué prefieres?",
+      "option1": "Que te baje el día de tu boda",
+      "option2": "Que te baje día de tu luna de miel",
+      "instruction": "Vestido blanco vs sábanas rojas… ¡nivel trauma desbloqueado!",
+      "emoji": "💍🩸",
+      "genderRestriction": "female"
+    },
+    {
+      "id": 2,
+      "text": "¿Qué prefieres?",
+      "option1": "Dos en la boca",
+      "option2": "Uno en el cul*",
+      "instruction": "Decisión estratégica: ¡elige tu dolor con honor!",
+      "emoji": "🍆",
+      "genderRestriction": "male"
+    },
+    {
+      "id": 3,
+      "text": "¿Qué prefieres?",
+      "option1": "Morir quemado",
+      "option2": "Morir ahogado",
+      "instruction": "¿BBQ eterno o jacuzzi fatal?",
+      "emoji": "🔥💦",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 4,
+      "text": "¿Qué prefieres?",
+      "option1": "Ver a tus papás teniendo relaciones",
+      "option2": "Que tus papás te vean teniendo relaciones",
+      "instruction": "Trauma familiar instantáneo, ¡elige tu pesadilla!",
+      "emoji": "😳",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 5,
+      "text": "¿Qué prefieres?",
+      "option1": "Ser infiel",
+      "option2": "Que te sean infiel",
+      "instruction": "¿Karma hoy o terapia mañana?",
+      "emoji": "💔",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 6,
+      "text": "¿Qué prefieres?",
+      "option1": "Sentir mucho placer en la cama, pero no poder darlo",
+      "option2": "No sentir placer, pero dar mucho al otro",
+      "instruction": "Ego feliz o pareja feliz.",
+      "emoji": "😶‍🌫️",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 7,
+      "text": "¿Qué prefieres?",
+      "option1": "Comer caca que sepa a comida",
+      "option2": "Comida que sepa a caca",
+      "instruction": "Menú gourmet extremo, ¡buen provecho!",
+      "emoji": "💩",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 8,
+      "text": "¿Qué prefieres?",
+      "option1": "Perder un brazo",
+      "option2": "Perder una pierna",
+      "instruction": "Estilo pirata fashion o muleta con flow?",
+      "emoji": "🦾🦿",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 9,
+      "text": "¿Qué prefieres?",
+      "option1": "Ser pobre junto al amor de tu vida",
+      "option2": "Ser millonario y nunca conocer al amor de tu vida",
+      "instruction": "¿Corazón lleno o cartera llena?",
+      "emoji": "💸❤️",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 10,
+      "text": "¿Qué prefieres?",
+      "option1": "Siempre que te tires un pedo se escuche mucho pero no huela",
+      "option2": "Siempre que te tires un pedo que no se escuche, pero huela horrible",
+      "instruction": "¿Ruido épico o asesinato olfativo?",
+      "emoji": "💨",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 11,
+      "text": "¿Qué prefieres?",
+      "option1": "Poder volar",
+      "option2": "Poder tener super fuerza",
+      "instruction": "¿Selfies en las nubes o levantar el carro del compa?",
+      "emoji": "🕊️🦾",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 12,
+      "text": "¿Qué prefieres?",
+      "option1": "No volver a tomar cerveza",
+      "option2": "No volver a tomar tequila",
+      "instruction": "¿Risas largas u olvidos rápidos?",
+      "emoji": "🍺",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 13,
+      "text": "¿Qué prefieres?",
+      "option1": "Comer tu comida favorita todos los días",
+      "option2": "Comer cualquier cosa excepto tu comida favorita",
+      "instruction": "Vivir con el recuerdo de ese sabor perdido",
+      "emoji": "🍔🍕",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 14,
+      "text": "¿Qué prefieres?",
+      "option1": "Pasar 5 años en la cárcel",
+      "option2": "Pasar 10 años en coma",
+      "instruction": "¿Historias para Netflix o años borrados?",
+      "emoji": "⏳",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 15,
+      "text": "¿Qué prefieres?",
+      "option1": "Viajar al futuro",
+      "option2": "Viajar al pasado",
+      "instruction": "¿Spoilers de tu vida o arreglar cagadas pasadas?",
+      "emoji": "🔮",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 16,
+      "text": "¿Qué prefieres?",
+      "option1": "Nunca volver usar Instagram",
+      "option2": "Nunca volver usar TikTok",
+      "instruction": "¿Feed perfecto o Tiktoks eternos?",
+      "emoji": "📱",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 17,
+      "text": "¿Qué prefieres?",
+      "option1": "Saber qué día morirás",
+      "option2": "Saber de qué vas a morir",
+      "instruction": "Spoiler mortal incoming.",
+      "emoji": "⚰️",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 18,
+      "text": "¿Qué prefieres?",
+      "option1": "Siempre tener tráfico",
+      "option2": "Siempre tener pésimo wifi",
+      "instruction": "Elige tu tortura moderna.",
+      "emoji": "🚗📶",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 19,
+      "text": "¿Qué prefieres?",
+      "option1": "Raparte todo el cabello",
+      "option2": "Besar a un vagabundo",
+      "instruction": "Nuevo look o beso con historia.",
+      "emoji": "✂️🤢",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 20,
+      "text": "¿Qué prefieres?",
+      "option1": "Nunca volver a comer sushi",
+      "option2": "Nunca volver a comer tacos",
+      "instruction": "Alta cocina fría o gloria callejera.",
+      "emoji": "🍣🌮",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 21,
+      "text": "¿Qué prefieres?",
+      "option1": "Ganar $10,000 pesos",
+      "option2": "Que tu mejor amigo gane $100,000",
+      "instruction": "¿Ego o amistad millonaria?",
+      "emoji": "💵",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 22,
+      "text": "¿Qué prefieres?",
+      "option1": "No poder salir nunca de día",
+      "option2": "No poder salir nunca de noche",
+      "instruction": "¿Señor Batman o Buenos días alegría?",
+      "emoji": "🌞🌙",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 23,
+      "text": "¿Qué prefieres?",
+      "option1": "Quedarte atrapado en un ascensor con tu ex",
+      "option2": "Quedarte atrapado en un ascensor con tu pareja y su ex",
+      "instruction": "Incómodo nivel jefe final.",
+      "emoji": "🚪😬",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 24,
+      "text": "¿Qué prefieres?",
+      "option1": "Tener un hijo a los 18",
+      "option2": "Tener hijos a los 50",
+      "instruction": "Pañales temprano o bastón con biberón.",
+      "emoji": "👶",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 25,
+      "text": "¿Qué prefieres?",
+      "option1": "Que se te pare en el discurso de graduación",
+      "option2": "Que traigas pantalón blanco con una mancha de caca atrás en el discurso de graduación",
+      "instruction": "Vergüenza pública vs discurso cagado.",
+      "emoji": "🎓🍆",
+      "genderRestriction": "male"
+    },
+    {
+      "id": 26,
+      "text": "¿Qué prefieres?",
+      "option1": "Que el Canelo te dé un puñetazo en la cara",
+      "option2": "Que tu amigo te dé 10 puñetazos en la cara",
+      "instruction": "Golpe profesional o maratón de putazos.",
+      "emoji": "🥊",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 27,
+      "text": "¿Qué prefieres?",
+      "option1": "Comer una araña viva",
+      "option2": "Tomar un vaso lleno de sudor",
+      "instruction": "Menú miedo al fallo o menú asco al fallo.",
+      "emoji": "🕷️🥤",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 28,
+      "text": "¿Qué prefieres?",
+      "option1": "Tener un pene pequeño pero que nadie lo sepa",
+      "option2": "No tener un pene pequeño pero que todos piensen que sí",
+      "instruction": "Privacidad o reputación… dilema de honor.",
+      "emoji": "🍌",
+      "genderRestriction": "male"
+    },
+    {
+      "id": 29,
+      "text": "¿Qué prefieres?",
+      "option1": "Tener una infección vaginal pero que nadie lo sepa",
+      "option2": "No tener ninguna infección vaginal pero que todos piensen que sí",
+      "instruction": "Salud real o chisme público, escoge tu infierno.",
+      "emoji": "🩺",
+      "genderRestriction": "female"
+    },
+    {
+      "id": 30,
+      "text": "¿Qué prefieres?",
+      "option1": "Mandar tus nudes por error a tu familia",
+      "option2": "Mandar tus nudes al grupo del trabajo/escuela",
+      "instruction": "Un 'ups' que no se borra ni con terapia.",
+      "emoji": "📤😱",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 31,
+      "text": "¿Qué prefieres?",
+      "option1": "Que tus papás te cachen viendo porno",
+      "option2": "Cachar a tu papá viendo porno",
+      "instruction": "Nivel: 'nunca volvimos a hablar de eso'.",
+      "emoji": "🍿🙈",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 32,
+      "text": "¿Qué prefieres?",
+      "option1": "Salir con un 10 pero habla como bebé todo el tiempo",
+      "option2": "Salir con un 10 pero se ríe como foca",
+      "instruction": "'Mi amorshito' o 'arf arf'.",
+      "emoji": "🍼🦭",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 33,
+      "text": "¿Qué prefieres?",
+      "option1": "Salir con un 10 pero todavía le da likes a su ex",
+      "option2": "Salir con un 10 pero siempre dice haiga y vistes",
+      "instruction": "Celos o faltas de ortografía: no hay final feliz.",
+      "emoji": "📱😬",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 34,
+      "text": "¿Qué prefieres?",
+      "option1": "Salir con un 10 pero tiene los dientes amarillos",
+      "option2": "Salir con un 10 pero siempre tiene las uñas llenas de mugre",
+      "instruction": "Besos de mango y plátano o uñas de vagabundo.",
+      "emoji": "🦷💅",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 35,
+      "text": "¿Qué prefieres?",
+      "option1": "Salir con un 10 pero su roomie es su ex",
+      "option2": "Salir con un 10 pero tiene y habla con su amigo imaginario",
+      "instruction": "Drama real o la cita más rara de tu vida.",
+      "emoji": "🏠👻",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 36,
+      "text": "¿Qué prefieres?",
+      "option1": "Morir en un tsunami",
+      "option2": "Morir en un terremoto",
+      "instruction": "¡De todas formas te vas a sacudir!",
+      "emoji": "🌊🌎",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 37,
+      "text": "¿Qué prefieres?",
+      "option1": "Que te muerda una rata",
+      "option2": "Que te muerda una serpiente",
+      "instruction": "Una da asco y la otra da veneno",
+      "emoji": "🐀🐍",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 38,
+      "text": "¿Qué prefieres?",
+      "option1": "Darte a tu jefe/jefa del trabajo",
+      "option2": "Darte a él/la de limpieza del trabajo/escuela",
+      "instruction": "¡Promoción laboral o limpieza profunda!",
+      "emoji": "💼🧹",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 39,
+      "text": "¿Qué prefieres?",
+      "option1": "Que tu mejor amigo/a arruine tu boda",
+      "option2": "Arruinar la boda de tu mejor amigo/a",
+      "instruction": "¡El karma es real!",
+      "emoji": "💣👰🤵",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 40,
+      "text": "¿Qué prefieres?",
+      "option1": "Comprar toda tu ropa únicamente en Walmart",
+      "option2": "Solo poder comprar 3 prendas por año de cualquier marca",
+      "instruction": "¡Moda económica o armario minimalista extremo!",
+      "emoji": "👕",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 41,
+      "text": "¿Qué prefieres?",
+      "option1": "Medir 1 metro 10",
+      "option2": "Medir 2 metros 30",
+      "instruction": "¡O te pareces al kemonito o pareces jirafa!",
+      "emoji": "📏🦒",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 42,
+      "text": "¿Qué prefieres?",
+      "option1": "Pasar 4 noches en el torito",
+      "option2": "Pasar un día entero en el manicomio",
+      "instruction": "¡O sales sobrio o sales hablando con las paredes!",
+      "emoji": "🚔🧠",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 43,
+      "text": "¿Qué prefieres?",
+      "option1": "Quedar atrapado en un elevador compacto por 24h",
+      "option2": "Quedar atrapado en una tumba por 4 horas",
+      "instruction": "¡Claustrofobia nivel experto desbloqueada!",
+      "emoji": "🛗⚰️",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 44,
+      "text": "¿Qué prefieres?",
+      "option1": "Pelear contra un oso a puño limpio",
+      "option2": "Pelear contra un gorila a puño limpio",
+      "instruction": "Spoiler: en ambos pierdes… pero con estilo.",
+      "emoji": "🐻🦍",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 45,
+      "text": "¿Qué prefieres?",
+      "option1": "Comer un huevo crudo",
+      "option2": "Comer tacos de huevo de toro",
+      "instruction": "¡Proteína es proteína, pero el trauma es distinto!",
+      "emoji": "🥚🥚🐂",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 46,
+      "text": "¿Qué prefieres?",
+      "option1": "Que tu hijo sea homosexual",
+      "option2": "Que tu hijo sea súper otaku",
+      "instruction": "¡Una marcha al año o anime todos los días!",
+      "emoji": "🏳️‍🌈🎌",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 47,
+      "text": "¿Qué prefieres?",
+      "option1": "Que te asalten 50 veces toda tu vida",
+      "option2": "Que te secuestren un día",
+      "instruction": "¡Violencia exprés o anécdota por trauma!",
+      "emoji": "💸🚐",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 48,
+      "text": "¿Qué prefieres?",
+      "option1": "Intentar sobrevivir al choque de un avión",
+      "option2": "Intentar sobrevivir al choque e inundación de un crucero",
+      "instruction": "¡Modo supervivencia activado!",
+      "emoji": "✈️🚢",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 49,
+      "text": "¿Qué prefieres?",
+      "option1": "Que te dé diarrea en la primera cita",
+      "option2": "Que a tu cita le dé diarrea en la primera cita",
+      "instruction": "¡Al menos sabrás si el amor resiste los olores fuertes!",
+      "emoji": "💩🚽",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 50,
+      "text": "¿Qué prefieres?",
+      "option1": "Chocar el coche de tus suegros",
+      "option2": "Chocar el coche de tu jefe del trabajo",
+      "instruction": "¡La cobrada va a estar buena!",
+      "emoji": "🚗💥",
+      "genderRestriction": "all"
+    }
+  ]
+}

@@ -40,7 +40,34 @@ class GameEngine {
     }
 
     const question = this.dynamicsManager.getNextQuestion();
+
+    if (question && question.dynamicType === 'preference_vote' && question.genderRestriction) {
+      const eligiblePlayers = this.filterPlayersByGender(question.genderRestriction);
+      if (eligiblePlayers.length < 2) {
+        return this.getNextQuestion();
+      }
+    }
+
     return question;
+  }
+
+  filterPlayersByGender(genderRestriction) {
+    if (!this.players || this.players.length === 0) {
+      return [];
+    }
+
+    if (genderRestriction === 'all') {
+      return this.players;
+    }
+
+    return this.players.filter(player => {
+      if (genderRestriction === 'male') {
+        return player.gender === 'Hombre' || player.gender === 'male';
+      } else if (genderRestriction === 'female') {
+        return player.gender === 'Mujer' || player.gender === 'female';
+      }
+      return true;
+    });
   }
 
   nextRound() {
