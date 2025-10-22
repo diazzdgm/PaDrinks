@@ -291,44 +291,57 @@ const PreferenceVoteDisplay = ({
     const playerName = currentPlayer?.name || currentPlayer?.nickname || 'Jugador';
 
     return (
-      <View style={styles.container}>
-        <View style={styles.contentWrapper}>
-          <Text style={styles.questionTitle}>
-            {playerName} {question.text}
+      <>
+        {/* Instrucción de la dinámica */}
+        <View style={styles.instructionContainerVoting}>
+          <Text style={styles.instructionText}>
+            {question.dynamicInstruction}
           </Text>
+        </View>
 
-          <View style={styles.optionsContainer}>
-            <TouchableOpacity
-              style={[
-                styles.optionButton,
-                styles.optionButtonLeft,
-                selectedOption === 'option1' && styles.optionButtonSelected,
-              ]}
-              onPress={() => handleOptionSelect('option1')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.optionButtonText}>{question.option1}</Text>
-            </TouchableOpacity>
+        {/* Contenido principal centrado */}
+        <View style={styles.questionContainerVoting}>
+          <View style={styles.votingContainer}>
+            <Text style={styles.questionTitle}>
+              {playerName} {question.text}
+            </Text>
 
-            <TouchableOpacity
-              style={[
-                styles.optionButton,
-                styles.optionButtonRight,
-                selectedOption === 'option2' && styles.optionButtonSelected,
-              ]}
-              onPress={() => handleOptionSelect('option2')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.optionButtonText}>{question.option2}</Text>
-            </TouchableOpacity>
+            <View style={styles.optionsContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.optionButton,
+                  styles.optionButtonLeft,
+                  selectedOption === 'option1' && styles.optionButtonSelected,
+                ]}
+                onPress={() => handleOptionSelect('option1')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.optionButtonText}>{question.option1}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.optionButton,
+                  styles.optionButtonRight,
+                  selectedOption === 'option2' && styles.optionButtonSelected,
+                ]}
+                onPress={() => handleOptionSelect('option2')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.optionButtonText}>{question.option2}</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.questionEmoji}>{question.emoji}</Text>
+            <Text style={styles.instructionAction}>{question.instruction}</Text>
           </View>
+        </View>
 
-          <Text style={styles.questionEmoji}>{question.emoji}</Text>
-          <Text style={styles.instructionAction}>{question.instruction}</Text>
-
+        {/* Botones de acción */}
+        <View style={styles.buttonsContainerRight}>
           <TouchableOpacity
             style={[
-              styles.confirmButton,
+              styles.continueButton,
               !selectedOption && styles.confirmButtonDisabled
             ]}
             onPress={handleConfirmVote}
@@ -336,27 +349,38 @@ const PreferenceVoteDisplay = ({
             disabled={!selectedOption}
           >
             <Text style={[
-              styles.confirmButtonText,
+              styles.continueButtonText,
               !selectedOption && styles.confirmButtonTextDisabled
             ]}>
               Continuar
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </>
     );
   }
 
   if (preferenceVoteState.phase === 'returning_phone') {
     return (
-      <View style={styles.container}>
-        <View style={styles.contentWrapper}>
+      <>
+        {/* Instrucción de la dinámica */}
+        <View style={styles.instructionContainer}>
+          <Text style={styles.instructionText}>
+            {question.dynamicInstruction}
+          </Text>
+        </View>
+
+        {/* Contenido principal centrado */}
+        <View style={styles.questionContainer}>
           <View style={styles.returningPhoneContainer}>
             <Text style={styles.returningPhoneText}>
               Pasa el celular al jugador que está leyendo las preguntas
             </Text>
           </View>
+        </View>
 
+        {/* Botones de acción */}
+        <View style={styles.buttonsContainerRight}>
           <TouchableOpacity
             style={styles.continueButton}
             onPress={handleContinueFromReturning}
@@ -365,7 +389,7 @@ const PreferenceVoteDisplay = ({
             <Text style={styles.continueButtonText}>Continuar</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </>
     );
   }
 
@@ -373,30 +397,43 @@ const PreferenceVoteDisplay = ({
     const { option1Count, option2Count } = calculateResults();
 
     return (
-      <View style={styles.container}>
-        <View style={styles.contentWrapper}>
-          <Text style={styles.resultsTitle}>Resultados</Text>
+      <>
+        {/* Instrucción de la dinámica */}
+        <View style={styles.instructionContainer}>
+          <Text style={styles.instructionText}>
+            {question.dynamicInstruction}
+          </Text>
+        </View>
 
-          <View style={styles.resultsContainer}>
-            <View style={styles.resultRow}>
-              <View style={styles.resultOptionContainer}>
-                <Text style={styles.resultOptionText}>{question.option1}</Text>
-              </View>
-              <View style={styles.resultVotesContainer}>
-                <Text style={styles.resultVotesText}>{option1Count} votos</Text>
-              </View>
-            </View>
+        {/* Contenido principal centrado */}
+        <View style={styles.questionContainer}>
+          <View style={styles.resultsContentContainer}>
+            <Text style={styles.resultsTitle}>Resultados</Text>
 
-            <View style={styles.resultRow}>
-              <View style={styles.resultOptionContainer}>
-                <Text style={styles.resultOptionText}>{question.option2}</Text>
+            <View style={styles.resultsContainer}>
+              <View style={styles.resultRow}>
+                <View style={styles.resultOptionContainer}>
+                  <Text style={styles.resultOptionText}>{question.option1}</Text>
+                </View>
+                <View style={styles.resultVotesContainer}>
+                  <Text style={styles.resultVotesText}>{option1Count} votos</Text>
+                </View>
               </View>
-              <View style={styles.resultVotesContainer}>
-                <Text style={styles.resultVotesText}>{option2Count} votos</Text>
+
+              <View style={styles.resultRow}>
+                <View style={styles.resultOptionContainer}>
+                  <Text style={styles.resultOptionText}>{question.option2}</Text>
+                </View>
+                <View style={styles.resultVotesContainer}>
+                  <Text style={styles.resultVotesText}>{option2Count} votos</Text>
+                </View>
               </View>
             </View>
           </View>
+        </View>
 
+        {/* Botones de acción */}
+        <View style={styles.buttonsContainerRight}>
           <TouchableOpacity
             style={styles.continueButton}
             onPress={handleContinueFromResults}
@@ -405,7 +442,7 @@ const PreferenceVoteDisplay = ({
             <Text style={styles.continueButtonText}>Continuar</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </>
     );
   }
 
@@ -413,8 +450,16 @@ const PreferenceVoteDisplay = ({
     const { losers } = calculateResults();
 
     return (
-      <View style={styles.container}>
-        <View style={styles.contentWrapper}>
+      <>
+        {/* Instrucción de la dinámica */}
+        <View style={styles.instructionContainer}>
+          <Text style={styles.instructionText}>
+            {question.dynamicInstruction}
+          </Text>
+        </View>
+
+        {/* Contenido principal centrado */}
+        <View style={styles.questionContainer}>
           {losers.length > 0 ? (
             <View style={styles.penaltyContainer}>
               <Text style={styles.penaltyText}>
@@ -431,7 +476,10 @@ const PreferenceVoteDisplay = ({
               <Text style={styles.penaltyAction}>Nadie toma</Text>
             </View>
           )}
+        </View>
 
+        {/* Botones de acción */}
+        <View style={styles.buttonsContainerRight}>
           <TouchableOpacity
             style={styles.continueButton}
             onPress={handleContinueFromPenalty}
@@ -440,7 +488,7 @@ const PreferenceVoteDisplay = ({
             <Text style={styles.continueButtonText}>Continuar</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </>
     );
   }
 
@@ -453,6 +501,24 @@ const styles = StyleSheet.create({
   instructionContainer: {
     alignItems: 'center',
     marginBottom: scaleByContent(30, 'spacing'),
+    backgroundColor: theme.colors.postItPink,
+    borderWidth: 3,
+    borderColor: '#000000',
+    borderRadius: 20,
+    borderTopLeftRadius: 5,
+    paddingVertical: scaleByContent(15, 'spacing'),
+    paddingHorizontal: scaleByContent(20, 'spacing'),
+    shadowColor: '#000',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
+    transform: [{ rotate: '1deg' }],
+  },
+
+  instructionContainerVoting: {
+    alignItems: 'center',
+    marginBottom: scaleByContent(25, 'spacing'),
     backgroundColor: theme.colors.postItPink,
     borderWidth: 3,
     borderColor: '#000000',
@@ -483,11 +549,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
+  questionContainerVoting: {
+    flex: 1,
+    marginTop: scaleByContent(10, 'spacing'),
+    marginBottom: scaleByContent(20, 'spacing'),
+    maxHeight: isSmallScreen ? 300 : 400,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+
   passingPhoneContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: scaleByContent(30, 'spacing'),
     paddingHorizontal: scaleByContent(25, 'spacing'),
+  },
+
+  votingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: scaleByContent(25, 'spacing'),
+    width: '100%',
   },
 
   passingPhoneText: {
@@ -579,7 +661,7 @@ const styles = StyleSheet.create({
 
   returningPhoneContainer: {
     alignItems: 'center',
-    marginBottom: scaleByContent(40, 'spacing'),
+    justifyContent: 'center',
     paddingHorizontal: scaleByContent(20, 'spacing'),
   },
 
@@ -588,6 +670,13 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
     textAlign: 'center',
+  },
+
+  resultsContentContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: scaleByContent(25, 'spacing'),
+    width: '100%',
   },
 
   resultsTitle: {
@@ -600,48 +689,69 @@ const styles = StyleSheet.create({
 
   resultsContainer: {
     width: '100%',
-    marginBottom: scaleByContent(30, 'spacing'),
   },
 
   resultRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: scaleByContent(20, 'spacing'),
-    paddingHorizontal: scaleByContent(10, 'spacing'),
+    marginBottom: scaleByContent(25, 'spacing'),
+    paddingHorizontal: scaleByContent(15, 'spacing'),
+    width: '100%',
   },
 
   resultOptionContainer: {
     flex: 2,
-    marginRight: scaleByContent(20, 'spacing'),
+    marginRight: scaleByContent(15, 'spacing'),
+    backgroundColor: theme.colors.postItYellow,
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderRadius: 12,
+    paddingVertical: scaleByContent(12, 'spacing'),
+    paddingHorizontal: scaleByContent(15, 'spacing'),
+    transform: [{ rotate: '-1deg' }],
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
 
   resultOptionText: {
-    fontSize: scaleByContent(18, 'text'),
+    fontSize: scaleByContent(20, 'text'),
     fontFamily: theme.fonts.primaryBold,
-    color: '#2E2E2E',
+    color: '#000000',
+    textAlign: 'center',
   },
 
   resultVotesContainer: {
     flex: 1,
-    backgroundColor: theme.colors.postItYellow,
-    borderWidth: 2,
+    backgroundColor: theme.colors.postItGreen,
+    borderWidth: 3,
     borderColor: '#000000',
-    borderRadius: 10,
-    paddingVertical: scaleByContent(8, 'spacing'),
-    paddingHorizontal: scaleByContent(12, 'spacing'),
+    borderRadius: 12,
+    paddingVertical: scaleByContent(12, 'spacing'),
+    paddingHorizontal: scaleByContent(15, 'spacing'),
     alignItems: 'center',
+    justifyContent: 'center',
+    transform: [{ rotate: '1deg' }],
+    shadowColor: '#000',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
   },
 
   resultVotesText: {
-    fontSize: scaleByContent(16, 'text'),
+    fontSize: scaleByContent(18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
+    textAlign: 'center',
   },
 
   penaltyContainer: {
     alignItems: 'center',
-    marginBottom: scaleByContent(40, 'spacing'),
+    justifyContent: 'center',
     paddingHorizontal: scaleByContent(20, 'spacing'),
   },
 
@@ -663,6 +773,14 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    width: '100%',
+    marginTop: scaleByContent(20, 'spacing'),
+    paddingHorizontal: scaleByContent(20, 'spacing'),
+  },
+
+  buttonsContainerRight: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
     width: '100%',
     marginTop: scaleByContent(20, 'spacing'),
     paddingHorizontal: scaleByContent(20, 'spacing'),
@@ -739,33 +857,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  confirmButton: {
-    backgroundColor: theme.colors.postItGreen,
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderRadius: 8,
-    borderTopLeftRadius: 3,
-    paddingVertical: 6,
-    paddingHorizontal: 22,
-    marginTop: scaleByContent(5, 'spacing'),
-    shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-    transform: [{ rotate: '1deg' }],
-  },
-
   confirmButtonDisabled: {
     backgroundColor: '#D0D0D0',
     opacity: 0.6,
-  },
-
-  confirmButtonText: {
-    fontSize: scaleByContent(12, 'text'),
-    fontFamily: theme.fonts.primaryBold,
-    color: '#000000',
-    textAlign: 'center',
   },
 
   confirmButtonTextDisabled: {
