@@ -1,0 +1,232 @@
+{
+  "id": "challenge_or_shot",
+  "name": "Reto o Shot",
+  "type": "mention_challenge",
+  "instruction": "Cumple el Reto o date un Shot",
+  "minPlayers": 2,
+  "questions": [
+    {
+      "id": "cos_001",
+      "text": "Cambia tu foto de perfil por una selfie haciendo cara de pato",
+      "instruction": "Modo influencer activado",
+      "emoji": "🦆"
+    },
+    {
+      "id": "cos_002",
+      "text": "El jugador de tu izquierda puede marcarle a cualquier contacto de tu celular para hacerle una broma",
+      "instruction": "Prepárate para destruir amistades en tiempo real.",
+      "emoji": "📞"
+    },
+    {
+      "id": "cos_003",
+      "text": "Sube una historia a Instagram con el filtro de perrito de Snapchat",
+      "instruction": "Porque todos necesitamos recordar tus días de 2016.",
+      "emoji": "🐶"
+    },
+    {
+      "id": "cos_004",
+      "text": "Comer un chile, si no pueden conseguir uno pasar dinámica",
+      "instruction": "Nivel de picor: lágrimas, arrepentimiento y diarrea.",
+      "emoji": "🌶️"
+    },
+    {
+      "id": "cos_005",
+      "text": "Comer un huevo, si no pueden conseguir uno pasar dinámica",
+      "instruction": "La proteína nunca supo tan humillante.",
+      "emoji": "🥚"
+    },
+    {
+      "id": "cos_006",
+      "text": "Hacer 35 lagartijas seguidas, si no puedes shot",
+      "instruction": "A ver si todo el gym que presumes sirve para algo.",
+      "emoji": "💪"
+    },
+    {
+      "id": "cos_007",
+      "text": "Comer una cucharada de picante, si no pueden conseguir pasar dinámica",
+      "instruction": "Prepárate para ver tu vida pasar entre sudor y lágrimas.",
+      "emoji": "🔥"
+    },
+    {
+      "id": "cos_008",
+      "text": "El jugador de tu derecha escoge un DM de Instagram para que le mandes una selfie sin contexto",
+      "instruction": "Selfie de presentación.",
+      "emoji": "🤳"
+    },
+    {
+      "id": "cos_009",
+      "text": "Márcale a tu ex y dile que lo/la extrañas",
+      "instruction": "El verdadero shot es emocional.",
+      "emoji": "💔"
+    },
+    {
+      "id": "cos_010",
+      "text": "Cortarte un mechón de pelo",
+      "instruction": "Nuevo look, misma mala decisión.",
+      "emoji": "✂️"
+    },
+    {
+      "id": "cos_011",
+      "text": "Baila una canción que escoja el jugador enfrente de ti",
+      "instruction": "Momento TikTok cringe activado.",
+      "emoji": "💃"
+    },
+    {
+      "id": "cos_012",
+      "text": "Imita un gemido y que todos escuchen",
+      "instruction": "Nivel de vergüenza: tus vecinos ya te reportaron.",
+      "emoji": "😏"
+    },
+    {
+      "id": "cos_013",
+      "text": "Transfiere o regálale $100 al jugador de tu izquierda",
+      "instruction": "Aguas con los del SAT",
+      "emoji": "💸"
+    },
+    {
+      "id": "cos_014",
+      "text": "Píntate los labios con un labial",
+      "instruction": "Prepárate para descubrir tu lado más glamuroso, reina.",
+      "emoji": "💄",
+      "genderRestriction": "male"
+    },
+    {
+      "id": "cos_015",
+      "text": "Cuenta un chiste y si nadie se ríe tomas shot",
+      "instruction": "Momento comediante o momento pena ajena, no hay punto medio.",
+      "emoji": "😂"
+    },
+    {
+      "id": "cos_016",
+      "text": "Huele la axila de cualquier jugador",
+      "instruction": "Bienvenido al infierno aromático.",
+      "emoji": "👃"
+    },
+    {
+      "id": "cos_017",
+      "text": "Hazle un baile privado al jugador que quieras",
+      "instruction": "A sacar los prohibidos",
+      "emoji": "🕺"
+    },
+    {
+      "id": "cos_018",
+      "text": "Ponte un hielo en la espalda",
+      "instruction": "Bienvenido al invierno express.",
+      "emoji": "🧊"
+    },
+    {
+      "id": "cos_019",
+      "text": "Imita el sonido de un caballo",
+      "instruction": "Galopa directo hacia el ridículo.",
+      "emoji": "🐴"
+    },
+    {
+      "id": "cos_020",
+      "text": "Imita el sonido de una gallina",
+      "instruction": "Si no cacareas bien, pierdes puntos de granjero.",
+      "emoji": "🐔"
+    },
+    {
+      "id": "cos_021",
+      "text": "Imita el sonido de una foca",
+      "instruction": "Aplausos por favor... literal.",
+      "emoji": "🦭"
+    },
+    {
+      "id": "cos_022",
+      "text": "Gira 10 veces seguidas como helicóptero en menos de 10 segundos",
+      "instruction": "Modo trompo activado, el vómito es opcional.",
+      "emoji": "🚁"
+    },
+    {
+      "id": "cos_023",
+      "text": "Tira beer pong al vaso del jugador que esté más lejos de ti, si fallas shot, si aciertas toma shot el dueño del vaso",
+      "instruction": "Las olimpiadas de la peda",
+      "emoji": "🏓"
+    },
+    {
+      "id": "cos_024",
+      "text": "Márcale a tu mamá o papá y diles que chocaste porque estás ebrio/a",
+      "instruction": "Premio al infarto parental del año.",
+      "emoji": "🚗"
+    },
+    {
+      "id": "cos_025",
+      "text": "Márcale a tu mamá o papá y diles que estas en el torito",
+      "instruction": "Sustos que dan gusto",
+      "emoji": "🚓"
+    },
+    {
+      "id": "cos_026",
+      "text": "Reacciona con emoji de fuego a las 3 primeras historias de Instagram que te aparezcan",
+      "instruction": "Cuidado Romeo no la vayas a enamorar",
+      "emoji": "🔥"
+    },
+    {
+      "id": "cos_027",
+      "text": "Toma una foto de la peda/reu en la que salgan todos los jugadores y el juego y etiqueta a @PaDrinks",
+      "instruction": "Momento histórico: la peda documentada oficialmente.",
+      "emoji": "📸"
+    },
+    {
+      "id": "cos_028",
+      "text": "Márcale a tu mamá o papá y diles que vas rumbo a Acapulco con tus amigos",
+      "instruction": "Mas vale pedir perdón que permiso",
+      "emoji": "🏖️"
+    },
+    {
+      "id": "cos_029",
+      "text": "Usa tus calcetines en las manos por los próximos 10 minutos",
+      "instruction": "Para que no se te deslice tu trago",
+      "emoji": "🧦"
+    },
+    {
+      "id": "cos_030",
+      "text": "Habla con voz de bebé por la próxima media hora",
+      "instruction": "¿Donde esta bb? ¡Aquí eta!",
+      "emoji": "👶"
+    },
+    {
+      "id": "cos_031",
+      "text": "Envía un sticker random a tu jefe/profesor del trabajo sin contexto",
+      "instruction": "Modo desempleo: activado.",
+      "emoji": "📲"
+    },
+    {
+      "id": "cos_032",
+      "text": "Deja que el grupo vea tu historial de Google y de ChatGPT",
+      "instruction": "Prepárate para revelar tus verdaderas oscuridades.",
+      "emoji": "🔍"
+    },
+    {
+      "id": "cos_033",
+      "text": "Deja que el grupo elija una palabra que no puedas decir en todo el juego; si la dices, shot",
+      "instruction": "La palabra prohibida: más peligrosa que Voldemort.",
+      "emoji": "🗣️"
+    },
+    {
+      "id": "cos_034",
+      "text": "Deja que alguien te haga una marca con plumón en la frente",
+      "instruction": "Marca registrada de la peda",
+      "emoji": "✏️"
+    },
+    {
+      "id": "cos_035",
+      "text": "Publica en tu historia de Instagram 'vendo tamales, mánden DM'",
+      "instruction": "Porque el emprendimiento no descansa ni en la peda.",
+      "emoji": "🌽"
+    },
+    {
+      "id": "cos_036",
+      "text": "Fondea el vaso más lleno que tenga un jugador",
+      "instruction": "Modo vikingo: sin miedo al éxito ni al vómito.",
+      "emoji": "🍺"
+    },
+    {
+      "id": "cos_037",
+      "text": "Imita el rugido de un dinosaurio feroz",
+      "instruction": "Jurassic Party: edición borrachos en extinción.",
+      "emoji": "🦖"
+    }
+  ]
+}

@@ -519,19 +519,40 @@ const GameScreen = ({ navigation, route }) => {
     if (currentQuestion?.dynamicType === 'mention_challenge' && allGamePlayers.length > 0) {
       const dynamicId = currentQuestion.dynamicName || 'unknown';
       const tracking = mentionChallengeTracking[dynamicId] || { lastPlayer: null, usedPlayerIds: [] };
+      const genderRestriction = currentQuestion.genderRestriction;
 
       console.log(`🎯 === NUEVA PREGUNTA: ${dynamicId} ===`);
       console.log(`🎯 Total jugadores: ${allGamePlayers.length}`);
       console.log(`🎯 Jugadores: ${allGamePlayers.map(p => p.name || p.nickname).join(', ')}`);
+      console.log(`🎯 Restricción de género: ${genderRestriction || 'ninguna'}`);
       console.log(`🎯 Último jugador de esta dinámica: ${tracking.lastPlayer ? `${tracking.lastPlayer.name}(${tracking.lastPlayer.id})` : 'ninguno'}`);
       console.log(`🎯 IDs usados en esta dinámica: [${tracking.usedPlayerIds.join(', ')}]`);
 
       const usedPlayerIdsSet = new Set(tracking.usedPlayerIds);
 
       // Filtrar jugadores que no han sido usados en ESTA dinámica específica
-      const availablePlayers = allGamePlayers.filter(player =>
+      let availablePlayers = allGamePlayers.filter(player =>
         !usedPlayerIdsSet.has(player.id)
       );
+
+      // Si hay restricción de género, filtrar por género
+      if (genderRestriction) {
+        const eligibleByGender = availablePlayers.filter(player => player.gender === genderRestriction);
+
+        // Si no hay jugadores del género requerido, saltar la dinámica automáticamente
+        if (eligibleByGender.length === 0) {
+          console.log(`🎯 ⚠️ No hay jugadores del género "${genderRestriction}" disponibles - SALTAR PREGUNTA`);
+
+          const skipResult = gameEngine.skipDynamic();
+          if (skipResult.success) {
+            dispatch(setCurrentQuestion(skipResult.question));
+          }
+          return;
+        }
+
+        availablePlayers = eligibleByGender;
+        console.log(`🎯 Jugadores elegibles con género "${genderRestriction}": ${availablePlayers.length}`);
+      }
 
       console.log(`🎯 Jugadores disponibles: ${availablePlayers.length}`);
       console.log(`🎯 Disponibles: ${availablePlayers.map(p => `${p.name || p.nickname}(${p.id})`).join(', ')}`);
@@ -551,8 +572,14 @@ const GameScreen = ({ navigation, route }) => {
 
         // Al reiniciar, evitar seleccionar inmediatamente el último jugador que participó
         let eligibleForRestart = allGamePlayers;
-        if (tracking.lastPlayer && allGamePlayers.length > 1) {
-          eligibleForRestart = allGamePlayers.filter(player => player.id !== tracking.lastPlayer.id);
+
+        // Aplicar restricción de género si existe
+        if (genderRestriction) {
+          eligibleForRestart = eligibleForRestart.filter(player => player.gender === genderRestriction);
+        }
+
+        if (tracking.lastPlayer && eligibleForRestart.length > 1) {
+          eligibleForRestart = eligibleForRestart.filter(player => player.id !== tracking.lastPlayer.id);
           console.log(`🔄 Al reiniciar, evitando inmediatamente a ${tracking.lastPlayer.name || tracking.lastPlayer.nickname}`);
         }
 

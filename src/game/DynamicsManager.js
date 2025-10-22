@@ -7,6 +7,7 @@ import awkwardQuestionsData from '../data/dynamics/awkwardQuestions.json';
 import armWrestlingData from '../data/dynamics/armWrestling.json';
 import rockPaperScissorsData from '../data/dynamics/rockPaperScissors.json';
 import whatDoYouPreferData from '../data/dynamics/whatDoYouPrefer.json';
+import challengeOrShotData from '../data/dynamics/challengeOrShot.json';
 
 class DynamicsManager {
   constructor() {
@@ -19,7 +20,8 @@ class DynamicsManager {
       awkwardQuestionsData,
       armWrestlingData,
       rockPaperScissorsData,
-      whatDoYouPreferData
+      whatDoYouPreferData,
+      challengeOrShotData
     ];
 
     this.availableDynamics = [...this.allDynamics];
