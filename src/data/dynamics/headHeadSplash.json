@@ -1,0 +1,15 @@
+{
+  "id": "head_head_splash",
+  "name": "Cabezas Splash",
+  "type": "paired_challenge",
+  "instruction": "El que se rie pierde y toma shot",
+  "minPlayers": 2,
+  "questions": [
+    {
+      "id": "hhs_001",
+      "text": "{player1} mirate fijamente de cerca por 1 minuto con {player2} y llenense los cachetes de su trago, el jugador que se ria o escupa, toma shot",
+      "instruction": "Ojo con ojo, trago con trago",
+      "emoji": "👁️💦"
+    }
+  ]
+}

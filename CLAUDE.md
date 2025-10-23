@@ -93,7 +93,7 @@ npm run start:tunnel
 - **Expo SDK**: Version 53 with new architecture enabled
 - **React Version**: React 19.0.0 with React Native 0.79.5
 - **Expo CLI**: Version 0.24.20 with custom Windows wrappers
-- **Orientation**: app.json specifies "portrait" but App.js forces landscape mode at runtime via expo-screen-orientation
+- **Orientation**: app.json specifies "landscape" and App.js additionally enforces landscape mode at runtime via expo-screen-orientation
 - **No Testing Setup**: No Jest, ESLint, or other testing/linting tools configured
 - **No Build Scripts**: Uses default Expo build system
 - **Firebase Integration**: React Native Firebase SDK with Auth and Realtime Database modules
@@ -184,12 +184,16 @@ The project includes a complete local game engine for single-device gameplay:
   - `eliminationChallenge.json`: Elimination-style questions
   - `INeverNever.json`: "I never never" confession questions (50 questions)
   - `awkwardQuestions.json`: Awkward questions with player selection (20 questions)
+  - `challengeOrShot.json`: Challenge or shot dynamics with optional gender restrictions (37 challenges)
   - `armWrestling.json`: Paired challenge for arm wrestling matches (paired_challenge type)
-- **Question Schema**: Each question has `id`, `text`, `instruction`, `emoji`
+  - `rockPaperScissors.json`: Paired challenge for rock-paper-scissors without gender restriction
+  - `whatDoYouPrefer.json`: Preference voting with two options
+- **Question Schema**: Each question has `id`, `text`, `instruction`, `emoji`, and optionally `genderRestriction`
 - **Dynamic Types**:
   - `vote_selection`: Group voting dynamics (whoIsMost, whoIsMoreLikely, INeverNever)
-  - `mention_challenge`: Individual player challenges with rotation system (mentionChallenge, awkwardQuestions)
-  - `paired_challenge`: Two-player challenges with gender-based pairing (armWrestling)
+  - `mention_challenge`: Individual player challenges with rotation system (mentionChallenge, awkwardQuestions, challengeOrShot)
+  - `paired_challenge`: Two-player challenges with gender-based pairing (armWrestling, rockPaperScissors)
+  - `preference_vote`: Multi-phase voting system where players vote individually on two options (whatDoYouPrefer)
 - **Extensible Design**: Easy to add new dynamics by creating new JSON files and updating DynamicsManager
 
 #### Game Flow Integration
@@ -471,18 +475,61 @@ The project uses an advanced responsive system in `src/utils/responsive.js`:
 - **Rotation Logic**: Players must participate once before anyone can repeat; when cycle resets, avoids immediate repetition of last player
 - **Player Addition Handling**: When new players are added mid-game, rotation state is preserved (not reset) so new players are automatically available
 - **State Persistence**: Anti-repetition state persists between questions even when other dynamics appear in between
-- **Multiple Dynamics**: awkwardQuestions and mentionChallenge track separately - player can appear in both without conflict
+- **Multiple Dynamics**: awkwardQuestions, mentionChallenge, and challengeOrShot track separately - player can appear in multiple dynamics without conflict
+- **Gender Restriction System**: Optional `genderRestriction` field in questions filters eligible players
+  - Supported values: `"male"`, `"female"` (matches player.gender field)
+  - Auto-skip behavior: If no players match the gender requirement, question is automatically skipped
+  - Rotation respects restriction: Only selects from eligible gender throughout rotation cycle
+  - Example: `challengeOrShot.json` reto #14 ("Píntate los labios") has `genderRestriction: "male"`
 
-### Paired Challenge System (ARM WRESTLING)
-- **Gender-Based Pairing**: Automatically selects two players of the same gender for fair matches
-- **Anti-Repetition**: Each player participates once per game using `pairedChallengeParticipants` array in Redux
-- **Smart Selection**: Prioritizes non-participants, falls back to participants of same gender if needed
-- **Auto-Skip Logic**: Skips dynamic when no matching gender pair available or all players participated
+### Paired Challenge System (ARM WRESTLING & ROCK PAPER SCISSORS)
+- **Two Dynamic Types**:
+  - `arm_wrestling`: Gender-based pairing (same gender required for fair matches)
+  - `rock_paper_scissors`: No gender restriction (any player can play against any other)
+- **Anti-Repetition Tracking**: Uses `pairedChallengeTracking` object in Redux with per-dynamic tracking (keyed by dynamicId)
+- **Smart Selection Algorithm**:
+  - PASO 1: Find gender with 2+ non-participants (for arm_wrestling)
+  - PASO 2: Select 1 non-participant, pair with same gender player
+  - PASO 3: Determine if dynamic should block when all eligible players participated
+- **Auto-Skip Logic**: Skips dynamic when no matching pair available (e.g., only one male player)
+- **Automatic Blocking**: When all eligible players participate, dynamic is blocked using `skippedPairedDynamicIds` Set
+- **Automatic Unblocking**: When new players are added mid-game, all blocked paired_challenge dynamics are automatically unblocked
 - **Question Reusability**: paired_challenge questions NOT marked as used (can appear with different player pairs)
-- **Loop Prevention**: Uses `lastSkippedPairedQuestionId` ref to prevent immediate re-processing after skip
-- **ID Cleanup**: Clears blocked question ID when switching to non-paired dynamics or when player count changes
-- **Tracking Persistence**: Tracking only resets on new game start, not mid-game when all players participate
+- **Processing Prevention**: Uses `lastProcessedQuestionId` ref to prevent infinite loops when auto-skipping blocked dynamics
 - **Player Management**: Automatically removes player IDs from tracking when players are kicked mid-game
+- **State Isolation**: Tracking persists during game but resets completely between games
+
+### GameScreen Lifecycle and State Cleanup System
+
+Critical patterns for managing GameScreen lifecycle to prevent state pollution between games:
+
+#### Component Mount State Tracking
+- **isMountedRef Pattern**: Use `useRef(true)` to track component mount state, set to `false` in cleanup
+- **useEffect Guards**: All useEffect hooks check `isMountedRef.current` before executing to prevent execution in unmounted components
+- **Prevents Race Conditions**: Guards prevent "Can't perform a React state update on an unmounted component" warnings
+
+#### State Cleanup Order (Critical)
+The cleanup order is critical to prevent race conditions and data leaks:
+1. **currentQuestion First**: Clear with `dispatch(setCurrentQuestion(null))` to stop useEffect processing
+2. **Local State**: Clear all component state (`setAllGamePlayers([])`, `setSelectedPlayerForQuestion(null)`, etc.)
+3. **Refs**: Clear all ref-based tracking (`skippedPairedDynamicIds.current.clear()`, `lastProcessedQuestionId.current = null`)
+4. **GameEngine**: Reset singleton with `gameEngine.resetGame()`
+5. **Redux Last**: Clear Redux state with `dispatch(clearAllPlayers())` and `dispatch(resetGame())`
+
+#### Navigation Stack Management
+- **navigation.reset() Required**: Must use `navigation.reset()` instead of `navigate()` to properly dismount GameScreen
+- **Stack Reset Pattern**: `navigation.reset({ index: 0, routes: [{ name: 'MainMenu' }] })` forces complete component dismount
+- **Problem with navigate()**: Using `navigate('MainMenu')` only hides GameScreen without dismounting it, leaving useEffect hooks active
+
+#### Complete Cleanup Locations
+Both game-ending paths must implement identical cleanup:
+1. **GameScreen.handleEndGame()**: Direct "Terminar Juego" button after game completion
+2. **GameConfigModal.handleEndGame()**: Config button → "Terminar Juego" → confirmation → "Terminar"
+
+#### Multiple Instance Prevention
+- Without proper cleanup and navigation.reset(), multiple GameScreen instances can run simultaneously in the navigation stack
+- Each instance processes questions independently, causing mixed player data from different games
+- Proper dismounting ensures only one GameScreen instance exists at a time
 
 ### Metro Bundler Configuration
 The project uses custom Metro configuration (metro.config.js) to prevent conflicts between frontend and backend:
