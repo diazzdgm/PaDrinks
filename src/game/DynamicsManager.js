@@ -9,6 +9,7 @@ import rockPaperScissorsData from '../data/dynamics/rockPaperScissors.json';
 import whatDoYouPreferData from '../data/dynamics/whatDoYouPrefer.json';
 import challengeOrShotData from '../data/dynamics/challengeOrShot.json';
 import headHeadSplashData from '../data/dynamics/headHeadSplash.json';
+import anonymousQuestionsData from '../data/dynamics/anonymousQuestions.json';
 
 class DynamicsManager {
   constructor() {
@@ -23,7 +24,8 @@ class DynamicsManager {
       rockPaperScissorsData,
       whatDoYouPreferData,
       challengeOrShotData,
-      headHeadSplashData
+      headHeadSplashData,
+      anonymousQuestionsData
     ];
 
     this.availableDynamics = [...this.allDynamics];
@@ -77,7 +79,7 @@ class DynamicsManager {
     const randomIndex = Math.floor(Math.random() * availableQuestions.length);
     const selectedQuestion = availableQuestions[randomIndex];
 
-    if (dynamic.type !== 'paired_challenge' && dynamic.type !== 'preference_vote') {
+    if (dynamic.type !== 'paired_challenge' && dynamic.type !== 'preference_vote' && dynamic.type !== 'anonymous_vote') {
       this.markQuestionAsUsed(dynamicId, selectedQuestion.id);
     }
 

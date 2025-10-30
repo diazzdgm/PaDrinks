@@ -49,6 +49,7 @@ import {
 import { clearAllPlayers } from '../../store/playersSlice';
 import GameConfigModal from '../../components/game/GameConfigModal';
 import PreferenceVoteDisplay from '../../components/game/PreferenceVoteDisplay';
+import AnonymousVoteDisplay from '../../components/game/AnonymousVoteDisplay';
 
 const CustomMuteIcon = ({ size, isMuted = false }) => {
   const responsiveSize = size || scaleModerate(50, 0.3);
@@ -1029,6 +1030,13 @@ const GameScreen = ({ navigation, route }) => {
         {/* Renderizar PreferenceVoteDisplay si es preference_vote */}
         {currentQuestion?.dynamicType === 'preference_vote' ? (
           <PreferenceVoteDisplay
+            question={currentQuestion}
+            allGamePlayers={allGamePlayers}
+            onComplete={handleContinue}
+            onSkipDynamic={handleSkipDynamic}
+          />
+        ) : currentQuestion?.dynamicType === 'anonymous_vote' ? (
+          <AnonymousVoteDisplay
             question={currentQuestion}
             allGamePlayers={allGamePlayers}
             onComplete={handleContinue}

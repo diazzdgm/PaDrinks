@@ -188,12 +188,15 @@ The project includes a complete local game engine for single-device gameplay:
   - `armWrestling.json`: Paired challenge for arm wrestling matches (paired_challenge type)
   - `rockPaperScissors.json`: Paired challenge for rock-paper-scissors without gender restriction
   - `whatDoYouPrefer.json`: Preference voting with two options
-- **Question Schema**: Each question has `id`, `text`, `instruction`, `emoji`, and optionally `genderRestriction`
+  - `headHeadSplash.json`: "Cabezas Splash" - paired challenge where players stare eye-to-eye with mouths full of drink, first to laugh/spit loses
+  - `anonymousQuestions.json`: Anonymous voting on players (42 questions) - players pass phone to vote privately, most voted player takes shot
+- **Question Schema**: Each question has `id`, `text`, `instruction`, `emoji`, and optionally `genderRestriction` and `targetGender`
 - **Dynamic Types**:
   - `vote_selection`: Group voting dynamics (whoIsMost, whoIsMoreLikely, INeverNever)
   - `mention_challenge`: Individual player challenges with rotation system (mentionChallenge, awkwardQuestions, challengeOrShot)
   - `paired_challenge`: Two-player challenges with gender-based pairing (armWrestling, rockPaperScissors)
   - `preference_vote`: Multi-phase voting system where players vote individually on two options (whatDoYouPrefer)
+  - `anonymous_vote`: Multi-phase anonymous voting where players vote for other players, most voted takes shot (anonymousQuestions)
 - **Extensible Design**: Easy to add new dynamics by creating new JSON files and updating DynamicsManager
 
 #### Game Flow Integration
@@ -498,6 +501,75 @@ The project uses an advanced responsive system in `src/utils/responsive.js`:
 - **Processing Prevention**: Uses `lastProcessedQuestionId` ref to prevent infinite loops when auto-skipping blocked dynamics
 - **Player Management**: Automatically removes player IDs from tracking when players are kicked mid-game
 - **State Isolation**: Tracking persists during game but resets completely between games
+
+### Anonymous Vote System (PREGUNTAS ANÓNIMAS)
+Complete anonymous voting system where players privately vote for other players:
+
+#### System Architecture
+- **Type**: `anonymous_vote` - Multi-phase voting system with phone passing
+- **Component**: `AnonymousVoteDisplay.js` - Handles all voting phases and UI
+- **Redux State**: `anonymousVoteState` in gameSlice with phase tracking and vote collection
+- **Minimum Players**: 3 players required
+- **Question Pool**: 42 questions in `anonymousQuestions.json`
+
+#### Voting Flow (5 Phases)
+1. **passing_phone Phase**: "Pasa el celular a [Player Name]" screen with Continue button
+2. **voting Phase**: Player sees question and buttons with all eligible player names to vote
+3. **Loop**: Phases 1-2 repeat for each player in the game
+4. **returning_phone Phase**: "Pasa el celular a la persona que está leyendo las dinámicas" screen
+5. **results Phase**: Shows vote counts for each player (anonymous - doesn't show who voted for whom)
+6. **penalty Phase**: Displays most voted player(s) who must take shot
+
+#### Gender Restriction System
+Two independent gender filters implemented:
+- **genderRestriction**: Limits who can VOTE (filters `eligiblePlayers`)
+  - Example: Only male players can vote on a specific question
+- **targetGender**: Limits voting OPTIONS (filters `targetPlayers` displayed as buttons)
+  - Example: All players vote, but only male players appear as button options
+  - Values: `"male"`, `"female"`, or undefined (all players)
+
+#### UI Implementation Details
+- **Responsive Button Grid**: Automatically adjusts columns based on player count
+  - 2-4 players: 2 columns
+  - 5-9 players: 3 columns
+  - 10+ players: 4 columns
+- **Compact Button Sizing**: Smaller buttons to accommodate up to 16 players
+- **ScrollView Integration**: Both voting screen and results screen scroll for many players
+- **Button States**: Yellow (default), Green (selected), with post-it styling and rotation effects
+
+#### Vote Counting and Results
+- **Anonymous Tracking**: Stores `voterId` and `votedForId` but doesn't display who voted for whom
+- **Results Display**: Shows each player with vote count in descending order
+- **Tie Handling**: If multiple players tied for most votes, ALL tied players take shot
+- **Zero Votes**: If no votes cast, displays "¡No hubo votos!" and nobody takes shot
+
+#### Redux Actions
+- `initializeAnonymousVote`: Sets up voting with eligible voters and target players
+- `setAnonymousVotePhase`: Transitions between phases (passing_phone, voting, returning_phone, results, penalty)
+- `recordAnonymousVote`: Stores individual vote with voter and target player IDs
+- `nextAnonymousVotePlayer`: Increments player index after vote
+- `skipAnonymousVotePlayer`: Skips current player's turn
+- `resetAnonymousVoteState`: Clears all state after dynamic completion
+
+#### Question Reusability
+- Like `preference_vote`, `anonymous_vote` questions are NOT marked as used
+- Questions can reappear later in the same game with different voting outcomes
+- DynamicsManager line 82 excludes `anonymous_vote` from auto-marking
+
+#### Integration Pattern
+```javascript
+// GameScreen.js integration (lines 1038-1044)
+{currentQuestion?.dynamicType === 'anonymous_vote' ? (
+  <AnonymousVoteDisplay
+    question={currentQuestion}
+    allGamePlayers={allGamePlayers}
+    onComplete={handleContinue}
+    onSkipDynamic={handleSkipDynamic}
+  />
+) : (
+  // Other dynamic types...
+)}
+```
 
 ### GameScreen Lifecycle and State Cleanup System
 

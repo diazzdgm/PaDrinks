@@ -1,0 +1,269 @@
+{
+  "id": "anonymous_questions",
+  "name": "Preguntas Anónimas",
+  "type": "anonymous_vote",
+  "instruction": "Vota sin que nadie sepa, el Jugador mas votado toma shot",
+  "minPlayers": 3,
+  "questions": [
+    {
+      "id": "aq_001",
+      "text": "¿Quién de los hombres es el más guapo?",
+      "instruction": "Con honestidad, apreciando la belleza de mi compadre",
+      "emoji": "😎",
+      "targetGender": "male"
+    },
+    {
+      "id": "aq_002",
+      "text": "¿Quién de las mujeres es la más guapa?",
+      "instruction": "Ni los filtros de Instagram te alcanzan, reina.",
+      "emoji": "💅",
+      "targetGender": "female"
+    },
+    {
+      "id": "aq_003",
+      "text": "¿Quién es el más feo?",
+      "instruction": "La belleza está en el interior… bien, bien interior.",
+      "emoji": "🫩",
+      "targetGender": "male"
+    },
+    {
+      "id": "aq_004",
+      "text": "¿Quién se viste peor?",
+      "instruction": "Esos zapatitos nada que ver",
+      "emoji": "👖👞"
+    },
+    {
+      "id": "aq_005",
+      "text": "¿Quién es más doble cara?",
+      "instruction": "Ni los espejos tienen tantas versiones.",
+      "emoji": "🎭"
+    },
+    {
+      "id": "aq_006",
+      "text": "¿Quién es más mamón/a?",
+      "instruction": "Le hablas y te corta con la mirada en dos.",
+      "emoji": "😤"
+    },
+    {
+      "id": "aq_007",
+      "text": "¿Quién es más presumido/a?",
+      "instruction": "3 pesitos de humildad cabron.",
+      "emoji": "🤑"
+    },
+    {
+      "id": "aq_008",
+      "text": "¿Quién crees que sea el peor en la cama?",
+      "instruction": "Ni con GPS encuentra el punto G.",
+      "emoji": "🥴🛏️"
+    },
+    {
+      "id": "aq_009",
+      "text": "¿Quién crees que bese mejor?",
+      "instruction": "Dicen que tiene maestría en besología.",
+      "emoji": "😘"
+    },
+    {
+      "id": "aq_010",
+      "text": "¿Quién crees que es el más infiel?",
+      "instruction": "Le ponen más cuernos que a un venado.",
+      "emoji": "🫎"
+    },
+    {
+      "id": "aq_011",
+      "text": "¿Quién ligaría más fácil?",
+      "instruction": "Hasta la cajera del Oxxo cae a tus pies",
+      "emoji": "😏"
+    },
+    {
+      "id": "aq_012",
+      "text": "¿Quién es más chismoso/a?",
+      "instruction": "Chismeeeee Potenteee!!",
+      "emoji": "🐒"
+    },
+    {
+      "id": "aq_013",
+      "text": "¿Quién crees que tendría un sugar mommy o daddy?",
+      "instruction": "Trabajando poco, cobrando mucho.",
+      "emoji": "💸"
+    },
+    {
+      "id": "aq_014",
+      "text": "¿Quién es más probable a quedarse soltero/a para siempre?",
+      "instruction": "Ni Tinder lo quiere.",
+      "emoji": "🥹"
+    },
+    {
+      "id": "aq_015",
+      "text": "¿Quién es más codo/a?",
+      "instruction": "No pasa ni el Wi-Fi.",
+      "emoji": "💰"
+    },
+    {
+      "id": "aq_016",
+      "text": "¿Quién se ve que es más celoso/a?",
+      "instruction": "Hasta el aire te reclama.",
+      "emoji": "🔒"
+    },
+    {
+      "id": "aq_017",
+      "text": "¿Quién es más mandilón/a?",
+      "instruction": "Le hacen falta unos pantalones extra.",
+      "emoji": "👖"
+    },
+    {
+      "id": "aq_018",
+      "text": "¿Quién tendría más probabilidades de besar a alguien del grupo?",
+      "instruction": "Se nota que vino con intenciones.",
+      "emoji": "😏"
+    },
+    {
+      "id": "aq_019",
+      "text": "¿Quién es más probable a besarse a un gordo/gorda?",
+      "instruction": "El amor no se pesa, se besa.",
+      "emoji": "🍩"
+    },
+    {
+      "id": "aq_020",
+      "text": "¿Quién sería el más probable a perder en una pelea?",
+      "instruction": "Rocky Balboa de temu.",
+      "emoji": "🥊",
+      "targetGender": "male"
+    },
+    {
+      "id": "aq_021",
+      "text": "¿Quién se pondría nervioso/a si le revisan el celular?",
+      "instruction": "Ese desbloqueo con sudor no es casualidad.",
+      "emoji": "📱"
+    },
+    {
+      "id": "aq_022",
+      "text": "¿Quién es más probable a que sea gay o lesbiana en secreto?",
+      "instruction": "Secretos del arcoíris.",
+      "emoji": "🌈"
+    },
+    {
+      "id": "aq_023",
+      "text": "¿Quién crees que haya tenido menos relaciones sexuales o que aún sea virgen?",
+      "instruction": "Ya ni la Virgen de Guadalupe",
+      "emoji": "🪆"
+    },
+    {
+      "id": "aq_024",
+      "text": "¿Quién crees que haya cogido más veces con personas diferentes?",
+      "instruction": "Hijos regados por todo el mundo",
+      "emoji": "🍆🍑"
+    },
+    {
+      "id": "aq_025",
+      "text": "¿Quién es más probable a que se dé a alguien que le doble la edad?",
+      "instruction": "El amor no tiene edad… pero sí pensión.",
+      "emoji": "👴"
+    },
+    {
+      "id": "aq_026",
+      "text": "¿Quién crees que pueda ser un interesado/a en una relación?",
+      "instruction": "No da amor, da facturas.",
+      "emoji": "💳"
+    },
+    {
+      "id": "aq_027",
+      "text": "¿Quién es más probable a andar con el/la ex de un amigo/a?",
+      "instruction": "El código de amigos lo rompió en mil pedazos.",
+      "emoji": "🐈‍⬛"
+    },
+    {
+      "id": "aq_028",
+      "text": "¿Quién siempre debe dinero y no paga?",
+      "instruction": "No paga, pero que tal gastando en Instagram",
+      "emoji": "💸"
+    },
+    {
+      "id": "aq_029",
+      "text": "¿Quién crees que es más tóxico/a?",
+      "instruction": "Tragarse un airtag al fallo",
+      "emoji": "☠️"
+    },
+    {
+      "id": "aq_030",
+      "text": "¿Quién crees que sea el que más porno ha visto?",
+      "instruction": "Experto en modo incognito",
+      "emoji": "🙈",
+      "targetGender": "male"
+    },
+    {
+      "id": "aq_031",
+      "text": "¿Quién es el más probable a no bañarse seguido?",
+      "instruction": "Al menos un regaderazo de vez en cuando",
+      "emoji": "🚿"
+    },
+    {
+      "id": "aq_032",
+      "text": "¿Quién podría volverse un político corrupto?",
+      "instruction": "Promete shots y no los cumple.",
+      "emoji": "🧠"
+    },
+    {
+      "id": "aq_033",
+      "text": "¿Quién crees que va a ser el jugador que menos gane dinero del grupo?",
+      "instruction": "Soñando con la quincena desde hoy.",
+      "emoji": "🪙"
+    },
+    {
+      "id": "aq_034",
+      "text": "¿Quién es a quien menos le confiarías un secreto?",
+      "instruction": "Le cuentas y ya todo México se entera en segundos",
+      "emoji": "🤐"
+    },
+    {
+      "id": "aq_035",
+      "text": "¿Quién es el/la más envidioso/a?",
+      "instruction": "Enorgullécete de los demás culo",
+      "emoji": "😬"
+    },
+    {
+      "id": "aq_036",
+      "text": "¿Quién crees que la tenga más chiquita?",
+      "instruction": "No importa el tamaño de la espada, importa el filo y el gladiador",
+      "emoji": "⚔️",
+      "targetGender": "male"
+    },
+    {
+      "id": "aq_037",
+      "text": "¿Quién parece niño/a bueno/a pero no lo es?",
+      "instruction": "Cara de ángel, alma de travesura.",
+      "emoji": "😇"
+    },
+    {
+      "id": "aq_038",
+      "text": "¿Quién crees que está seguido en la friendzone?",
+      "instruction": "Aplica likes pero nunca besos.",
+      "emoji": "💔"
+    },
+    {
+      "id": "aq_039",
+      "text": "¿Quién parece que le gusta alguien del grupo, pero no lo dice?",
+      "instruction": "La mirada los delata.",
+      "emoji": "😳"
+    },
+    {
+      "id": "aq_040",
+      "text": "¿Quién tiene cara de ser el que mejor liga del grupo?",
+      "instruction": "Tiene flow de rompecorazones.",
+      "emoji": "😏",
+      "targetGender": "male"
+    },
+    {
+      "id": "aq_041",
+      "text": "¿Quién crees que sea más probable a que tenga un embarazo no deseado?",
+      "instruction": "Sin Globo no hay fiesta campeón",
+      "emoji": "🍼",
+      "targetGender": "female"
+    },
+    {
+      "id": "aq_042",
+      "text": "¿Quién es más probable a que le pongan el cuerno?",
+      "instruction": "La confianza mata al hombre.",
+      "emoji": "🦌"
+    }
+  ]
+}

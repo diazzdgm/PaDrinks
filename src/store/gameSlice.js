@@ -37,6 +37,16 @@ const initialState = {
     questionData: null,
   },
 
+  // Anonymous Vote specific state
+  anonymousVoteState: {
+    phase: null,
+    eligiblePlayers: [],
+    targetPlayers: [],
+    currentPlayerIndex: 0,
+    playerVotes: [],
+    questionData: null,
+  },
+
   // Timer
   timer: 0,
   timerActive: false,
@@ -206,6 +216,51 @@ const gameSlice = createSlice({
       };
     },
 
+    initializeAnonymousVote: (state, action) => {
+      const { eligiblePlayers, targetPlayers, questionData } = action.payload;
+      state.anonymousVoteState = {
+        phase: 'passing_phone',
+        eligiblePlayers,
+        targetPlayers,
+        currentPlayerIndex: 0,
+        playerVotes: [],
+        questionData,
+      };
+    },
+
+    setAnonymousVotePhase: (state, action) => {
+      state.anonymousVoteState.phase = action.payload;
+    },
+
+    recordAnonymousVote: (state, action) => {
+      const { voterId, voterName, votedForId, votedForName } = action.payload;
+      state.anonymousVoteState.playerVotes.push({
+        voterId,
+        voterName,
+        votedForId,
+        votedForName,
+      });
+    },
+
+    nextAnonymousVotePlayer: (state) => {
+      state.anonymousVoteState.currentPlayerIndex += 1;
+    },
+
+    skipAnonymousVotePlayer: (state) => {
+      state.anonymousVoteState.currentPlayerIndex += 1;
+    },
+
+    resetAnonymousVoteState: (state) => {
+      state.anonymousVoteState = {
+        phase: null,
+        eligiblePlayers: [],
+        targetPlayers: [],
+        currentPlayerIndex: 0,
+        playerVotes: [],
+        questionData: null,
+      };
+    },
+
     setCurrentDynamic: (state, action) => {
       state.currentDynamic = action.payload.name;
       state.dynamicType = action.payload.type;
@@ -313,6 +368,12 @@ export const {
   nextPreferenceVotePlayer,
   skipPreferenceVotePlayer,
   resetPreferenceVoteState,
+  initializeAnonymousVote,
+  setAnonymousVotePhase,
+  recordAnonymousVote,
+  nextAnonymousVotePlayer,
+  skipAnonymousVotePlayer,
+  resetAnonymousVoteState,
   setCurrentDynamic,
   updateGameEngineState,
   pauseGame,
