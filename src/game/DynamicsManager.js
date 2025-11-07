@@ -9,6 +9,7 @@ import rockPaperScissorsData from '../data/dynamics/rockPaperScissors.json';
 import whatDoYouPreferData from '../data/dynamics/whatDoYouPrefer.json';
 import challengeOrShotData from '../data/dynamics/challengeOrShot.json';
 import headHeadSplashData from '../data/dynamics/headHeadSplash.json';
+import drinkingCompetitionData from '../data/dynamics/drinkingCompetition.json';
 import anonymousQuestionsData from '../data/dynamics/anonymousQuestions.json';
 
 class DynamicsManager {
@@ -25,6 +26,7 @@ class DynamicsManager {
       whatDoYouPreferData,
       challengeOrShotData,
       headHeadSplashData,
+      drinkingCompetitionData,
       anonymousQuestionsData
     ];
 

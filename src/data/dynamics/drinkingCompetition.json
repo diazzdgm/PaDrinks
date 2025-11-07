@@ -1,0 +1,15 @@
+{
+  "id": "drinking_competition",
+  "name": "Competencia de Fondo",
+  "type": "paired_challenge",
+  "instruction": "Fondo..Fondoo! quien pierda shot",
+  "minPlayers": 2,
+  "questions": [
+    {
+      "id": "dc_001",
+      "text": "{player1} y {player2} tomense fondo de su trago el ultimo en terminar toma shot",
+      "instruction": "Fondooo al falloooo!",
+      "emoji": "🍻"
+    }
+  ]
+}
