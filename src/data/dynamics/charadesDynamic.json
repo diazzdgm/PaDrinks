@@ -1,0 +1,38 @@
+{
+  "id": "charades_dynamic",
+  "name": "Charadas",
+  "type": "paired_challenge",
+  "instruction": "Si no adivinan la palabra ambos toman shot",
+  "minPlayers": 2,
+  "questions": [
+    {
+      "id": "charades_001",
+      "text": "{player1} con gestos y caras logra que {player2} adivine la frase",
+      "instruction": ".",
+      "emoji": "🎭",
+      "phrases": [
+        "Parir un bebé",
+        "T-rex",
+        "Pavorreal",
+        "Nauseas",
+        "Coger sensualmente",
+        "Hacer chupetón",
+        "Chewbacca",
+        "Mala copear",
+        "Cualquier jugador que quieras imitar",
+        "Jugador de la izquierda",
+        "Calambre en la pierna",
+        "Pelar con una mosca",
+        "Bebe llorando",
+        "Tener diarrea",
+        "Caerte en público y fingir que fue a propósito",
+        "Tener una mega cruda",
+        "Famoso en alfombra roja",
+        "Ser un dragón echando fuego",
+        "Perro cogiendo",
+        "Enano de fiesta",
+        "Futbolista que exagera una falta"
+      ]
+    }
+  ]
+}

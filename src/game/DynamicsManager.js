@@ -10,6 +10,7 @@ import whatDoYouPreferData from '../data/dynamics/whatDoYouPrefer.json';
 import challengeOrShotData from '../data/dynamics/challengeOrShot.json';
 import headHeadSplashData from '../data/dynamics/headHeadSplash.json';
 import drinkingCompetitionData from '../data/dynamics/drinkingCompetition.json';
+import charadesDynamicData from '../data/dynamics/charadesDynamic.json';
 import anonymousQuestionsData from '../data/dynamics/anonymousQuestions.json';
 
 class DynamicsManager {
@@ -27,6 +28,7 @@ class DynamicsManager {
       challengeOrShotData,
       headHeadSplashData,
       drinkingCompetitionData,
+      charadesDynamicData,
       anonymousQuestionsData
     ];
 

@@ -50,6 +50,7 @@ import { clearAllPlayers } from '../../store/playersSlice';
 import GameConfigModal from '../../components/game/GameConfigModal';
 import PreferenceVoteDisplay from '../../components/game/PreferenceVoteDisplay';
 import AnonymousVoteDisplay from '../../components/game/AnonymousVoteDisplay';
+import CharadesDisplay from '../../components/game/CharadesDisplay';
 
 const CustomMuteIcon = ({ size, isMuted = false }) => {
   const responsiveSize = size || scaleModerate(50, 0.3);
@@ -1039,6 +1040,14 @@ const GameScreen = ({ navigation, route }) => {
           <AnonymousVoteDisplay
             question={currentQuestion}
             allGamePlayers={allGamePlayers}
+            onComplete={handleContinue}
+            onSkipDynamic={handleSkipDynamic}
+          />
+        ) : currentQuestion?.dynamicId === 'charades_dynamic' ? (
+          <CharadesDisplay
+            question={currentQuestion}
+            player1Name={selectedPairedPlayers.player1?.name || selectedPairedPlayers.player1?.nickname || 'Jugador 1'}
+            player2Name={selectedPairedPlayers.player2?.name || selectedPairedPlayers.player2?.nickname || 'Jugador 2'}
             onComplete={handleContinue}
             onSkipDynamic={handleSkipDynamic}
           />
