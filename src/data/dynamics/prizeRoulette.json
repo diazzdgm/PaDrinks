@@ -1,0 +1,23 @@
+{
+  "id": "prize_roulette",
+  "name": "Ruleta de Premios",
+  "type": "paired_challenge",
+  "instruction": "Hora de los premios",
+  "minPlayers": 3,
+  "questions": [
+    {
+      "id": "pr_001",
+      "text": "{player1} gira la ruleta para recibir tu premio",
+      "instruction": "¡Que la suerte esté de tu lado!",
+      "emoji": "🎰",
+      "prizes": [
+        "Reparte shot a todos",
+        "Negar 3 shots",
+        "Desviar shot",
+        "Reparte shot a un jugador",
+        "Multiplica el shot de alguien",
+        "Negar 1 shot"
+      ]
+    }
+  ]
+}

@@ -145,7 +145,7 @@ const gameSlice = createSlice({
       if (!state.pairedChallengeTracking[dynamicId].includes(player1Id)) {
         state.pairedChallengeTracking[dynamicId].push(player1Id);
       }
-      if (!state.pairedChallengeTracking[dynamicId].includes(player2Id)) {
+      if (player2Id && !state.pairedChallengeTracking[dynamicId].includes(player2Id)) {
         state.pairedChallengeTracking[dynamicId].push(player2Id);
       }
     },

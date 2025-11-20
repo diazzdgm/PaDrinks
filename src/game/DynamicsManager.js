@@ -12,6 +12,7 @@ import headHeadSplashData from '../data/dynamics/headHeadSplash.json';
 import drinkingCompetitionData from '../data/dynamics/drinkingCompetition.json';
 import charadesDynamicData from '../data/dynamics/charadesDynamic.json';
 import anonymousQuestionsData from '../data/dynamics/anonymousQuestions.json';
+import prizeRouletteData from '../data/dynamics/prizeRoulette.json';
 
 class DynamicsManager {
   constructor() {
@@ -29,7 +30,8 @@ class DynamicsManager {
       headHeadSplashData,
       drinkingCompetitionData,
       charadesDynamicData,
-      anonymousQuestionsData
+      anonymousQuestionsData,
+      prizeRouletteData
     ];
 
     this.availableDynamics = [...this.allDynamics];

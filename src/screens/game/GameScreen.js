@@ -51,6 +51,7 @@ import GameConfigModal from '../../components/game/GameConfigModal';
 import PreferenceVoteDisplay from '../../components/game/PreferenceVoteDisplay';
 import AnonymousVoteDisplay from '../../components/game/AnonymousVoteDisplay';
 import CharadesDisplay from '../../components/game/CharadesDisplay';
+import PrizeRouletteDisplay from '../../components/game/PrizeRouletteDisplay';
 
 const CustomMuteIcon = ({ size, isMuted = false }) => {
   const responsiveSize = size || scaleModerate(50, 0.3);
@@ -867,18 +868,30 @@ const GameScreen = ({ navigation, route }) => {
 
       // Guardar la pareja seleccionada
       setSelectedPairedPlayers({ player1, player2 });
-      dispatch(addPairedChallengeParticipants({
-        dynamicId,
-        player1Id: player1.id || player1.playerId,
-        player2Id: player2.id || player2.playerId
-      }));
+
+      if (dynamicId === 'prize_roulette') {
+        dispatch(addPairedChallengeParticipants({
+          dynamicId,
+          player1Id: player1.id || player1.playerId,
+          player2Id: null
+        }));
+        console.log(`🎰 ✅ Jugador seleccionado: ${player1.name || player1.nickname}`);
+        console.log(`🎰 📊 Participantes actuales: [${participantsForThisDynamic.join(', ')}]`);
+        console.log(`🎰 📊 Después de esta ronda: ${participantsForThisDynamic.length + 1}/${allGamePlayers.length} jugadores habrán participado`);
+      } else {
+        dispatch(addPairedChallengeParticipants({
+          dynamicId,
+          player1Id: player1.id || player1.playerId,
+          player2Id: player2.id || player2.playerId
+        }));
+        console.log(`💪 ✅ Pareja seleccionada: ${player1.name || player1.nickname} vs ${player2.name || player2.nickname}`);
+        console.log(`💪 📊 Participantes actuales: [${participantsForThisDynamic.join(', ')}]`);
+        console.log(`💪 📊 Después de esta ronda: ${participantsForThisDynamic.length + 2}/${allGamePlayers.length} jugadores habrán participado`);
+      }
 
       // Marcar esta pregunta como procesada para evitar re-procesamiento en este ciclo
       lastProcessedQuestionId.current = currentQuestion.id;
 
-      console.log(`💪 ✅ Pareja seleccionada: ${player1.name || player1.nickname} vs ${player2.name || player2.nickname}`);
-      console.log(`💪 📊 Participantes actuales: [${participantsForThisDynamic.join(', ')}]`);
-      console.log(`💪 📊 Después de esta ronda: ${participantsForThisDynamic.length + 2}/${allGamePlayers.length} jugadores habrán participado`);
       console.log(`💪 ==========================================`);
     } else {
       setSelectedPairedPlayers({ player1: null, player2: null });
@@ -1048,6 +1061,13 @@ const GameScreen = ({ navigation, route }) => {
             question={currentQuestion}
             player1Name={selectedPairedPlayers.player1?.name || selectedPairedPlayers.player1?.nickname || 'Jugador 1'}
             player2Name={selectedPairedPlayers.player2?.name || selectedPairedPlayers.player2?.nickname || 'Jugador 2'}
+            onComplete={handleContinue}
+            onSkipDynamic={handleSkipDynamic}
+          />
+        ) : currentQuestion?.dynamicId === 'prize_roulette' ? (
+          <PrizeRouletteDisplay
+            question={currentQuestion}
+            player1Name={selectedPairedPlayers.player1?.name || selectedPairedPlayers.player1?.nickname || 'Jugador 1'}
             onComplete={handleContinue}
             onSkipDynamic={handleSkipDynamic}
           />
