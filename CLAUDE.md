@@ -101,18 +101,18 @@ npm run start:tunnel
 
 ## Project Configuration
 
-- **Expo SDK**: Version 53 with new architecture enabled
-- **React Version**: React 19.0.0 with React Native 0.79.5
-- **Expo CLI**: Version 0.24.20 with custom Windows wrappers
+- **Expo SDK**: Version 54.0.0 with new architecture enabled
+- **React Version**: React 19.1.0 with React Native 0.81.5
+- **Expo CLI**: Version 0.25.x with custom Windows wrappers
 - **Orientation**: app.json specifies "landscape" and App.js additionally enforces landscape mode at runtime via expo-screen-orientation
 - **No Testing Setup**: No Jest, ESLint, or other testing/linting tools configured
 - **No Build Scripts**: Uses EAS Build for APK generation
-- **Firebase Integration**: React Native Firebase SDK with Auth and Realtime Database modules
-- **Connectivity Stack**: Multiple networking options - Bluetooth (BLE Manager), WiFi P2P, Firebase backend, and Socket.IO real-time communication
+- **Connectivity Stack**: Socket.IO real-time communication for multiplayer (Firebase removed in SDK 54 update)
 - **Backend Integration**: Node.js + Express + Socket.IO backend server for multiplayer functionality
 - **Image Processing**: expo-image-manipulator for photo compression (150x150px, 30% quality)
 - **AsyncStorage**: Session persistence using @react-native-async-storage/async-storage
 - **QR Code System**: Complete QR generation and scanning for multiplayer room joining using react-native-qrcode-svg and expo-camera
+- **Required Expo Packages**: expo-file-system and expo-asset are critical dependencies for SDK 54
 
 ## Architecture
 
@@ -225,8 +225,9 @@ The project includes a complete local game engine for single-device gameplay:
 - **Redux Toolkit**: State management with non-serializable action ignoring for persistence
 - **Expo AV**: Audio playbook with complex configuration for cross-platform compatibility
 - **Expo Haptics**: Feedback system with error handling for unsupported platforms
+- **Expo File System**: Required for image processing and file operations (SDK 54)
+- **Expo Asset**: Required for asset loading system (SDK 54)
 - **react-native-svg**: SVG support (installed but MainMenu uses PNG for megaphone icon)
-- **Firebase**: Backend integration with Auth and Realtime Database (@react-native-firebase/*)
 - **Connectivity Suite**: BLE Manager, WiFi P2P, Framer Motion for advanced animations
 - **UI Components**: React Native Paper for material design elements, Vector Icons, Super Grid
 - **Socket.IO Client**: Real-time communication with backend server for multiplayer functionality
@@ -251,7 +252,7 @@ The app includes a complete QR code system for multiplayer room joining:
 - **UI Elements**: Custom scanner overlay with instructions, close button, and corner frame indicators
 
 #### Technical Implementation Notes
-- **Dependency Migration**: Project uses expo-camera instead of expo-barcode-scanner for SDK 53 compatibility
+- **Dependency Migration**: Project uses expo-camera instead of expo-barcode-scanner for SDK 54 compatibility
 - **Barcode Settings**: Scanner configured specifically for QR codes: `barcodeScannerSettings={{ barcodeTypes: ["qr"] }}`
 - **Error Handling**: Invalid codes show appropriate error messages via custom modals
 - **Integration**: Both manual code entry and QR scanning lead to same registration flow
@@ -1033,7 +1034,49 @@ The project includes MCP server integrations for enhanced AI/LLM capabilities:
 ## TypeScript Integration
 
 The project includes TypeScript configuration but is primarily JavaScript-based:
-- **TypeScript Version**: 5.8.3 with React types (19.0.10)
+- **TypeScript Version**: 5.9.2 with React types (19.1.0)
 - **Configuration**: Basic tsconfig.json extending expo/tsconfig.base
 - **Usage**: TypeScript is available but most components are .js files
 - **Mixed Codebase**: Can gradually adopt TypeScript for new components
+
+## SDK 54 Upgrade Notes
+
+The project was successfully upgraded from SDK 53 to SDK 54 in November 2025:
+
+### Critical Changes in SDK 54
+- **React Native**: Upgraded to 0.81.5 (from 0.79.5)
+- **React**: Upgraded to 19.1.0 (from 19.0.0)
+- **Firebase Removed**: All Firebase dependencies removed - project now uses only Socket.IO for multiplayer
+- **Required Packages**: `expo-file-system` and `expo-asset` are now explicit dependencies (were previously bundled)
+
+### Installation Issues and Solutions
+**Problem**: When upgrading to SDK 54, `expo-file-system` and `expo-asset` may not install correctly from WSL
+**Solution**:
+1. Delete `node_modules` and `package-lock.json`
+2. Run `npm install` from **Windows CMD** (not WSL/Git Bash)
+3. Verify installation: `npm list expo-file-system expo-asset`
+
+### Cache Issues After Upgrade
+**Problem**: Metro bundler cache may cause "module not found" errors after SDK upgrade
+**Solution**:
+```bash
+# Clear all caches
+rm -rf .expo node_modules/.cache
+npm run clean:cache
+
+# Or full clean
+npm run clean
+```
+
+### Tunnel Mode for iOS Testing
+**ngrok Configuration**: When testing on iOS with Expo Go (which requires SDK 54):
+1. Start ngrok tunnel: `ngrok http 3001` (from Windows CMD as Administrator)
+2. Update `src/config/server.js` with ngrok URL in `TUNNEL_SERVER_URL`
+3. Start backend: `cd backend && npm run dev`
+4. Start Expo: `npm start` (normal mode, not tunnel - backend is already tunneled)
+
+### Compatibility Notes
+- **Expo Go iOS**: Latest version only accepts SDK 54+ projects
+- **Expo Go Android**: More flexible with SDK versions
+- **Windows Development**: Must run `npm install` from Windows CMD for proper permissions
+- **WSL Issues**: Package installations from WSL may have permission errors with node_modules
