@@ -52,6 +52,7 @@ import PreferenceVoteDisplay from '../../components/game/PreferenceVoteDisplay';
 import AnonymousVoteDisplay from '../../components/game/AnonymousVoteDisplay';
 import CharadesDisplay from '../../components/game/CharadesDisplay';
 import PrizeRouletteDisplay from '../../components/game/PrizeRouletteDisplay';
+import SpinBottleDisplay from '../../components/game/SpinBottleDisplay';
 
 const CustomMuteIcon = ({ size, isMuted = false }) => {
   const responsiveSize = size || scaleModerate(50, 0.3);
@@ -639,6 +640,12 @@ const GameScreen = ({ navigation, route }) => {
     if (currentQuestion?.dynamicType === 'paired_challenge' && allGamePlayers.length >= 2) {
       const dynamicId = currentQuestion.dynamicId;
       const dynamicName = currentQuestion.dynamicName || 'paired challenge';
+
+      if (dynamicId === 'spin_bottle') {
+        console.log(`🍾 Spin Bottle - dinámica grupal, sin selección de jugadores ni auto-bloqueo`);
+        return;
+      }
+
       const requiresSameGender = dynamicId === 'arm_wrestling';
 
       console.log(`💪 === NUEVA PREGUNTA: ${dynamicName.toUpperCase()} ===`);
@@ -1068,6 +1075,12 @@ const GameScreen = ({ navigation, route }) => {
           <PrizeRouletteDisplay
             question={currentQuestion}
             player1Name={selectedPairedPlayers.player1?.name || selectedPairedPlayers.player1?.nickname || 'Jugador 1'}
+            onComplete={handleContinue}
+            onSkipDynamic={handleSkipDynamic}
+          />
+        ) : currentQuestion?.dynamicId === 'spin_bottle' ? (
+          <SpinBottleDisplay
+            question={currentQuestion}
             onComplete={handleContinue}
             onSkipDynamic={handleSkipDynamic}
           />

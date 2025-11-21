@@ -10,6 +10,7 @@ class GameEngine {
     this.gameStartTime = null;
     this.currentQuestion = null;
     this.roundHistory = [];
+    this.dynamicAppearanceCount = {};
   }
 
   startGame(players = [], gameSettings = {}) {
@@ -20,6 +21,7 @@ class GameEngine {
     this.gameStartTime = Date.now();
     this.roundHistory = [];
     this.players = players;
+    this.dynamicAppearanceCount = {};
 
     // Reset DynamicsManager para nuevo juego
     this.dynamicsManager.reset();
@@ -39,12 +41,31 @@ class GameEngine {
       return null;
     }
 
-    const question = this.dynamicsManager.getNextQuestion();
+    const blockedDynamicIds = new Set();
+    Object.entries(this.dynamicAppearanceCount).forEach(([dynamicId, count]) => {
+      if (dynamicId === 'spin_bottle' && count >= 3) {
+        console.log(`🚫 Bloqueando spin_bottle - Count: ${count}`);
+        blockedDynamicIds.add(dynamicId);
+      }
+    });
 
-    if (question && question.dynamicType === 'preference_vote' && question.genderRestriction) {
-      const eligiblePlayers = this.filterPlayersByGender(question.genderRestriction);
-      if (eligiblePlayers.length < 2) {
-        return this.getNextQuestion();
+    const question = this.dynamicsManager.getNextQuestion(blockedDynamicIds);
+
+    if (question) {
+      if (question.dynamicType === 'preference_vote' && question.genderRestriction) {
+        const eligiblePlayers = this.filterPlayersByGender(question.genderRestriction);
+        if (eligiblePlayers.length < 2) {
+          return this.getNextQuestion();
+        }
+      }
+
+      if (!this.dynamicAppearanceCount[question.dynamicId]) {
+        this.dynamicAppearanceCount[question.dynamicId] = 0;
+      }
+      this.dynamicAppearanceCount[question.dynamicId] += 1;
+
+      if (question.dynamicId === 'spin_bottle') {
+        console.log(`🍾 Spin Bottle apareció - Count ahora: ${this.dynamicAppearanceCount[question.dynamicId]}`);
       }
     }
 

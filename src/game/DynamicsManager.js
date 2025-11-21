@@ -13,6 +13,7 @@ import drinkingCompetitionData from '../data/dynamics/drinkingCompetition.json';
 import charadesDynamicData from '../data/dynamics/charadesDynamic.json';
 import anonymousQuestionsData from '../data/dynamics/anonymousQuestions.json';
 import prizeRouletteData from '../data/dynamics/prizeRoulette.json';
+import spinBottleData from '../data/dynamics/spin.Bottle.json';
 
 class DynamicsManager {
   constructor() {
@@ -31,7 +32,8 @@ class DynamicsManager {
       drinkingCompetitionData,
       charadesDynamicData,
       anonymousQuestionsData,
-      prizeRouletteData
+      prizeRouletteData,
+      spinBottleData
     ];
 
     this.availableDynamics = [...this.allDynamics];
@@ -47,14 +49,14 @@ class DynamicsManager {
     });
   }
 
-  getRandomDynamic() {
+  getRandomDynamic(blockedDynamicIds = new Set()) {
     let availableForSelection = this.availableDynamics.filter(
-      dynamic => dynamic.id !== this.lastDynamicId && this.hasAvailableQuestions(dynamic.id)
+      dynamic => dynamic.id !== this.lastDynamicId && this.hasAvailableQuestions(dynamic.id) && !blockedDynamicIds.has(dynamic.id)
     );
 
     if (availableForSelection.length === 0) {
       availableForSelection = this.availableDynamics.filter(
-        dynamic => this.hasAvailableQuestions(dynamic.id)
+        dynamic => this.hasAvailableQuestions(dynamic.id) && !blockedDynamicIds.has(dynamic.id)
       );
     }
 
@@ -120,8 +122,8 @@ class DynamicsManager {
     );
   }
 
-  getNextQuestion() {
-    const selectedDynamic = this.getRandomDynamic();
+  getNextQuestion(blockedDynamicIds = new Set()) {
+    const selectedDynamic = this.getRandomDynamic(blockedDynamicIds);
     if (!selectedDynamic) {
       return null;
     }

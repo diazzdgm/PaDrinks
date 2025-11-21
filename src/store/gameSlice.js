@@ -26,6 +26,9 @@ const initialState = {
   // Paired Challenge specific state (tracking per dynamic: arm_wrestling, rock_paper_scissors)
   pairedChallengeTracking: {},
 
+  // Dynamic appearance count (for dynamics with appearance limits like spin_bottle)
+  dynamicAppearanceCount: {},
+
   // Preference Vote specific state
   preferenceVoteState: {
     phase: null,
@@ -101,6 +104,7 @@ const gameSlice = createSlice({
       state.currentQuestion = question || null;
       state.mentionChallengeTracking = {};
       state.pairedChallengeTracking = {};
+      state.dynamicAppearanceCount = {};
 
       if (gameEngineState) {
         state.gameEngineState = gameEngineState;
@@ -261,6 +265,14 @@ const gameSlice = createSlice({
       };
     },
 
+    incrementDynamicAppearance: (state, action) => {
+      const dynamicId = action.payload;
+      if (!state.dynamicAppearanceCount[dynamicId]) {
+        state.dynamicAppearanceCount[dynamicId] = 0;
+      }
+      state.dynamicAppearanceCount[dynamicId] += 1;
+    },
+
     setCurrentDynamic: (state, action) => {
       state.currentDynamic = action.payload.name;
       state.dynamicType = action.payload.type;
@@ -374,6 +386,7 @@ export const {
   nextAnonymousVotePlayer,
   skipAnonymousVotePlayer,
   resetAnonymousVoteState,
+  incrementDynamicAppearance,
   setCurrentDynamic,
   updateGameEngineState,
   pauseGame,
