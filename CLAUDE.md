@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PaDrinks is a React Native drinking game app built with Expo. It's designed for party multiplayer experiences with post-it note aesthetic and landscape orientation. The app supports multiple connectivity options (Bluetooth, WiFi P2P) and features animated shot-pouring effects.
+PaDrinks is a React Native drinking game app built with Expo. It's designed for party multiplayer experiences with post-it note aesthetic and landscape orientation. The app supports multiple connectivity options (Bluetooth, WiFi P2P, Socket.IO) and features animated shot-pouring effects.
 
 ## Development Commands
 
@@ -17,7 +17,7 @@ npx expo start
 
 # Run on specific platforms
 npm run android
-npm run ios  
+npm run ios
 npm run web
 
 # Clear cache versions
@@ -66,6 +66,17 @@ node test-api.js
 # Open test-client.html in browser for Socket.IO testing
 ```
 
+### Building APK for Android
+
+```bash
+# Build APK for testing (preview profile)
+npm run build:android
+
+# Note: package-lock.json is excluded from git repo
+# EAS Build uses npm install instead of npm ci
+# First build will ask to generate Android Keystore (say Yes)
+```
+
 ### Windows Development Setup
 ```bash
 # Windows-specific Expo commands (bypassing npx issues)
@@ -95,7 +106,7 @@ npm run start:tunnel
 - **Expo CLI**: Version 0.24.20 with custom Windows wrappers
 - **Orientation**: app.json specifies "landscape" and App.js additionally enforces landscape mode at runtime via expo-screen-orientation
 - **No Testing Setup**: No Jest, ESLint, or other testing/linting tools configured
-- **No Build Scripts**: Uses default Expo build system
+- **No Build Scripts**: Uses EAS Build for APK generation
 - **Firebase Integration**: React Native Firebase SDK with Auth and Realtime Database modules
 - **Connectivity Stack**: Multiple networking options - Bluetooth (BLE Manager), WiFi P2P, Firebase backend, and Socket.IO real-time communication
 - **Backend Integration**: Node.js + Express + Socket.IO backend server for multiplayer functionality
@@ -137,7 +148,7 @@ Kalam fonts (Regular/Bold) are loaded asynchronously in App.js. Font loading com
 #### Audio System Architecture
 - **Configuration**: Silent mode playback enabled, duck audio on Android
 - **Cleanup Pattern**: All screens implement sound cleanup in `useFocusEffect` return function
-- **File Organization**: Audio files in `assets/sounds/` (PADRINKS.backround.music.mp3, beer.can.sound.mp3)
+- **File Organization**: Audio files in `assets/sounds/` (PADRINKS.backround.music.mp3, beer.can.sound.mp3, wine-pop.mp3, school.bell.mp3, Roulette.Spin.mp3, bottle.spin.mp3)
 - **Background Music**: Looping background music with volume control and mute functionality
 
 ### Design System Implementation
@@ -189,7 +200,11 @@ The project includes a complete local game engine for single-device gameplay:
   - `rockPaperScissors.json`: Paired challenge for rock-paper-scissors without gender restriction
   - `whatDoYouPrefer.json`: Preference voting with two options
   - `headHeadSplash.json`: "Cabezas Splash" - paired challenge where players stare eye-to-eye with mouths full of drink, first to laugh/spit loses
+  - `drinkingCompetition.json`: "Competencia de Fondo" - paired challenge where two players race to finish their drink, loser takes shot
+  - `charadesDynamic.json`: "Charadas" - paired challenge with timer and phrase bank (21 phrases), players act out phrases with 60-second timer
   - `anonymousQuestions.json`: Anonymous voting on players (42 questions) - players pass phone to vote privately, most voted player takes shot
+  - `prizeRoulette.json`: "Ruleta de Premios" - animated prize wheel (single-player paired_challenge) with 6 prizes, blocks after all players participate once
+  - `spin.Bottle.json`: "Gira la Botella" - group dynamic with spinning bottle animation, appears maximum 3 times per game, confetti effect on stop
 - **Question Schema**: Each question has `id`, `text`, `instruction`, `emoji`, and optionally `genderRestriction` and `targetGender`
 - **Dynamic Types**:
   - `vote_selection`: Group voting dynamics (whoIsMost, whoIsMoreLikely, INeverNever)
@@ -244,7 +259,7 @@ The app includes a complete QR code system for multiplayer room joining:
 ## Important Technical Notes
 
 ### Animation System
-- Use `Animated.Value` refs, never mix with static values in transform arrays  
+- Use `Animated.Value` refs, never mix with static values in transform arrays
 - **Complex Animation Warning**: Avoid `Animated.sequence` and `Animated.parallel` in `useFocusEffect` as they cause `useInsertionEffect` warnings with React Navigation
 - **Safe Pattern**: Use simple `Animated.timing` calls with `setTimeout` for staggered effects
 - Particle effects implemented with arrays of animated values for individual particles
@@ -270,7 +285,7 @@ The app includes a complete QR code system for multiplayer room joining:
 - **Click Prevention**: Track `isSwipeInProgress` state to prevent button clicks during swipe gestures
 - **Reset Timing**: 300ms delay after successful swipe, 100ms for non-swipes to allow normal clicks
 
-### Redux Configuration Discrepancies  
+### Redux Configuration Discrepancies
 - Store configured for persistence middleware but persistence not implemented
 - Serializable check ignores 'persist/PERSIST' actions despite no actual persistence
 
@@ -282,7 +297,7 @@ The app includes a complete QR code system for multiplayer room joining:
 - **CircularText Component**: Animated rotating text around logo with dancing effects and 20s rotation cycle
 - **Complex Animation Cleanup**: Automatic navigation to AgeVerification after sequence completion
 
-#### AgeVerificationScreen Architecture  
+#### AgeVerificationScreen Architecture
 - **Legal Compliance**: Hard-blocks Android back button, forces app exit on underage selection
 - **Modal System**: Custom animated modal with notebook paper styling for underage users
 - **Dramatic Entrance**: Icon falling animation, question sliding, micro-animations with pulse and blinking
@@ -426,7 +441,7 @@ backend/
 ### Server Configuration Management
 The project uses a sophisticated server configuration system in `src/config/server.js` with priority-based URL resolution:
 - **Tunnel Mode**: ngrok tunnels for external testing (highest priority)
-- **Manual Configuration**: Local network IP for device testing (middle priority) 
+- **Manual Configuration**: Local network IP for device testing (middle priority)
 - **Auto-Detection**: Platform-specific localhost detection (lowest priority)
 - Current configurations support Android emulator (10.0.2.2:3001), iOS simulator (localhost:3001), and real devices
 
@@ -485,10 +500,14 @@ The project uses an advanced responsive system in `src/utils/responsive.js`:
   - Rotation respects restriction: Only selects from eligible gender throughout rotation cycle
   - Example: `challengeOrShot.json` reto #14 ("Píntate los labios") has `genderRestriction: "male"`
 
-### Paired Challenge System (ARM WRESTLING & ROCK PAPER SCISSORS)
-- **Two Dynamic Types**:
+### Paired Challenge System (ARM WRESTLING, ROCK PAPER SCISSORS, HEAD-TO-HEAD, CHARADES, DRINKING COMPETITION, SPIN BOTTLE)
+- **Multiple Dynamic Types**:
   - `arm_wrestling`: Gender-based pairing (same gender required for fair matches)
   - `rock_paper_scissors`: No gender restriction (any player can play against any other)
+  - `head_head_splash`: "Cabezas Splash" - players hold drink in mouth, first to laugh/spit loses
+  - `drinking_competition`: "Competencia de Fondo" - race to finish drink, loser takes shot
+  - `charades_dynamic`: Interactive charades with timer and phrase bank (special component)
+  - `spin_bottle`: Group dynamic with spinning bottle, excluded from auto-blocking (appears max 3 times)
 - **Anti-Repetition Tracking**: Uses `pairedChallengeTracking` object in Redux with per-dynamic tracking (keyed by dynamicId)
 - **Smart Selection Algorithm**:
   - PASO 1: Find gender with 2+ non-participants (for arm_wrestling)
@@ -563,6 +582,211 @@ Two independent gender filters implemented:
   <AnonymousVoteDisplay
     question={currentQuestion}
     allGamePlayers={allGamePlayers}
+    onComplete={handleContinue}
+    onSkipDynamic={handleSkipDynamic}
+  />
+) : (
+  // Other dynamic types...
+)}
+```
+
+### Charades System (CHARADAS)
+Complete interactive charades game with timer and random phrase selection:
+
+#### System Architecture
+- **Type**: `paired_challenge` - Two-player acting game with special UI component
+- **Dynamic ID**: `charades_dynamic` - Detected by dynamicId instead of dynamicType
+- **Component**: `CharadesDisplay.js` - Self-contained component with timer and modals
+- **Question Pool**: 1 question with 21 different phrases to act out
+- **Timer Duration**: 60 seconds (1 minute)
+
+#### Game Flow
+1. **Initial State**: "Mostrar Frase" button enabled, "Empezar Timer" button disabled
+2. **Show Phrase**: Player presses "Mostrar Frase" → random phrase shown in modal → button becomes disabled
+3. **Start Timer**: "Empezar Timer" button becomes enabled after phrase shown → starts 60-second countdown
+4. **Timer Display**: Button text changes to show remaining time in MM:SS format (e.g., "1:00", "0:45")
+5. **Timer End**: School bell sound plays, modal appears with "Se acabó el tiempo" message
+6. **Continue/Skip**: Standard buttons available throughout to advance or skip the dynamic
+
+#### UI Components
+- **Two Special Buttons**: "Mostrar Frase" and "Empezar Timer" positioned horizontally
+- **Button Logic**: Timer only activates after phrase has been shown (prevents cheating)
+- **Modals**: Notebook paper design matching game aesthetic
+  - Phrase modal: Shows selected phrase with "Tu frase es:" title
+  - Time up modal: Shows ⏰ emoji with "Se acabó el tiempo" message
+- **Layout Matching**: Uses Fragment return with same structure as other dynamics (instructionContainer, questionContainer with maxHeight, buttonsContainer)
+
+#### Technical Implementation
+- **Phrase Selection**: Random selection from 21 phrases stored in question.phrases array
+- **Timer Management**: useRef for interval, useState for timeRemaining countdown
+- **Modal Animations**: Scale and opacity animations using Animated.spring and Animated.timing
+- **Audio Integration**:
+  - "wine-pop.mp3" when showing phrase
+  - "school.bell.mp3" when timer ends (80% volume)
+  - "beer.can.sound.mp3" when starting timer
+- **Responsive Design**: Includes isSmallScreen detection for proper maxHeight constraint
+
+#### Critical Layout Pattern
+CharadesDisplay must maintain exact same positioning as other dynamics:
+- **questionContainer maxHeight**: Must have `maxHeight: isSmallScreen ? 300 : 400` to prevent flex: 1 from expanding too much
+- **Fragment Return**: Returns `<>...</>` not a wrapping View to integrate properly with GameScreen's content View
+- **Three Main Sections**: instructionContainer → questionContainer (flex: 1) → buttonsContainer
+- Without maxHeight, the instruction appears too low and buttons misaligned due to excessive questionContainer expansion
+
+#### Question Reusability
+- Like other `paired_challenge` types, questions are NOT marked as used in DynamicsManager
+- Same question can appear multiple times with different player pairs
+- Each appearance randomly selects a new phrase from the 21-phrase bank
+
+#### Integration Pattern
+```javascript
+// GameScreen.js integration
+{currentQuestion?.dynamicId === 'charades_dynamic' ? (
+  <CharadesDisplay
+    question={currentQuestion}
+    player1Name={selectedPairedPlayers.player1?.name || 'Jugador 1'}
+    player2Name={selectedPairedPlayers.player2?.name || 'Jugador 2'}
+    onComplete={handleContinue}
+    onSkipDynamic={handleSkipDynamic}
+  />
+) : (
+  // Other dynamic types...
+)}
+```
+
+### Prize Roulette System (RULETA DE PREMIOS)
+Animated prize wheel with single-player rotation and automatic blocking:
+
+#### System Architecture
+- **Type**: `paired_challenge` - Single-player game (only uses player1, player2 set to null)
+- **Dynamic ID**: `prize_roulette` - Detected by dynamicId for special handling
+- **Component**: `PrizeRouletteDisplay.js` - Self-contained animated roulette component
+- **Question Pool**: 1 question with 6 different prizes
+- **Blocking Behavior**: Automatically blocks after all players participate once (like armWrestling)
+
+#### Game Flow
+1. **Initial State**: Player name displayed, "Girar" button enabled
+2. **Spin Animation**: 5-second rotation with Roulette.Spin.mp3 audio
+3. **Prize Selection**: Random prize selected from 6 options
+4. **Confetti Effect**: 50 particles fall from top of screen
+5. **Prize Modal**: Displays winning prize in notebook paper modal
+6. **Continue/Skip**: Standard buttons available throughout
+
+#### Prize Options (6 total)
+- "Reparte shot a todos"
+- "Negar 3 shots"
+- "Desviar shot"
+- "Reparte shot a un jugador"
+- "Multiplica el shot de alguien"
+- "Negar 1 shot"
+
+#### Technical Implementation
+- **SVG Roulette**: 200x200 viewBox with 6 wedge paths using post-it colors
+- **Text Rendering**: Multi-line text support with automatic word wrapping (max 15 chars per line)
+- **Text Position**: Positioned at 68% radius, rotated radially (pointing inward)
+- **Rotation Animation**: Animated.View wrapping SVG, interpolates 0-360 degrees over 5 seconds
+- **Confetti System**: 50 particles with individual Animated.Value instances, random colors and positions
+- **Modal Design**: Transparent background, 8 horizontal lines, notebook paper aesthetic
+- **Audio Integration**:
+  - "Roulette.Spin.mp3" when button pressed (80% volume)
+  - "school.bell.mp3" when spin completes (80% volume)
+
+#### Single-Player Paired Challenge Pattern
+Unlike other paired_challenge dynamics, prizeRoulette only tracks ONE player:
+```javascript
+// GameScreen.js special handling
+if (dynamicId === 'prize_roulette') {
+  dispatch(addPairedChallengeParticipants({
+    dynamicId,
+    player1Id: player1.id,
+    player2Id: null  // Only one player participates
+  }));
+}
+```
+
+#### Redux Integration
+- **gameSlice.js**: `addPairedChallengeParticipants` checks `if (player2Id && ...)` before adding
+- Prevents adding null to pairedChallengeTracking array
+- Tracks only player1, ensuring correct blocking behavior
+
+#### Question Reusability
+- Questions NOT marked as used in DynamicsManager (can appear with different players)
+- Dynamic blocks after ALL players spin once
+- Auto-unblocks when new players added mid-game
+
+#### Integration Pattern
+```javascript
+// GameScreen.js integration
+{currentQuestion?.dynamicId === 'prize_roulette' ? (
+  <PrizeRouletteDisplay
+    question={currentQuestion}
+    player1Name={selectedPairedPlayers.player1?.name || 'Jugador 1'}
+    onComplete={handleContinue}
+    onSkipDynamic={handleSkipDynamic}
+  />
+) : (
+  // Other dynamic types...
+)}
+```
+
+### Spin Bottle System (GIRA LA BOTELLA)
+Group dynamic with spinning bottle animation and appearance limit:
+
+#### System Architecture
+- **Type**: `paired_challenge` - But excluded from player selection logic (group dynamic)
+- **Dynamic ID**: `spin_bottle` - Detected for special handling in GameScreen
+- **Component**: `SpinBottleDisplay.js` - Self-contained spinning bottle component
+- **Question Pool**: 1 question (group dynamic, no player-specific content)
+- **Appearance Limit**: Maximum 3 times per game (managed by GameEngine)
+
+#### Game Flow
+1. **Initial State**: Bottle displayed with "Girar" button centered on top
+2. **Spin Animation**: 5-second rotation (1800° + random degrees) with bottle.spin.mp3 audio
+3. **Confetti Effect**: 50 particles fall from top of screen when bottle stops
+4. **Bell Sound**: school.bell.mp3 plays when rotation completes
+5. **Manual Selection**: Players manually determine who the bottle points to (no automatic selection)
+6. **Continue/Skip**: Standard buttons available throughout
+
+#### Technical Implementation
+- **Image**: Uses Bottle.Spin.png (220x220px) instead of SVG for bottle rendering
+- **Button Behavior**: "Girar" button (55x55px) disappears during spin, reappears after
+- **Rotation Animation**: Animated.Value with Easing.out(Easing.cubic) for gradual deceleration
+- **Confetti System**:
+  - 50 particles starting at `top: -300` (above screen)
+  - Animation range: `translateY: [0, 900]`
+  - `confettiAnimValues` array cleared on each spin to prevent position issues
+  - Post-it colors (yellow, green, pink, blue)
+- **Audio Integration**:
+  - bottle.spin.mp3 during rotation (80% volume)
+  - school.bell.mp3 when stopped (80% volume)
+
+#### Appearance Limit System
+- **GameEngine Tracking**: `dynamicAppearanceCount` object tracks appearances by dynamicId
+- **Block Logic**: When count reaches 3, dynamicId added to `blockedDynamicIds` Set
+- **DynamicsManager Integration**: `getNextQuestion(blockedDynamicIds)` filters blocked dynamics
+- **Counter Increment**: Only increments AFTER all validations pass (not on rejected questions)
+- **Reset**: Counter resets to `{}` when new game starts
+
+#### Exclusion from Paired Challenge Auto-Blocking
+Critical difference from other paired_challenge dynamics:
+```javascript
+// GameScreen.js - spin_bottle excluded from player selection logic
+if (dynamicId === 'spin_bottle') {
+  console.log(`🍾 Spin Bottle - dinámica grupal, sin selección de jugadores ni auto-bloqueo`);
+  return;
+}
+```
+- Does NOT select player pairs
+- Does NOT track participants
+- Does NOT auto-block when all players participate
+- ONLY blocks after 3 total appearances (via GameEngine counter)
+
+#### Integration Pattern
+```javascript
+// GameScreen.js integration
+{currentQuestion?.dynamicId === 'spin_bottle' ? (
+  <SpinBottleDisplay
+    question={currentQuestion}
     onComplete={handleContinue}
     onSkipDynamic={handleSkipDynamic}
   />
@@ -749,6 +973,27 @@ Key events implemented in the system:
 - **Metro Cache**: Cache corruption common after installations - automatic fallback to full crawl is normal
 - **IP Configuration**: For mobile device testing, update IP in src/config/server.js to your machine's local network IP (use `ipconfig` to find it)
 
+## EAS Build Configuration
+
+### APK Build System
+- **package-lock.json Exclusion**: The `package-lock.json` file is intentionally excluded from the git repository
+- **Build Strategy**: EAS uses `npm install` instead of `npm ci` to avoid synchronization issues
+- **Pre-Install Hook**: `.eas/build/eas-build-pre-install.sh` removes package-lock.json before dependency installation
+- **Build Profile**: Uses "preview" profile for generating APK files for testing
+
+### Build Workflow
+1. **Credential Management**: EAS automatically generates and stores Android Keystore on first build
+2. **Remote Builds**: All builds run on Expo's cloud infrastructure
+3. **QR Code Distribution**: Successful builds provide QR codes for easy APK download
+4. **Build Logs**: Complete build logs available on expo.dev for debugging
+
+### Important Build Notes
+- Never commit `package-lock.json` to git repo
+- Run `npm install` locally before building to sync dependencies
+- Builds take ~10-15 minutes on EAS servers
+- First build requires creating Android Keystore (accept automatic generation)
+- APK files can be installed directly on Android devices for testing
+
 ## MCP (Model Context Protocol) Integration
 
 The project includes MCP server integrations for enhanced AI/LLM capabilities:
@@ -792,9 +1037,3 @@ The project includes TypeScript configuration but is primarily JavaScript-based:
 - **Configuration**: Basic tsconfig.json extending expo/tsconfig.base
 - **Usage**: TypeScript is available but most components are .js files
 - **Mixed Codebase**: Can gradually adopt TypeScript for new components
-
-# important-instruction-reminders
-Do what has been asked; nothing more, nothing less.
-NEVER create files unless they're absolutely necessary for achieving your goal.
-ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
