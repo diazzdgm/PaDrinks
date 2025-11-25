@@ -73,7 +73,7 @@ const LobbyConfigScreen = ({ navigation, route }) => {
   } = route.params || {};
   
   // Estados para las selecciones
-  const [playMethod, setPlayMethod] = useState('multiple'); // 'multiple' o 'single'
+  const [playMethod, setPlayMethod] = useState('single'); // 'multiple' o 'single' - Cambiado a 'single' por defecto ya que múltiples está desactivado
   const [connectionType, setConnectionType] = useState('wifi'); // 'wifi' o 'bluetooth'
   
   // Animaciones
@@ -162,6 +162,12 @@ const LobbyConfigScreen = ({ navigation, route }) => {
   };
 
   const handlePlayMethodSelect = (method) => {
+    // No permitir selección de Múltiples dispositivos (próximamente)
+    if (method === 'multiple') {
+      console.log('🚫 Múltiples dispositivos próximamente - selección bloqueada');
+      return;
+    }
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
@@ -175,6 +181,12 @@ const LobbyConfigScreen = ({ navigation, route }) => {
   const handleConnectionSelect = (connection) => {
     // No permitir selección si está en modo un dispositivo
     if (playMethod === 'single') return;
+
+    // No permitir selección de WiFi (próximamente)
+    if (connection === 'wifi') {
+      console.log('🚫 WiFi próximamente - selección bloqueada');
+      return;
+    }
 
     // No permitir selección de Bluetooth (próximamente)
     if (connection === 'bluetooth') {
@@ -327,9 +339,10 @@ const LobbyConfigScreen = ({ navigation, route }) => {
               style={[
                 styles.optionButton,
                 playMethod === 'multiple' && styles.selectedOption,
+                { opacity: 0.7 }, // Opacity reducida porque es próximamente
               ]}
               onPress={() => handlePlayMethodSelect('multiple')}
-              activeOpacity={0.8}
+              activeOpacity={0.6}
             >
               <View style={styles.radioButton}>
                 {playMethod === 'multiple' && <View style={styles.radioButtonSelected} />}
@@ -337,6 +350,11 @@ const LobbyConfigScreen = ({ navigation, route }) => {
               <View style={styles.optionContent}>
                 <Text style={styles.optionTitle}>Múltiples Dispositivos</Text>
                 <Text style={styles.optionSubtitle}>(Recomendable)</Text>
+              </View>
+
+              {/* Badge de "Próximamente" */}
+              <View style={styles.comingSoonBadge}>
+                <Text style={styles.comingSoonText}>PRÓXIMAMENTE</Text>
               </View>
             </TouchableOpacity>
             
@@ -384,12 +402,13 @@ const LobbyConfigScreen = ({ navigation, route }) => {
                 styles.optionButton,
                 connectionType === 'wifi' && styles.selectedOption,
                 playMethod === 'single' && styles.disabledOption,
+                { opacity: 0.7 }, // Opacity reducida porque es próximamente
               ]}
               onPress={() => handleConnectionSelect('wifi')}
-              activeOpacity={playMethod === 'single' ? 1 : 0.8}
+              activeOpacity={playMethod === 'single' ? 1 : 0.6}
             >
               <View style={styles.radioButton}>
-                {connectionType === 'wifi' && playMethod !== 'single' && 
+                {connectionType === 'wifi' && playMethod !== 'single' &&
                   <View style={styles.radioButtonSelected} />
                 }
               </View>
@@ -399,6 +418,11 @@ const LobbyConfigScreen = ({ navigation, route }) => {
                   <Text style={styles.optionTitle}>WiFi</Text>
                 </View>
                 <Text style={styles.optionDescription}>Conexión por red WiFi</Text>
+              </View>
+
+              {/* Badge de "Próximamente" */}
+              <View style={styles.comingSoonBadge}>
+                <Text style={styles.comingSoonText}>PRÓXIMAMENTE</Text>
               </View>
             </TouchableOpacity>
             
