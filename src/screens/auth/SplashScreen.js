@@ -254,46 +254,52 @@ const SplashScreen = ({ navigation }) => {
 
       {/* Contenido principal */}
       <View style={styles.content}>
-        
-        
-        {/* Shot logo grande que CAE desde arriba */}
-        <Animated.View
-          style={[
-            styles.logoContainer,
-            {
-              transform: [
-                { translateY: logoTranslateY },
-                { scale: logoScale },
-                { 
-                  rotate: logoRotate.interpolate({
-                    inputRange: [-1, 0, 1],
-                    outputRange: ['-8deg', '0deg', '8deg'],
-                  })
-                },
-              ],
-            },
-          ]}
-        >
-          
-          <View style={styles.shotContainer}>
-            <Image 
-              source={require('../../../assets/images/shot-logo.png')}
-              style={styles.shotLogo}
-              resizeMode="contain"
+
+        {/* Container centralizado para logo y texto circular */}
+        <View style={styles.centerContainer}>
+
+          {/* Shot logo grande que CAE desde arriba */}
+          <Animated.View
+            style={[
+              styles.logoContainer,
+              {
+                transform: [
+                  { translateY: logoTranslateY },
+                  { scale: logoScale },
+                  {
+                    rotate: logoRotate.interpolate({
+                      inputRange: [-1, 0, 1],
+                      outputRange: ['-8deg', '0deg', '8deg'],
+                    })
+                  },
+                ],
+              },
+            ]}
+          >
+
+            <View style={styles.shotContainer}>
+              <Image
+                source={require('../../../assets/images/shot-logo.png')}
+                style={styles.shotLogo}
+                resizeMode="contain"
+              />
+            </View>
+
+          </Animated.View>
+
+          {/* Texto circular girando alrededor del logo - Más cerca */}
+          <View style={styles.circularTextWrapper}>
+            <CircularText
+              text="PADRINKS*PADRINKS*PADRINKS*"
+              spinDuration={20000}
+              radius={150}
+              fontSize={22}
+              style={styles.circularTextContainer}
+              enableDancing={true}
             />
           </View>
-          
-        </Animated.View>
-        
-        {/* Texto circular girando alrededor del logo - Más cerca */}
-        <CircularText 
-          text="PADRINKS*PADRINKS*PADRINKS*"
-          spinDuration={20000}
-          radius={120}
-          fontSize={22}
-          style={styles.circularTextContainer}
-          enableDancing={true}
-        />
+
+        </View>
 
       </View>
     </View>
@@ -377,39 +383,55 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
   },
-  
+
+  // Container centralizado que agrupa logo y texto circular
+  centerContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 350,
+    height: 350,
+    marginTop: 20,
+  },
+
   // Logo container
   logoContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 2,
   },
-  
+
   // Shot container - Valores más conservadores y visibles
   shotContainer: {
-    position: 'relative',
     width: 280,
     height: 350,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  
+
   shotLogo: {
-    width: 280,
-    height: 350,
+    width: '100%',
+    height: '100%',
     zIndex: 1,
   },
-  
+
+  // Wrapper para centrar el texto circular
+  circularTextWrapper: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+    marginTop: -10,
+  },
+
   // Container para el texto circular - Más cerca del logo
   circularTextContainer: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -120,
-    marginLeft: -120,
-    zIndex: 1,
+    position: 'relative',
   },
   
 });
