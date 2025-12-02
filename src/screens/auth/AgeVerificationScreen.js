@@ -8,6 +8,7 @@ import {
   BackHandler,
   Dimensions,
   Modal,
+  Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
@@ -597,7 +598,9 @@ const styles = StyleSheet.create({
     color: '#000000',
     textAlign: 'center',
     transform: [{ rotate: '0.5deg' }],
-    lineHeight: scaleByContent(28, 'text'),
+    lineHeight: Platform.OS === 'ios' ? scaleByContent(32, 'text') : scaleByContent(28, 'text'),
+    includeFontPadding: false,
+    paddingTop: Platform.OS === 'ios' ? 5 : 0,
   },
   
   // SECCIÓN CENTRAL - Botones

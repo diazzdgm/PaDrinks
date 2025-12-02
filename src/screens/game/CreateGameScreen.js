@@ -240,51 +240,120 @@ const CreateGameScreen = ({ navigation }) => {
   }, [connected, isConnecting]);
 
   const handleModeSelect = async (mode, index) => {
-    // Prevenir click si acabamos de hacer un swipe
-    if (isSwipeInProgress) {
-      console.log('Click bloqueado - swipe en progreso');
-      return;
-    }
-    
-    const gameMode = gameModes[index];
-    
     try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    } catch (error) {
-      console.log('Haptics not available:', error);
-    }
+      // Prevenir click si acabamos de hacer un swipe
+      if (isSwipeInProgress) {
+        console.log('Click bloqueado - swipe en progreso');
+        return;
+      }
 
-    await playBeerSound();
-    
-    if (gameMode.available) {
-      setSelectedMode(gameMode.id);
-      dispatch(setGameMode(gameMode.id));
-      
-      // Navegar a configuración de lobby (la sala se crea allí)
-      setTimeout(() => {
-        navigation.navigate('LobbyConfig', { 
-          gameMode: gameMode.id
+      const gameMode = gameModes[index];
+
+      if (!gameMode) {
+        console.log('Game mode not found at index:', index);
+        return;
+      }
+
+      console.log('🎮 Mode selected:', gameMode.id, 'Available:', gameMode.available);
+
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        console.log('Haptics not available:', error);
+      }
+
+      try {
+        await playBeerSound();
+      } catch (error) {
+        console.log('Error playing sound:', error);
+      }
+
+      if (gameMode.available) {
+        setSelectedMode(gameMode.id);
+        dispatch(setGameMode(gameMode.id));
+
+        // Navegar a configuración de lobby (la sala se crea allí)
+        setTimeout(() => {
+          navigation.navigate('LobbyConfig', {
+            gameMode: gameMode.id
+          });
+        }, 500);
+      } else {
+        console.log('📱 Showing coming soon modal for:', gameMode.title);
+
+        // Primero establecer los estados
+        const modalInfo = {
+          id: gameMode.id,
+          icon: gameMode.icon,
+          title: gameMode.title,
+          description: gameMode.description,
+          color: gameMode.color,
+          textColor: gameMode.textColor,
+          available: gameMode.available
+        };
+
+        console.log('📱 Modal info prepared:', modalInfo);
+
+        // Resetear animaciones antes de mostrar
+        modalScale.setValue(0.3);
+        modalOpacity.setValue(0);
+
+        // Establecer info del modal
+        setModalModeInfo(modalInfo);
+
+        console.log('📱 About to show modal...');
+
+        // Mostrar modal con setTimeout para asegurar que el estado se actualice
+        setTimeout(() => {
+          try {
+            console.log('📱 Setting modal visible...');
+            setShowComingSoonModal(true);
+
+            // Animar después de que el modal esté visible
+            setTimeout(() => {
+              try {
+                console.log('📱 Starting animation...');
+                Animated.parallel([
+                  Animated.timing(modalScale, {
+                    toValue: 1,
+                    duration: 200,
+                    useNativeDriver: true,
+                  }),
+                  Animated.timing(modalOpacity, {
+                    toValue: 1,
+                    duration: 200,
+                    useNativeDriver: true,
+                  }),
+                ]).start();
+                console.log('📱 Animation started successfully');
+              } catch (animError) {
+                console.error('❌ Error animating modal:', animError);
+              }
+            }, 50);
+          } catch (modalError) {
+            console.error('❌ Error showing modal:', modalError);
+          }
+        }, 100);
+      }
+    } catch (error) {
+      console.error('❌ Error in handleModeSelect:', error);
+      console.error('Error stack:', error.stack);
+
+      // Fallback simple sin animaciones
+      try {
+        setModalModeInfo({
+          id: 'fallback',
+          icon: '🎮',
+          title: 'Próximamente',
+          description: 'Este modo estará disponible próximamente.',
+          color: '#FFE082',
+          textColor: '#2E2E2E',
+          available: false
         });
-      }, 500);
-    } else {
-      // Mostrar modal personalizado estilo AgeVerification
-      setModalModeInfo(gameMode);
-      setShowComingSoonModal(true);
-      
-      // Animar entrada del modal
-      Animated.parallel([
-        Animated.spring(modalScale, {
-          toValue: 1,
-          tension: 50,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.timing(modalOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+        setShowComingSoonModal(true);
+      } catch (fallbackError) {
+        console.error('❌ Even fallback failed:', fallbackError);
+      }
     }
   };
 
@@ -479,67 +548,29 @@ const CreateGameScreen = ({ navigation }) => {
         ))}
       </View>
       
-      {/* Modal personalizado estilo AgeVerification para modos no disponibles */}
-      <Modal
-        visible={showComingSoonModal}
-        transparent={true}
-        animationType="none"
-        statusBarTranslucent={true}
-      >
-        <View style={styles.modalOverlay}>
-          <Animated.View
-            style={[
-              styles.modalContainer,
-              {
-                transform: [{ scale: modalScale }],
-                opacity: modalOpacity,
-              },
-            ]}
-          >
-            {/* Fondo con patrón de libreta */}
-            <View style={styles.modalPaper}>
-              {/* Líneas de libreta en el modal */}
-              {[...Array(8)].map((_, index) => (
-                <View 
-                  key={index} 
-                  style={[styles.modalLine, { top: scaleByContent(20, 'spacing') + (index * scaleByContent(25, 'spacing')) }]} 
-                />
-              ))}
-              
-              {/* Línea vertical roja (margen) */}
-              <View style={styles.modalRedLine} />
-              
-              {/* Agujeros de perforación */}
-              <View style={styles.modalHoles}>
-                {[...Array(3)].map((_, index) => (
-                  <View key={index} style={styles.modalHole} />
-                ))}
-              </View>
-              
-              {/* Contenido del modal */}
-              <View style={styles.modalContent}>
-                <Text style={styles.modalIcon}>{modalModeInfo?.icon}</Text>
-                <Text style={styles.modalTitle}>Modo {modalModeInfo?.title}</Text>
-                <Text style={styles.modalMessage}>
-                  Este modo estará disponible próximamente.
-                </Text>
-                <Text style={styles.modalSubMessage}>
-                  ¡Mantente atento a las actualizaciones!
-                </Text>
-                
-                {/* Botón de cerrar */}
-                <TouchableOpacity
-                  style={styles.modalButton}
-                  onPress={handleCloseModal}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.modalButtonText}>Entendido</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Animated.View>
+      {/* Overlay absoluto en lugar de Modal para iOS */}
+      {showComingSoonModal && modalModeInfo && (
+        <View style={styles.absoluteOverlay}>
+          <View style={styles.modalContainerSimple}>
+            <Text style={styles.modalIconSimple}>{modalModeInfo.icon}</Text>
+            <Text style={styles.modalTitleSimple}>Modo {modalModeInfo.title}</Text>
+            <Text style={styles.modalMessageSimple}>
+              Este modo estará disponible próximamente.
+            </Text>
+            <Text style={styles.modalSubMessageSimple}>
+              ¡Mantente atento a las actualizaciones!
+            </Text>
+
+            <TouchableOpacity
+              style={styles.modalButtonSimple}
+              onPress={handleCloseModal}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.modalButtonTextSimple}>Entendido</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </Modal>
+      )}
     </Animated.View>
   );
 };
@@ -925,6 +956,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: scaleByContent(30, 'spacing'),
     paddingVertical: scaleByContent(50, 'spacing'),
   },
+
+  // Overlay absoluto para reemplazar Modal
+  absoluteOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+  },
   
   modalContainer: {
     backgroundColor: '#F8F6F0',
@@ -1061,6 +1105,74 @@ const styles = StyleSheet.create({
   
   modalButtonText: {
     fontSize: scaleByContent(16, 'text'),
+    fontFamily: theme.fonts.primaryBold,
+    color: '#000000',
+  },
+
+  // Estilos simplificados para iOS
+  modalContainerSimple: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    maxWidth: 400,
+    width: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+
+  modalIconSimple: {
+    fontSize: 60,
+    marginBottom: 20,
+  },
+
+  modalTitleSimple: {
+    fontSize: 24,
+    fontFamily: theme.fonts.primaryBold,
+    color: '#000000',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+
+  modalMessageSimple: {
+    fontSize: 16,
+    fontFamily: theme.fonts.primary,
+    color: '#333333',
+    textAlign: 'center',
+    marginBottom: 10,
+    lineHeight: 22,
+  },
+
+  modalSubMessageSimple: {
+    fontSize: 14,
+    fontFamily: theme.fonts.primary,
+    color: '#666666',
+    textAlign: 'center',
+    marginBottom: 25,
+    fontStyle: 'italic',
+    lineHeight: 18,
+  },
+
+  modalButtonSimple: {
+    backgroundColor: '#FFE082',
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: '#000000',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+
+  modalButtonTextSimple: {
+    fontSize: 16,
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
