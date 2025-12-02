@@ -803,23 +803,25 @@ const styles = StyleSheet.create({
   // Estilos del botón del modo - Más compactos
   modeIcon: {
     fontSize: scaleByContent(isSmallScreen ? 40 : isTabletScreen ? 65 : 52, 'icon'),
-    marginBottom: scaleByContent(isSmallScreen ? 1 : isTabletScreen ? 2 : 1.5, 'spacing'),
+    marginBottom: scaleByContent(isSmallScreen ? 6 : isTabletScreen ? 10 : 8, 'spacing'),
   },
-  
+
   modeTitle: {
     fontSize: scaleByContent(isSmallScreen ? 18 : isTabletScreen ? 28 : 22, 'text'),
     fontFamily: theme.fonts.primaryBold,
-    marginBottom: scaleByContent(0, 'spacing'),
+    marginBottom: scaleByContent(4, 'spacing'),
     textAlign: 'center',
-    lineHeight: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 32 : 26, 'text'),
+    lineHeight: scaleByContent(isSmallScreen ? 24 : isTabletScreen ? 36 : 28, 'text'),
+    includeFontPadding: false,
   },
-  
+
   modeDescription: {
     fontSize: scaleByContent(isSmallScreen ? 12 : isTabletScreen ? 18 : 15, 'text'),
     fontFamily: theme.fonts.primary,
     textAlign: 'center',
     opacity: 0.8,
-    lineHeight: scaleByContent(isSmallScreen ? 14 : isTabletScreen ? 22 : 18, 'text'),
+    lineHeight: scaleByContent(isSmallScreen ? 18 : isTabletScreen ? 26 : 22, 'text'),
+    includeFontPadding: false,
   },
   
   // Badge "Próximamente"

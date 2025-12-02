@@ -10,6 +10,7 @@ import {
   TextInput,
   Alert,
   Modal,
+  Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
@@ -288,22 +289,20 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
     }
 
     playWinePopSound();
+
+    // Simplificar para iOS - solo mostrar el modal sin animaciones complejas
+    console.log('📱 Abriendo modal de emojis...');
     setShowEmojiModal(true);
-    
-    // Animar entrada del modal
-    Animated.parallel([
-      Animated.spring(emojiModalScale, {
-        toValue: 1,
-        tension: 50,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-      Animated.timing(emojiModalOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+
+    // Animar solo opacidad para evitar crashes en iOS
+    emojiModalOpacity.setValue(0);
+    Animated.timing(emojiModalOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      console.log('✅ Modal de emojis abierto');
+    });
   };
   
   const handleEmojiSelect = (emoji) => {
@@ -324,20 +323,14 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   const handleCloseEmojiModal = () => {
     playWinePopSound();
 
-    // Animar salida del modal
-    Animated.parallel([
-      Animated.timing(emojiModalScale, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(emojiModalOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    // Animar salida del modal - solo opacidad para iOS
+    Animated.timing(emojiModalOpacity, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
       setShowEmojiModal(false);
+      console.log('❌ Modal de emojis cerrado');
     });
   };
   
@@ -345,39 +338,26 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   const showError = (message) => {
     setErrorMessage(message);
     setShowErrorModal(true);
-    
-    // Animar entrada del modal
-    Animated.parallel([
-      Animated.spring(errorModalScale, {
-        toValue: 1,
-        tension: 50,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-      Animated.timing(errorModalOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+
+    // Animar solo opacidad para evitar crashes en iOS
+    errorModalOpacity.setValue(0);
+    Animated.timing(errorModalOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   };
   
   // Función para ocultar modal de error
   const hideErrorModal = () => {
     playWinePopSound();
 
-    Animated.parallel([
-      Animated.timing(errorModalScale, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(errorModalOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    // Animar salida del modal - solo opacidad para iOS
+    Animated.timing(errorModalOpacity, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
       setShowErrorModal(false);
       setErrorMessage('');
     });
@@ -887,120 +867,75 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
         />
       </TouchableOpacity>
 
-      {/* Modal para selección de emojis */}
-      <Modal
-        visible={showEmojiModal}
-        transparent={true}
-        animationType="none"
-        statusBarTranslucent={true}
-      >
-        <View style={styles.emojiModalOverlay}>
+      {/* Modal para selección de emojis - Usando overlay absoluto en lugar de Modal */}
+      {showEmojiModal && (
+        <View style={styles.absoluteEmojiOverlay}>
           <Animated.View
             style={[
               styles.emojiModalContainer,
               {
-                transform: [{ scale: emojiModalScale }],
                 opacity: emojiModalOpacity,
               },
             ]}
           >
-            {/* Fondo con patrón de libreta */}
-            <View style={styles.emojiModalPaper}>
-              {/* Líneas de libreta en el modal */}
-              {[...Array(6)].map((_, index) => (
-                <View 
-                  key={index} 
-                  style={[styles.emojiModalLine, { top: scaleByContent(20, 'spacing') + (index * scaleByContent(25, 'spacing')) }]} 
-                />
-              ))}
-              
-              {/* Línea vertical roja (margen) */}
-              <View style={styles.emojiModalRedLine} />
-              
-              {/* Agujeros de perforación */}
-              <View style={styles.emojiModalHoles}>
-                {[...Array(3)].map((_, index) => (
-                  <View key={index} style={styles.emojiModalHole} />
+            {/* Contenido del modal simplificado */}
+            <View style={styles.emojiModalContent}>
+              <Text style={styles.emojiModalTitle}>Selecciona tu Emoji</Text>
+
+              {/* Grid de emojis */}
+              <View style={styles.emojiGrid}>
+                {['😀', '😎', '🤩', '😁', '🥳', '🤪', '😜', '🥰', '😘', '🤗', '😋', '🤠', '🥸', '🤭', '😏', '😌'].map((emoji, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.emojiOption}
+                    onPress={() => handleEmojiSelect(emoji)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.emojiOptionText}>{emoji}</Text>
+                  </TouchableOpacity>
                 ))}
               </View>
-              
-              {/* Contenido del modal */}
-              <View style={styles.emojiModalContent}>
-                <Text style={styles.emojiModalTitle}>Selecciona tu Emoji</Text>
-                
-                {/* Grid de emojis */}
-                <View style={styles.emojiGrid}>
-                  {['😀', '😎', '🤩', '😁', '🥳', '🤪', '😜', '🥰', '😘', '🤗', '😋', '🤠', '🥸', '🤭', '😏', '😌'].map((emoji, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.emojiOption}
-                      onPress={() => handleEmojiSelect(emoji)}
-                      activeOpacity={0.8}
-                    >
-                      <Text style={styles.emojiOptionText}>{emoji}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-                
-                {/* Botón de cerrar */}
-                <TouchableOpacity
-                  style={styles.emojiModalButton}
-                  onPress={handleCloseEmojiModal}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.emojiModalButtonText}>Cancelar</Text>
-                </TouchableOpacity>
-              </View>
+
+              {/* Botón de cerrar */}
+              <TouchableOpacity
+                style={styles.emojiModalButton}
+                onPress={handleCloseEmojiModal}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.emojiModalButtonText}>Cancelar</Text>
+              </TouchableOpacity>
             </View>
           </Animated.View>
         </View>
-      </Modal>
+      )}
       
-      {/* Modal de error personalizado */}
-      <Modal
-        visible={showErrorModal}
-        transparent={true}
-        animationType="none"
-        onRequestClose={hideErrorModal}
-      >
-        <View style={styles.modalOverlay}>
-          <Animated.View 
+      {/* Modal de error personalizado - Usando overlay absoluto */}
+      {showErrorModal && (
+        <View style={styles.absoluteErrorOverlay}>
+          <Animated.View
             style={[
-              styles.modalContainer,
+              styles.errorModalContainer,
               {
-                transform: [{ scale: errorModalScale }],
                 opacity: errorModalOpacity,
               }
             ]}
           >
-            {/* Fondo de papel del modal */}
-            <View style={styles.modalPaper}>
-              <View style={styles.modalHoles}>
-                {[...Array(4)].map((_, i) => (
-                  <View key={i} style={styles.modalHole} />
-                ))}
-              </View>
-              <View style={styles.modalRedLine} />
-            </View>
-
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>⚠️ Datos Incompletos</Text>
-              <Text style={styles.modalSubtitle}>{errorMessage}</Text>
+            <View style={styles.errorModalContent}>
+              <Text style={styles.errorModalTitle}>⚠️ Datos Incompletos</Text>
+              <Text style={styles.errorModalMessage}>{errorMessage}</Text>
 
               {/* Botón de cerrar */}
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.errorButton]}
-                  onPress={hideErrorModal}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.errorButtonText}>Entendido</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                style={styles.errorModalButton}
+                onPress={hideErrorModal}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.errorModalButtonText}>Entendido</Text>
+              </TouchableOpacity>
             </View>
           </Animated.View>
         </View>
-      </Modal>
+      )}
     </Animated.View>
   );
 };
@@ -1483,7 +1418,21 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '45deg' }],
   },
 
-  // Estilos del modal de emojis
+  // Estilos del modal de emojis - Overlay absoluto
+  absoluteEmojiOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+    paddingHorizontal: scaleByContent(30, 'spacing'),
+    paddingVertical: scaleByContent(50, 'spacing'),
+  },
+
   emojiModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -1494,24 +1443,21 @@ const styles = StyleSheet.create({
   },
   
   emojiModalContainer: {
-    backgroundColor: '#F8F6F0',
-    borderRadius: scaleByContent(25, 'spacing'),
-    padding: scaleByContent(15, 'spacing'),
-    maxWidth: scaleByContent(350, 'interactive'),
-    width: '80%',
-    minHeight: scaleByContent(280, 'interactive'),
-    maxHeight: '65%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 25,
+    maxWidth: 350,
+    width: '85%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: scaleByContent(15, 'spacing'),
+      height: 4,
     },
-    shadowOpacity: 0.4,
-    shadowRadius: scaleByContent(25, 'spacing'),
-    elevation: 20,
-    borderWidth: scaleByContent(3, 'spacing'),
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
+    borderWidth: 2,
     borderColor: '#000000',
-    overflow: 'hidden',
   },
   
   emojiModalPaper: {
@@ -1569,174 +1515,121 @@ const styles = StyleSheet.create({
   
   emojiModalContent: {
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingLeft: scaleByContent(15, 'spacing'),
-    paddingRight: scaleByContent(15, 'spacing'),
-    paddingTop: scaleByContent(5, 'spacing'),
-    paddingBottom: scaleByContent(5, 'spacing'),
-    flex: 1,
-    backgroundColor: '#F8F6F0',
+    justifyContent: 'center',
   },
-  
+
   emojiModalTitle: {
-    fontSize: scaleByContent(18, 'text'),
+    fontSize: 20,
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: scaleByContent(15, 'spacing'),
-    transform: [{ rotate: '0.5deg' }],
+    marginBottom: 20,
   },
-  
+
   emojiGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: scaleByContent(10, 'spacing'),
-    marginBottom: scaleByContent(15, 'spacing'),
-    maxHeight: scaleByContent(180, 'interactive'),
+    gap: 10,
+    marginBottom: 20,
   },
-  
+
   emojiOption: {
-    width: scaleByContent(40, 'interactive'),
-    height: scaleByContent(40, 'interactive'),
-    backgroundColor: '#FFFFFF',
-    borderRadius: scaleByContent(20, 'spacing'),
-    borderWidth: scaleByContent(2, 'spacing'),
+    width: 45,
+    height: 45,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 22.5,
+    borderWidth: 2,
     borderColor: '#CCCCCC',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
-    shadowOpacity: 0.1,
-    shadowRadius: scaleByContent(4, 'spacing'),
-    elevation: 3,
-    transform: [{ rotate: '-1deg' }],
   },
-  
+
   emojiOptionText: {
-    fontSize: scaleByContent(20, 'icon'),
+    fontSize: 24,
   },
-  
+
   emojiModalButton: {
     backgroundColor: '#FFE082',
-    paddingHorizontal: scaleByContent(20, 'spacing'),
-    paddingVertical: scaleByContent(8, 'spacing'),
-    borderRadius: scaleByContent(15, 'spacing'),
-    borderTopLeftRadius: scaleByContent(5, 'spacing'),
-    borderWidth: scaleByContent(2, 'spacing'),
+    paddingHorizontal: 25,
+    paddingVertical: 10,
+    borderRadius: 15,
+    borderWidth: 2,
     borderColor: '#000000',
-    shadowColor: '#000',
-    shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
-    shadowOpacity: 0.25,
-    shadowRadius: scaleByContent(4, 'spacing'),
-    elevation: 4,
-    transform: [{ rotate: '-1deg' }],
   },
-  
+
   emojiModalButtonText: {
-    fontSize: scaleByContent(14, 'text'),
+    fontSize: 16,
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
   
-  // Estilos para modal de error (consistente con otras pantallas)
-  modalOverlay: {
-    flex: 1,
+  // Estilos para modal de error - Overlay absoluto simplificado
+  absoluteErrorOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 9999,
   },
 
-  modalContainer: {
-    width: SCREEN_WIDTH * 0.8,
-    maxWidth: scaleByContent(400, 'interactive'),
-    backgroundColor: '#F8F6F0',
-    borderRadius: scaleByContent(20, 'spacing'),
-    borderWidth: scaleByContent(3, 'spacing'),
-    borderColor: '#8B4513',
+  errorModalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 30,
+    maxWidth: 350,
+    width: '85%',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: scaleByContent(10, 'spacing') },
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
     shadowOpacity: 0.3,
-    shadowRadius: scaleByContent(20, 'spacing'),
-    elevation: 20,
+    shadowRadius: 10,
+    elevation: 10,
+    borderWidth: 3,
+    borderColor: '#FF6B6B',
   },
 
-  modalPaper: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: scaleByContent(17, 'spacing'),
+  errorModalContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  modalHoles: {
-    position: 'absolute',
-    left: scaleByContent(25, 'spacing'),
-    top: scaleByContent(40, 'spacing'),
-    flexDirection: 'column',
-  },
-
-  modalHole: {
-    width: scaleByContent(12, 'spacing'),
-    height: scaleByContent(12, 'spacing'),
-    borderRadius: scaleByContent(6, 'spacing'),
-    backgroundColor: '#E0E0E0',
-    marginBottom: scaleByContent(40, 'spacing'),
-  },
-
-  modalRedLine: {
-    position: 'absolute',
-    left: scaleByContent(50, 'spacing'),
-    top: 0,
-    bottom: 0,
-    width: scaleByContent(2, 'spacing'),
-    backgroundColor: '#FF6B6B',
-  },
-
-  modalContent: {
-    padding: scaleByContent(30, 'spacing'),
-    paddingLeft: scaleByContent(70, 'spacing'),
-  },
-
-  modalTitle: {
-    fontSize: scaleByContent(24, 'text'),
+  errorModalTitle: {
+    fontSize: 24,
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: scaleByContent(8, 'spacing'),
-    transform: [{ rotate: '-0.5deg' }],
+    marginBottom: 15,
   },
 
-  modalSubtitle: {
-    fontSize: scaleByContent(16, 'text'),
+  errorModalMessage: {
+    fontSize: 16,
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
-    marginBottom: scaleByContent(30, 'spacing'),
-    transform: [{ rotate: '0.3deg' }],
+    marginBottom: 25,
+    lineHeight: 22,
   },
 
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: scaleByContent(20, 'spacing'),
-  },
-
-  modalButton: {
-    flex: 1,
-    paddingVertical: scaleByContent(15, 'spacing'),
-    borderRadius: scaleByContent(12, 'spacing'),
-    alignItems: 'center',
-    marginHorizontal: scaleByContent(5, 'spacing'),
-  },
-
-  errorButton: {
+  errorModalButton: {
     backgroundColor: '#FF6B6B',
-    borderWidth: scaleByContent(2, 'spacing'),
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 15,
+    borderWidth: 2,
     borderColor: '#000000',
   },
 
-  errorButtonText: {
-    fontSize: scaleByContent(16, 'text'),
+  errorModalButtonText: {
+    fontSize: 16,
     fontFamily: theme.fonts.primaryBold,
-    color: '#FFF',
+    color: '#FFFFFF',
   },
 });
 
