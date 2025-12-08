@@ -206,39 +206,24 @@ const JoinGameScreen = ({ navigation }) => {
     await playWinePopSound();
 
     setShowCodeInput(true);
-    
+
     // Animación del modal
-    Animated.parallel([
-      Animated.spring(modalScale, {
-        toValue: 1,
-        tension: 50,
-        friction: 7,
-        useNativeDriver: true,
-      }),
-      Animated.timing(modalOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(modalOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   };
 
   // Función para ocultar modal
   const hideCodeInput = () => {
     playWinePopSound();
 
-    Animated.parallel([
-      Animated.timing(modalScale, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(modalOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(modalOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
       setShowCodeInput(false);
       setRoomCode('');
     });
@@ -248,39 +233,24 @@ const JoinGameScreen = ({ navigation }) => {
   const showError = (message) => {
     setErrorMessage(message);
     setShowErrorModal(true);
-    
+
     // Animar entrada del modal
-    Animated.parallel([
-      Animated.spring(errorModalScale, {
-        toValue: 1,
-        tension: 50,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-      Animated.timing(errorModalOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(errorModalOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   };
 
   // Función para ocultar modal de error
   const hideErrorModal = () => {
     playWinePopSound();
 
-    Animated.parallel([
-      Animated.timing(errorModalScale, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(errorModalOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(errorModalOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
       setShowErrorModal(false);
       setErrorMessage('');
     });
@@ -540,22 +510,17 @@ const JoinGameScreen = ({ navigation }) => {
       </Animated.View>
 
       {/* Modal para código manual */}
-      <Modal
-        visible={showCodeInput}
-        transparent={true}
-        animationType="none"
-        onRequestClose={hideCodeInput}
-      >
-        <View style={styles.modalOverlay}>
-          <Animated.View 
-            style={[
-              styles.modalContainer,
-              {
-                transform: [{ scale: modalScale }],
-                opacity: modalOpacity,
-              }
-            ]}
-          >
+      {showCodeInput && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.modalContainer,
+                {
+                  opacity: modalOpacity,
+                }
+              ]}
+            >
             {/* Fondo de papel del modal */}
             <View style={styles.modalPaper}>
               <View style={styles.modalHoles}>
@@ -612,25 +577,20 @@ const JoinGameScreen = ({ navigation }) => {
             </View>
           </Animated.View>
         </View>
-      </Modal>
+      </View>)}
 
       {/* Modal de error personalizado */}
-      <Modal
-        visible={showErrorModal}
-        transparent={true}
-        animationType="none"
-        onRequestClose={hideErrorModal}
-      >
-        <View style={styles.modalOverlay}>
-          <Animated.View 
-            style={[
-              styles.modalContainer,
-              {
-                transform: [{ scale: errorModalScale }],
-                opacity: errorModalOpacity,
-              }
-            ]}
-          >
+      {showErrorModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.modalContainer,
+                {
+                  opacity: errorModalOpacity,
+                }
+              ]}
+            >
             {/* Fondo de papel del modal */}
             <View style={styles.modalPaper}>
               <View style={styles.modalHoles}>
@@ -658,14 +618,10 @@ const JoinGameScreen = ({ navigation }) => {
             </View>
           </Animated.View>
         </View>
-      </Modal>
+      </View>)}
 
       {/* Modal del Escáner QR */}
-      <Modal
-        visible={showQRScanner}
-        animationType="slide"
-        onRequestClose={() => setShowQRScanner(false)}
-      >
+      {showQRScanner && (
         <View style={styles.qrScannerContainer}>
           <CameraView
             style={StyleSheet.absoluteFillObject}
@@ -704,7 +660,7 @@ const JoinGameScreen = ({ navigation }) => {
             </View>
           </View>
         </View>
-      </Modal>
+      )}
     </View>
   );
 };
@@ -978,6 +934,22 @@ const styles = StyleSheet.create({
   },
 
   // Modal styles
+  absoluteModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 9999,
+  },
+
+  modalWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',

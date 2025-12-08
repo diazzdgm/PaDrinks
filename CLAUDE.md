@@ -1080,3 +1080,133 @@ npm run clean
 - **Expo Go Android**: More flexible with SDK versions
 - **Windows Development**: Must run `npm install` from Windows CMD for proper permissions
 - **WSL Issues**: Package installations from WSL may have permission errors with node_modules
+
+## iOS-Specific Development Patterns
+
+### Modal Implementation for iOS Compatibility
+
+**CRITICAL**: React Native's `<Modal>` component has known issues on iOS that can cause crashes. Always use absolute positioned overlays instead.
+
+#### Problem Pattern (AVOID):
+```javascript
+<Modal visible={showModal} transparent={true} animationType="none" statusBarTranslucent={true}>
+  <Animated.View style={{ transform: [{ scale: modalScale }] }}>
+    {/* Complex decorative elements with arrays */}
+  </Animated.View>
+</Modal>
+```
+
+#### Solution Pattern (USE):
+```javascript
+{showModal && (
+  <View style={styles.absoluteOverlay}>
+    <Animated.View style={{ opacity: modalOpacity }}>
+      {/* Simplified content without complex transforms */}
+    </Animated.View>
+  </View>
+)}
+```
+
+#### Key Rules for iOS Modals:
+1. **Use Conditional Rendering**: Replace `<Modal>` with `{showModal && <View>}`
+2. **Absolute Positioning**: Use `position: 'absolute'` with `zIndex: 9999`
+3. **Opacity Only**: Animate only opacity, avoid scale/rotate transforms in modals
+4. **No statusBarTranslucent**: This property causes crashes on iOS
+5. **Fixed Values**: Use fixed numeric values instead of `scaleByContent()` in modals
+6. **Simplify Decorations**: Avoid complex array maps for decorative elements
+
+#### Example from MultiPlayerRegistrationScreen:
+```javascript
+// Overlay style
+absoluteEmojiOverlay: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  justifyContent: 'center',
+  alignItems: 'center',
+  zIndex: 9999,
+}
+
+// Container style - fixed values, no transforms
+emojiModalContainer: {
+  backgroundColor: '#FFFFFF',
+  borderRadius: 20,
+  padding: 25,
+  maxWidth: 350,
+  width: '85%',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.3,
+  shadowRadius: 10,
+  elevation: 10,
+  borderWidth: 2,
+  borderColor: '#000000',
+}
+```
+
+### Text Rendering Issues on iOS
+
+iOS requires more vertical space for text than Android. Always include extra lineHeight and padding:
+
+#### Problem (Text gets cut off):
+```javascript
+modeTitle: {
+  fontSize: 22,
+  lineHeight: 26,  // Too tight for iOS
+  marginBottom: 0,
+}
+```
+
+#### Solution:
+```javascript
+modeTitle: {
+  fontSize: 22,
+  lineHeight: 28,  // Extra space for iOS
+  marginBottom: 4,
+  includeFontPadding: false,  // Better control on both platforms
+}
+```
+
+### Animation Restrictions on iOS
+
+1. **Avoid Animated.spring in Modals**: Use `Animated.timing` instead
+2. **Limit useNativeDriver transforms**: Only use for opacity and simple translateX/Y
+3. **Reset Animation Values**: Always call `.setValue()` before showing animated elements
+4. **Parallel Animations**: Keep to 2-3 properties max in `Animated.parallel`
+
+#### Safe Animation Pattern:
+```javascript
+const handleShowModal = () => {
+  // Reset first
+  modalOpacity.setValue(0);
+  setShowModal(true);
+
+  // Simple timing animation
+  Animated.timing(modalOpacity, {
+    toValue: 1,
+    duration: 200,
+    useNativeDriver: true,
+  }).start();
+};
+```
+
+### iOS Testing Workflow
+
+1. **Local Testing**: Run Expo in tunnel mode with ngrok for backend connectivity
+2. **Modal Testing**: Always test modal open/close on iOS device, not just simulator
+3. **Text Verification**: Check all screen sizes - text that fits on Android may clip on iOS
+4. **Animation Validation**: Verify animations don't cause crashes on actual iOS devices
+5. **Console Monitoring**: Watch for iOS-specific warnings about useNativeDriver or transform properties
+
+### Known iOS Issues and Solutions
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| App crashes when opening modal | `<Modal>` component with statusBarTranslucent | Use absolute positioned overlay |
+| Text cut off at top | Insufficient lineHeight | Increase lineHeight by 20-30% |
+| Modal animation crash | Animated.spring with scale transform | Use Animated.timing with opacity only |
+| Blank screen on modal | Complex nested decorative elements | Simplify modal content, remove array maps |
+| Transform not working | useNativeDriver limitation | Use layout animations or remove transform |

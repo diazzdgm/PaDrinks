@@ -190,37 +190,21 @@ const PrizeRouletteDisplay = ({
   };
 
   const animateModalIn = () => {
-    modalScaleAnim.setValue(0);
     modalOpacityAnim.setValue(0);
 
-    Animated.parallel([
-      Animated.spring(modalScaleAnim, {
-        toValue: 1,
-        tension: 50,
-        friction: 7,
-        useNativeDriver: true,
-      }),
-      Animated.timing(modalOpacityAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(modalOpacityAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   };
 
   const animateModalOut = (callback) => {
-    Animated.parallel([
-      Animated.timing(modalScaleAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(modalOpacityAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(modalOpacityAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
       if (callback) callback();
     });
   };
@@ -385,22 +369,17 @@ const PrizeRouletteDisplay = ({
         );
       })}
 
-      <Modal
-        visible={showPrizeModal}
-        transparent
-        animationType="none"
-        onRequestClose={closePrizeModal}
-      >
-        <View style={styles.modalWrapper}>
-          <Animated.View
-            style={[
-              styles.modalContainer,
-              {
-                transform: [{ scale: modalScaleAnim }],
-                opacity: modalOpacityAnim,
-              },
-            ]}
-          >
+      {showPrizeModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.modalContainer,
+                {
+                  opacity: modalOpacityAnim,
+                },
+              ]}
+            >
             <View style={styles.modalPaperBackground}>
               <View style={styles.modalNotebookLines}>
                 {[...Array(8)].map((_, index) => (
@@ -426,7 +405,8 @@ const PrizeRouletteDisplay = ({
             </View>
           </Animated.View>
         </View>
-      </Modal>
+        </View>
+      )}
     </>
   );
 };
@@ -570,6 +550,16 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     top: 0,
   },
+  absoluteModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 9999,
+  },
+
   modalWrapper: {
     flex: 1,
     justifyContent: 'center',

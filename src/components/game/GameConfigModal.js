@@ -50,18 +50,18 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
 
   useEffect(() => {
     if (visible) {
-      // Entrada
-      Animated.spring(modalAnim, {
+      // Entrada - Solo timing para iOS
+      modalAnim.setValue(0);
+      Animated.timing(modalAnim, {
         toValue: 1,
-        tension: 100,
-        friction: 8,
+        duration: 200,
         useNativeDriver: true,
       }).start();
     } else {
       // Salida
       Animated.timing(modalAnim, {
         toValue: 0,
-        duration: 200,
+        duration: 150,
         useNativeDriver: true,
       }).start();
     }
@@ -238,26 +238,16 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
   const { width: SCREEN_WIDTH } = Dimensions.get('window');
   const isSmallScreen = isSmallDevice();
 
+  if (!visible) return null;
+
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      onRequestClose={handleClose}
-    >
+    <View style={styles.absoluteModalOverlay}>
       <View style={styles.modalWrapper}>
         <Animated.View
           style={[
             styles.modalContainer,
             {
-              transform: [
-                {
-                  scale: modalAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0.8, 1],
-                  })
-                }
-              ]
+              opacity: modalAnim,
             }
           ]}
           onStartShouldSetResponder={() => true}
@@ -484,7 +474,7 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
             </View>
         </Animated.View>
       </View>
-    </Modal>
+    </View>
   );
 };
 
@@ -493,6 +483,16 @@ const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
 
 const styles = StyleSheet.create({
+  absoluteModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 9999,
+  },
+
   modalWrapper: {
     flex: 1,
     justifyContent: 'center',

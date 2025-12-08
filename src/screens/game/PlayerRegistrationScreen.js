@@ -280,21 +280,13 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
 
     playWinePopSound();
     setShowEmojiModal(true);
-    
+
     // Animar entrada del modal
-    Animated.parallel([
-      Animated.spring(emojiModalScale, {
-        toValue: 1,
-        tension: 50,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-      Animated.timing(emojiModalOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(emojiModalOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   };
   
   const handleEmojiSelect = (emoji) => {
@@ -316,18 +308,11 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
     playWinePopSound();
 
     // Animar salida del modal
-    Animated.parallel([
-      Animated.timing(emojiModalScale, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(emojiModalOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(emojiModalOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
       setShowEmojiModal(false);
     });
   };
@@ -336,39 +321,24 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
   const showError = (message) => {
     setErrorMessage(message);
     setShowErrorModal(true);
-    
+
     // Animar entrada del modal
-    Animated.parallel([
-      Animated.spring(errorModalScale, {
-        toValue: 1,
-        tension: 50,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-      Animated.timing(errorModalOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(errorModalOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   };
   
   // Función para ocultar modal de error
   const hideErrorModal = () => {
     playWinePopSound();
 
-    Animated.parallel([
-      Animated.timing(errorModalScale, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(errorModalOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(errorModalOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
       setShowErrorModal(false);
       setErrorMessage('');
     });
@@ -840,22 +810,17 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
       </TouchableOpacity>
 
       {/* Modal para selección de emojis */}
-      <Modal
-        visible={showEmojiModal}
-        transparent={true}
-        animationType="none"
-        statusBarTranslucent={true}
-      >
-        <View style={styles.emojiModalOverlay}>
-          <Animated.View
-            style={[
-              styles.emojiModalContainer,
-              {
-                transform: [{ scale: emojiModalScale }],
-                opacity: emojiModalOpacity,
-              },
-            ]}
-          >
+      {showEmojiModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.emojiModalWrapper}>
+            <Animated.View
+              style={[
+                styles.emojiModalContainer,
+                {
+                  opacity: emojiModalOpacity,
+                },
+              ]}
+            >
             {/* Fondo con patrón de libreta */}
             <View style={styles.emojiModalPaper}>
               {/* Líneas de libreta en el modal */}
@@ -906,25 +871,20 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
             </View>
           </Animated.View>
         </View>
-      </Modal>
-      
+      </View>)}
+
       {/* Modal de error personalizado */}
-      <Modal
-        visible={showErrorModal}
-        transparent={true}
-        animationType="none"
-        onRequestClose={hideErrorModal}
-      >
-        <View style={styles.modalOverlay}>
-          <Animated.View 
-            style={[
-              styles.modalContainer,
-              {
-                transform: [{ scale: errorModalScale }],
-                opacity: errorModalOpacity,
-              }
-            ]}
-          >
+      {showErrorModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.modalContainer,
+                {
+                  opacity: errorModalOpacity,
+                }
+              ]}
+            >
             {/* Fondo de papel del modal */}
             <View style={styles.modalPaper}>
               <View style={styles.modalHoles}>
@@ -952,7 +912,7 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
             </View>
           </Animated.View>
         </View>
-      </Modal>
+      </View>)}
     </Animated.View>
   );
 };
@@ -1436,6 +1396,30 @@ const styles = StyleSheet.create({
   },
 
   // Estilos del modal de emojis
+  absoluteModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 9999,
+  },
+
+  emojiModalWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: scaleByContent(30, 'spacing'),
+    paddingVertical: scaleByContent(50, 'spacing'),
+  },
+
+  modalWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   emojiModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',

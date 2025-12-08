@@ -248,21 +248,14 @@ const AgeVerificationScreen = ({ navigation }) => {
     
     // Mostrar modal personalizado
     setShowUnderageModal(true);
-    
-    // Animar entrada del modal
-    Animated.parallel([
-      Animated.spring(modalScale, {
-        toValue: 1,
-        tension: 50,
-        friction: 7,
-        useNativeDriver: true,
-      }),
-      Animated.timing(modalOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+
+    // Animar entrada del modal - Solo opacidad para iOS
+    modalOpacity.setValue(0);
+    Animated.timing(modalOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   };
 
   return (
@@ -396,22 +389,17 @@ const AgeVerificationScreen = ({ navigation }) => {
       </View>
 
       {/* Modal personalizado para menores de edad */}
-      <Modal
-        visible={showUnderageModal}
-        transparent={true}
-        animationType="none"
-        statusBarTranslucent={true}
-      >
-        <View style={styles.modalOverlay}>
-          <Animated.View
-            style={[
-              styles.modalContainer,
-              {
-                transform: [{ scale: modalScale }],
-                opacity: modalOpacity,
-              },
-            ]}
-          >
+      {showUnderageModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalOverlay}>
+            <Animated.View
+              style={[
+                styles.modalContainer,
+                {
+                  opacity: modalOpacity,
+                },
+              ]}
+            >
             {/* Fondo con patrón de libreta */}
             <View style={styles.modalPaper}>
               {/* Líneas de libreta en el modal */}
@@ -476,7 +464,8 @@ const AgeVerificationScreen = ({ navigation }) => {
             </View>
           </Animated.View>
         </View>
-      </Modal>
+        </View>
+      )}
 
     </View>
   );
@@ -693,9 +682,19 @@ const styles = StyleSheet.create({
   },
   
   // Estilos del modal personalizado
+  absoluteModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 9999,
+  },
+
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: scaleByContent(30, 'spacing'),

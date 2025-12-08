@@ -105,37 +105,21 @@ const CharadesDisplay = ({
   };
 
   const animateModalIn = () => {
-    modalScaleAnim.setValue(0);
     modalOpacityAnim.setValue(0);
 
-    Animated.parallel([
-      Animated.spring(modalScaleAnim, {
-        toValue: 1,
-        tension: 50,
-        friction: 7,
-        useNativeDriver: true,
-      }),
-      Animated.timing(modalOpacityAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(modalOpacityAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   };
 
   const animateModalOut = (callback) => {
-    Animated.parallel([
-      Animated.timing(modalScaleAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(modalOpacityAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(modalOpacityAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
       if (callback) callback();
     });
   };
@@ -266,22 +250,17 @@ const CharadesDisplay = ({
         </TouchableOpacity>
       </View>
 
-      <Modal
-        visible={showPhraseModal}
-        transparent
-        animationType="none"
-        onRequestClose={closePhraseModal}
-      >
-        <View style={styles.modalWrapper}>
-          <Animated.View
-            style={[
-              styles.modalContainer,
-              {
-                transform: [{ scale: modalScaleAnim }],
-                opacity: modalOpacityAnim,
-              },
-            ]}
-          >
+      {showPhraseModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.modalContainer,
+                {
+                  opacity: modalOpacityAnim,
+                },
+              ]}
+            >
             {/* Fondo de papel del modal */}
             <View style={styles.modalPaperBackground}>
               <View style={styles.modalNotebookLines}>
@@ -308,24 +287,20 @@ const CharadesDisplay = ({
             </View>
           </Animated.View>
         </View>
-      </Modal>
+        </View>
+      )}
 
-      <Modal
-        visible={showTimeUpModal}
-        transparent
-        animationType="none"
-        onRequestClose={closeTimeUpModal}
-      >
-        <View style={styles.modalWrapper}>
-          <Animated.View
-            style={[
-              styles.modalContainer,
-              {
-                transform: [{ scale: modalScaleAnim }],
-                opacity: modalOpacityAnim,
-              },
-            ]}
-          >
+      {showTimeUpModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.modalContainer,
+                {
+                  opacity: modalOpacityAnim,
+                },
+              ]}
+            >
             {/* Fondo de papel del modal */}
             <View style={styles.modalPaperBackground}>
               <View style={styles.modalNotebookLines}>
@@ -352,7 +327,8 @@ const CharadesDisplay = ({
             </View>
           </Animated.View>
         </View>
-      </Modal>
+        </View>
+      )}
     </>
   );
 };
@@ -501,6 +477,16 @@ const styles = StyleSheet.create({
   },
 
   // Estilos de modal (diseño de papel notebook)
+  absoluteModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 9999,
+  },
+
   modalWrapper: {
     flex: 1,
     justifyContent: 'center',
@@ -520,6 +506,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 10,
     transform: [{ rotate: '-0.5deg' }],
+    overflow: 'hidden',
   },
   modalPaperBackground: {
     position: 'absolute',
@@ -530,6 +517,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F6F0',
     borderRadius: 17,
     borderTopLeftRadius: 2,
+    overflow: 'hidden',
   },
   modalNotebookLines: {
     position: 'absolute',

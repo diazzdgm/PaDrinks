@@ -143,7 +143,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
   // Función genérica para mostrar modales personalizados
   const showCustomModal = (title, message, type = 'info') => {
     setModalData({ title, message, type });
-    
+
     if (type === 'error') {
       setShowErrorModal(true);
     } else if (type === 'success') {
@@ -151,37 +151,22 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     } else {
       setShowInfoModal(true);
     }
-    
+
     // Animar entrada del modal
-    Animated.parallel([
-      Animated.spring(genericModalScale, {
-        toValue: 1,
-        tension: 50,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-      Animated.timing(genericModalOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(genericModalOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   };
 
   // Función para cerrar modales genéricos
   const handleCloseGenericModal = () => {
-    Animated.parallel([
-      Animated.timing(genericModalScale, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(genericModalOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(genericModalOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
       setShowErrorModal(false);
       setShowSuccessModal(false);
       setShowInfoModal(false);
@@ -488,48 +473,32 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       console.log('🔔 *** EVENTO KICKED RECIBIDO ***');
       console.log('❌ Jugador expulsado porque host disolvió la sala:', data);
       console.log('📱 Mostrando modal de sala disuelta...');
-      
+
       // Mostrar modal personalizado al jugador expulsado
       setShowKickedModal(true);
-      
+
       // Animar entrada del modal
-      Animated.parallel([
-        Animated.spring(kickedModalScale, {
-          toValue: 1,
-          tension: 50,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.timing(kickedModalOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      Animated.timing(kickedModalOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
     };
     
     const handlePlayerKicked = (data) => {
       console.log('🔔 *** EVENTO PLAYERKICKED RECIBIDO ***');
       console.log('❌ Jugador expulsado individualmente:', data);
       console.log('📱 Mostrando modal de expulsión individual...');
-      
+
       // Mostrar modal personalizado al jugador expulsado
       setShowKickedModal(true);
-      
+
       // Animar entrada del modal
-      Animated.parallel([
-        Animated.spring(kickedModalScale, {
-          toValue: 1,
-          tension: 50,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.timing(kickedModalOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      Animated.timing(kickedModalOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
     };
 
     // Registrar event listeners
@@ -659,39 +628,23 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     // Si el jugador se unió a una sala (no es host), mostrar modal de jugador
     if (isJoining && !isHost) {
       setShowLeaveModal(true);
-      
+
       // Animar entrada del modal
-      Animated.parallel([
-        Animated.spring(leaveModalScale, {
-          toValue: 1,
-          tension: 50,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.timing(leaveModalOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      Animated.timing(leaveModalOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
     } else if (isHost && !isJoining) {
       // Si es host y creó la sala, mostrar modal de host
       setShowHostLeaveModal(true);
-      
+
       // Animar entrada del modal de host
-      Animated.parallel([
-        Animated.spring(hostLeaveModalScale, {
-          toValue: 1,
-          tension: 50,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.timing(hostLeaveModalOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      Animated.timing(hostLeaveModalOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
     } else {
       // Para otros casos, comportamiento normal
       navigation.goBack();
@@ -700,18 +653,11 @@ const CreateLobbyScreen = ({ navigation, route }) => {
 
   const handleCloseLeaveModal = () => {
     // Animar salida del modal
-    Animated.parallel([
-      Animated.timing(leaveModalScale, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(leaveModalOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(leaveModalOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
       setShowLeaveModal(false);
     });
   };
@@ -777,18 +723,11 @@ const CreateLobbyScreen = ({ navigation, route }) => {
 
   const handleCloseHostLeaveModal = () => {
     // Animar salida del modal de host
-    Animated.parallel([
-      Animated.timing(hostLeaveModalScale, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(hostLeaveModalOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(hostLeaveModalOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
       setShowHostLeaveModal(false);
     });
   };
@@ -870,18 +809,11 @@ const CreateLobbyScreen = ({ navigation, route }) => {
 
   const handleCloseKickedModal = () => {
     // Animar salida del modal de kicked
-    Animated.parallel([
-      Animated.timing(kickedModalScale, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(kickedModalOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(kickedModalOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
       setShowKickedModal(false);
     });
   };
@@ -926,38 +858,23 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     if (player) {
       setPlayerToKick(player);
       setShowKickPlayerModal(true);
-      
+
       // Animar entrada del modal
-      Animated.parallel([
-        Animated.spring(kickPlayerModalScale, {
-          toValue: 1,
-          tension: 50,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.timing(kickPlayerModalOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      Animated.timing(kickPlayerModalOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
     }
   };
   
   // Funciones para modal de expulsión de jugador
   const handleCloseKickPlayerModal = () => {
-    Animated.parallel([
-      Animated.timing(kickPlayerModalScale, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(kickPlayerModalOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(kickPlayerModalOpacity, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
       setShowKickPlayerModal(false);
       setPlayerToKick(null);
     });
@@ -1393,22 +1310,17 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       </View>
 
       {/* Modal personalizado para confirmación de salida */}
-      <Modal
-        visible={showLeaveModal}
-        transparent={true}
-        animationType="none"
-        statusBarTranslucent={true}
-      >
-        <View style={styles.leaveModalOverlay}>
-          <Animated.View
-            style={[
-              styles.leaveModalContainer,
-              {
-                transform: [{ scale: leaveModalScale }],
-                opacity: leaveModalOpacity,
-              },
-            ]}
-          >
+      {showLeaveModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.leaveModalContainer,
+                {
+                  opacity: leaveModalOpacity,
+                },
+              ]}
+            >
             {/* Fondo con patrón de libreta */}
             <View style={styles.leaveModalPaper}>
               {/* Líneas de libreta en el modal */}
@@ -1458,25 +1370,20 @@ const CreateLobbyScreen = ({ navigation, route }) => {
             </View>
           </Animated.View>
         </View>
-      </Modal>
+      </View>)}
 
       {/* Modal personalizado para confirmación de disolución de sala (Host) */}
-      <Modal
-        visible={showHostLeaveModal}
-        transparent={true}
-        animationType="none"
-        statusBarTranslucent={true}
-      >
-        <View style={styles.hostLeaveModalOverlay}>
-          <Animated.View
-            style={[
-              styles.hostLeaveModalContainer,
-              {
-                transform: [{ scale: hostLeaveModalScale }],
-                opacity: hostLeaveModalOpacity,
-              },
-            ]}
-          >
+      {showHostLeaveModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.hostLeaveModalContainer,
+                {
+                  opacity: hostLeaveModalOpacity,
+                },
+              ]}
+            >
             {/* Fondo con patrón de libreta */}
             <View style={styles.hostLeaveModalPaper}>
               {/* Líneas de libreta en el modal */}
@@ -1526,26 +1433,21 @@ const CreateLobbyScreen = ({ navigation, route }) => {
             </View>
           </Animated.View>
         </View>
-      </Modal>
+      </View>)}
 
       {/* Modal personalizado para notificación de expulsión */}
-      <Modal
-        visible={showKickedModal}
-        transparent={true}
-        animationType="none"
-        statusBarTranslucent={true}
-        onRequestClose={() => {}} // No permitir cerrar con botón atrás
-      >
-        <View style={styles.leaveModalOverlay}>
-          <Animated.View 
-            style={[
-              styles.leaveModalContainer,
-              {
-                transform: [{ scale: kickedModalScale }, { rotate: '1deg' }],
-                opacity: kickedModalOpacity,
-              }
-            ]}
-          >
+      {showKickedModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.leaveModalContainer,
+                {
+                  opacity: kickedModalOpacity,
+                  transform: [{ rotate: '1deg' }],
+                },
+              ]}
+            >
             {/* Fondo de papel del modal */}
             <View style={styles.leaveModalPaper}>
               {/* Líneas del cuaderno */}
@@ -1586,25 +1488,20 @@ const CreateLobbyScreen = ({ navigation, route }) => {
             </View>
           </Animated.View>
         </View>
-      </Modal>
-      
+      </View>)}
+
       {/* Modal personalizado para expulsión de jugador */}
-      <Modal
-        visible={showKickPlayerModal}
-        transparent={true}
-        animationType="none"
-        onRequestClose={handleCloseKickPlayerModal}
-      >
-        <View style={styles.leaveModalOverlay}>
-          <Animated.View 
-            style={[
-              styles.leaveModalContainer,
-              {
-                transform: [{ scale: kickPlayerModalScale }],
-                opacity: kickPlayerModalOpacity,
-              }
-            ]}
-          >
+      {showKickPlayerModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.leaveModalContainer,
+                {
+                  opacity: kickPlayerModalOpacity,
+                }
+              ]}
+            >
             {/* Fondo de papel del modal */}
             <View style={styles.leaveModalPaper}>
               <View style={styles.leaveModalHoles}>
@@ -1650,25 +1547,20 @@ const CreateLobbyScreen = ({ navigation, route }) => {
             </View>
           </Animated.View>
         </View>
-      </Modal>
+      </View>)}
 
       {/* Modal genérico personalizado para errores */}
-      <Modal
-        visible={showErrorModal}
-        transparent={true}
-        animationType="none"
-        onRequestClose={handleCloseGenericModal}
-      >
-        <View style={styles.leaveModalOverlay}>
-          <Animated.View 
-            style={[
-              styles.leaveModalContainer,
-              {
-                transform: [{ scale: genericModalScale }],
-                opacity: genericModalOpacity,
-              }
-            ]}
-          >
+      {showErrorModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.leaveModalContainer,
+                {
+                  opacity: genericModalOpacity,
+                }
+              ]}
+            >
             {/* Fondo de papel del modal */}
             <View style={styles.leaveModalPaper}>
               <View style={styles.leaveModalHoles}>
@@ -1705,25 +1597,20 @@ const CreateLobbyScreen = ({ navigation, route }) => {
             </View>
           </Animated.View>
         </View>
-      </Modal>
+      </View>)}
 
       {/* Modal genérico personalizado para éxitos */}
-      <Modal
-        visible={showSuccessModal}
-        transparent={true}
-        animationType="none"
-        onRequestClose={handleCloseGenericModal}
-      >
-        <View style={styles.leaveModalOverlay}>
-          <Animated.View 
-            style={[
-              styles.leaveModalContainer,
-              {
-                transform: [{ scale: genericModalScale }],
-                opacity: genericModalOpacity,
-              }
-            ]}
-          >
+      {showSuccessModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.leaveModalContainer,
+                {
+                  opacity: genericModalOpacity,
+                }
+              ]}
+            >
             {/* Fondo de papel del modal */}
             <View style={styles.leaveModalPaper}>
               <View style={styles.leaveModalHoles}>
@@ -1760,25 +1647,20 @@ const CreateLobbyScreen = ({ navigation, route }) => {
             </View>
           </Animated.View>
         </View>
-      </Modal>
+      </View>)}
 
       {/* Modal genérico personalizado para información */}
-      <Modal
-        visible={showInfoModal}
-        transparent={true}
-        animationType="none"
-        onRequestClose={handleCloseGenericModal}
-      >
-        <View style={styles.leaveModalOverlay}>
-          <Animated.View 
-            style={[
-              styles.leaveModalContainer,
-              {
-                transform: [{ scale: genericModalScale }],
-                opacity: genericModalOpacity,
-              }
-            ]}
-          >
+      {showInfoModal && (
+        <View style={styles.absoluteModalOverlay}>
+          <View style={styles.modalWrapper}>
+            <Animated.View
+              style={[
+                styles.leaveModalContainer,
+                {
+                  opacity: genericModalOpacity,
+                }
+              ]}
+            >
             {/* Fondo de papel del modal */}
             <View style={styles.leaveModalPaper}>
               <View style={styles.leaveModalHoles}>
@@ -1815,7 +1697,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
             </View>
           </Animated.View>
         </View>
-      </Modal>
+      </View>)}
     </Animated.View>
   );
 };
@@ -2388,6 +2270,24 @@ const styles = StyleSheet.create({
   },
 
   // Estilos del modal de confirmación de salida
+  absoluteModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 9999,
+  },
+
+  modalWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: scaleByContent(30, 'spacing'),
+    paddingVertical: scaleByContent(50, 'spacing'),
+  },
+
   leaveModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
