@@ -21,6 +21,7 @@ import { addPlayer } from '../../store/playersSlice';
 import { getGameEngine } from '../../game/GameEngine';
 import { theme } from '../../styles/theme';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { Camera } from 'expo-camera';
 import { 
   scale, 
@@ -258,21 +259,60 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
       // Opciones para la cámara
       const options = {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1], // Cuadrado para foto de perfil
-        quality: 0.8,
-        cameraType: ImagePicker.CameraType.front, // Cámara frontal para selfie
+        allowsEditing: false,
+        quality: 1.0,
+        cameraType: ImagePicker.CameraType.front,
+        ...(Platform.OS === 'ios' && {
+          presentationStyle: 'fullScreen',
+        }),
       };
-      
+
       // Abrir cámara
       const result = await ImagePicker.launchCameraAsync(options);
-      
+
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const photoUri = result.assets[0].uri;
-        setPhotoUri(photoUri);
-        setPlayerPhoto('photo');
-        setSelectedEmoji(''); // Limpiar emoji si había uno seleccionado
-        console.log('📸 Foto tomada exitosamente:', photoUri);
+        const originalUri = result.assets[0].uri;
+        const { width: imgWidth, height: imgHeight } = result.assets[0];
+
+        try {
+          const smallerDimension = Math.min(imgWidth, imgHeight);
+          const cropX = (imgWidth - smallerDimension) / 2;
+          const cropY = (imgHeight - smallerDimension) / 2;
+
+          const imageInfo = await ImageManipulator.manipulateAsync(
+            originalUri,
+            [
+              {
+                crop: {
+                  originX: cropX,
+                  originY: cropY,
+                  width: smallerDimension,
+                  height: smallerDimension,
+                }
+              },
+              {
+                resize: {
+                  width: 500,
+                  height: 500,
+                }
+              }
+            ],
+            {
+              compress: 0.8,
+              format: ImageManipulator.SaveFormat.JPEG,
+            }
+          );
+
+          setPhotoUri(imageInfo.uri);
+          setPlayerPhoto('photo');
+          setSelectedEmoji('');
+          console.log('📸 Foto procesada exitosamente:', imageInfo.uri);
+        } catch (manipError) {
+          console.log('Error procesando imagen, usando original:', manipError);
+          setPhotoUri(originalUri);
+          setPlayerPhoto('photo');
+          setSelectedEmoji('');
+        }
       }
       
     } catch (error) {

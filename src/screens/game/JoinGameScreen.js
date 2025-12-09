@@ -624,7 +624,7 @@ const JoinGameScreen = ({ navigation }) => {
       {showQRScanner && (
         <View style={styles.qrScannerContainer}>
           <CameraView
-            style={StyleSheet.absoluteFillObject}
+            style={styles.camera}
             facing="back"
             onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
             barcodeScannerSettings={{
@@ -1112,8 +1112,21 @@ const styles = StyleSheet.create({
 
   // Estilos del escáner QR
   qrScannerContainer: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: '#000',
+    zIndex: 10000,
+  },
+
+  camera: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 
   qrOverlay: {
