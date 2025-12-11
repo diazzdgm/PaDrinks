@@ -304,6 +304,36 @@
       "text": "Las personas que en su INE el último dígito de su CURP sea 5 shot o trago",
       "instruction": "suerte del destino",
       "emoji": "🆔"
+    },
+    {
+      "id": "ec_051",
+      "text": "La persona que tenga la prenda o accesorio de mayor valor shot o trago",
+      "instruction": "Ese outfit vale mas que la renta",
+      "emoji": "💸👗"
+    },
+    {
+      "id": "ec_052",
+      "text": "La persona que nunca a puesto casa para la peda shot o trago",
+      "instruction": "Proxima peda te toca a ti",
+      "emoji": "🏠"
+    },
+    {
+      "id": "ec_053",
+      "text": "La persona mas que se vea mas sobria shot o trago",
+      "instruction": "Tu higado anda sediento",
+      "emoji": "🍹​"
+    },
+    {
+      "id": "ec_054",
+      "text": "La persona que menos shots haya tomado shot o trago",
+      "instruction": "Hora de poner a trabajar ese higado",
+      "emoji": "💥"
+    },
+    {
+      "id": "ec_055",
+      "text": "La personas que le vaya al equipo del America shot o trago",
+      "instruction": "Shot por cada torneo robado",
+      "emoji": "🦅"
     }
   ]
 }

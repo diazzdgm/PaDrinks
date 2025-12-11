@@ -304,6 +304,42 @@
       "text": "Menciona 5 posiciones sexuales",
       "instruction": "todo un mago en la cama",
       "emoji": "🧙"
+    },
+    {
+      "id": "mc_051",
+      "text": "Menciona el nombre completo de al menos un jugador",
+      "instruction": "Ya sabemos que le dicen EL NEGRO pero como se llama?",
+      "emoji": "👦🏿"
+    },
+    {
+      "id": "mc_052",
+      "text": "Menciona el cumpleaños de al menos un jugador",
+      "instruction": "vamos a ver si eres de los reales o no",
+      "emoji": "🎂"
+    },
+    {
+      "id": "mc_053",
+      "text": "Menciona el nombre de la cancion que esta sonando",
+      "instruction": "gusto musical de npc",
+      "emoji": "🎵"
+    },
+    {
+      "id": "mc_054",
+      "text": "Menciona la seleccion que gano el ultima copa mundial",
+      "instruction": "saca tu FIFAS que traes a dentro",
+      "emoji": "⚽"
+    },
+    {
+      "id": "mc_055",
+      "text": "Menciona el nombre de la esposa de Justin Biber",
+      "instruction": "saca tu beliver que traes adentro",
+      "emoji": "👩🏼‍❤️‍👨🏻​"
+    },
+    {
+      "id": "mc_056",
+      "text": "Menciona el nombre de la esposa de Justin Biber",
+      "instruction": "Pregunta basica de maquillaje",
+      "emoji": "💄"
     }
   ]
 }

@@ -1201,6 +1201,79 @@ const handleShowModal = () => {
 4. **Animation Validation**: Verify animations don't cause crashes on actual iOS devices
 5. **Console Monitoring**: Watch for iOS-specific warnings about useNativeDriver or transform properties
 
+### Camera and QR Scanner Issues on iOS
+
+#### QR Scanner Full Screen Issue
+**Problem**: QR scanner appears only at bottom of screen instead of full screen
+**Cause**: Using `flex: 1` inside a container with complex layout
+**Solution**: Use absolute positioning for camera overlay
+
+```javascript
+// Container with absolute positioning
+qrScannerContainer: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: '#000',
+  zIndex: 10000,
+},
+
+// Camera view also absolute
+camera: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+},
+```
+
+#### Photo Capture Black Bars in Landscape
+**Problem**: When taking photos horizontally with `allowsEditing: true`, black bars appear because aspect ratio doesn't match landscape orientation
+**Solution**: Disable native editor and use automatic center-crop with expo-image-manipulator
+
+```javascript
+// Camera options - disable editing
+const options = {
+  mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  allowsEditing: false,
+  quality: 1.0,
+  cameraType: ImagePicker.CameraType.front,
+};
+
+// Automatic center-crop to square
+const { width: imgWidth, height: imgHeight } = result.assets[0];
+const smallerDimension = Math.min(imgWidth, imgHeight);
+const cropX = (imgWidth - smallerDimension) / 2;
+const cropY = (imgHeight - smallerDimension) / 2;
+
+const imageInfo = await ImageManipulator.manipulateAsync(
+  originalUri,
+  [
+    {
+      crop: {
+        originX: cropX,
+        originY: cropY,
+        width: smallerDimension,
+        height: smallerDimension,
+      }
+    },
+    {
+      resize: {
+        width: 500,
+        height: 500,
+      }
+    }
+  ],
+  {
+    compress: 0.8,
+    format: ImageManipulator.SaveFormat.JPEG,
+  }
+);
+```
+
 ### Known iOS Issues and Solutions
 
 | Issue | Cause | Solution |
@@ -1210,3 +1283,5 @@ const handleShowModal = () => {
 | Modal animation crash | Animated.spring with scale transform | Use Animated.timing with opacity only |
 | Blank screen on modal | Complex nested decorative elements | Simplify modal content, remove array maps |
 | Transform not working | useNativeDriver limitation | Use layout animations or remove transform |
+| QR scanner only at bottom | `flex: 1` in complex layout | Use `position: 'absolute'` with full screen coords |
+| Black bars on landscape photos | `allowsEditing: true` aspect mismatch | Disable editing, use center-crop with ImageManipulator |

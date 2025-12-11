@@ -454,6 +454,114 @@
       "instruction": "¡La cobrada va a estar buena!",
       "emoji": "🚗💥",
       "genderRestriction": "all"
+    },
+    {
+      "id": 51,
+      "text": "¿Qué prefieres?",
+      "option1": "Team Sangre",
+      "option2": "Team Carne",
+      "instruction": "Que despierte el titan o que evolucione la cobra",
+      "emoji": "​🍆​🍌​",
+      "genderRestriction": "male"
+    },
+    {
+      "id": 52,
+      "text": "¿Qué prefieres?",
+      "option1": "Team Jamiaca",
+      "option2": "Team Horchata",
+      "instruction": "La controversia mas mexicana",
+      "emoji": "​🥛",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 53,
+      "text": "¿Qué prefieres?",
+      "option1": "Pizza con piña",
+      "option2": "Pizza sin piña",
+      "instruction": "Eres un psicópata culinario o una persona decente",
+      "emoji": "​🍕​🍍",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 54,
+      "text": "¿Qué opinas?",
+      "option1": "Las quesadilla llevan queso",
+      "option2": "Las quesadillas no llevan queso",
+      "instruction": "El debate que rompe amistades",
+      "emoji": "​🧀",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 55,
+      "text": "¿Qué prefieres?",
+      "option1": "Patada en los huevos",
+      "option2": "Colicos horribles",
+      "instruction": "Vomitar del dolor un rato o sangrar y llorar una semana",
+      "emoji": "​🥚​🩸",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 56,
+      "text": "¿Qué prefieres?",
+      "option1": "Salir con alguien que tiene only",
+      "option2": "Salir con alguine que es bisexual",
+      "instruction": "Prefieres que comparta fotos o que comparta gustos",
+      "emoji": "​📸​🏳️‍🌈",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 57,
+      "text": "¿Qué prefieres?",
+      "option1": "Culo",
+      "option2": "Tetas",
+      "instruction": "Perfieres lo delantero o lo trasero",
+      "emoji": "​🍒​​🍑",
+      "genderRestriction": "male"
+    },
+    {
+      "id": 58,
+      "text": "¿Qué opinas?",
+      "option1": "El tamaño si importa",
+      "option2": "El tamaño no importa",
+      "instruction": "Es la varita o es el mago",
+      "emoji": "​🍆🪄",
+      "genderRestriction": "female"
+    },
+    {
+      "id": 59,
+      "text": "¿Qué prefieres?",
+      "option1": "Estar arriba durante el sexo",
+      "option2": "Estar abajo durante el sexo",
+      "instruction": "Ser el jinete o ser el caballo",
+      "emoji": "​🤠🐎​",
+      "genderRestriction": "female"
+    },
+    {
+      "id": 60,
+      "text": "¿Qué prefieres?",
+      "option1": "Besar a tu amigo/a del mismo sexo",
+      "option2": "Que tu amigo/a del mismo sexo bese a tu mama/papa",
+      "instruction": "Perder la dignidad un rato o perder la herencia para siempre",
+      "emoji": "​💰​",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 61,
+      "text": "¿Qué prefieres?",
+      "option1": "No parar de estornudar durante el sexo",
+      "option2": "No parar de canatar el himno nacional durante el sexo",
+      "instruction": "Perder el ritmo respiratorio o ponerte FIRME por la patria",
+      "emoji": "​🤧​🫡",
+      "genderRestriction": "all"
+    },
+    {
+      "id": 62,
+      "text": "¿Qué prefieres?",
+      "option1": "Tenerlo circuncidado",
+      "option2": "No tenerlo circuncidado",
+      "instruction": "Prefieres con chamarra de piel integrada o casco alemán al aire libre",
+      "emoji": "​🍌🪖",
+      "genderRestriction": "male"
     }
   ]
 }

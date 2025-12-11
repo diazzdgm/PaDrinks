@@ -124,6 +124,24 @@
       "text": "¿Quién del grupo te cae mejor borracho/a que sobrio/a?",
       "instruction": "¡Sobrio es un 3, borracho es un 10 en diversión!",
       "emoji": "🍻"
+    },
+    {
+      "id": "aq_021",
+      "text": "¿De quién del grupo te tomarias su pipi?",
+      "instruction": "Esas si son aguas locas",
+      "emoji": "🤢​🍻"
+    },
+    {
+      "id": "aq_023",
+      "text": "¿Si estuvieras solo/a en una isla con quien estarias del sexo opuesto?",
+      "instruction": "Modo sobrevivenicia activado",
+      "emoji": "🌴"
+    },
+    {
+      "id": "aq_022",
+      "text": "¿Si estuvieras solo/a en una isla con quien estarias del sexo opuesto?",
+      "instruction": "Modo sobrevivenicia activado",
+      "emoji": "🌴"
     }
   ]
 }
