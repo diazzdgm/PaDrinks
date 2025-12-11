@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaDrinks - Juego de Fiesta para Adultos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        .container {
+            text-align: center;
+            padding: 40px 20px;
+            max-width: 600px;
+        }
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        }
+        .tagline {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        .description {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        .badges {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+        .badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+        }
+        .links {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .link {
+            background: #FFE082;
+            color: #333;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+        }
+        .link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .footer {
+            margin-top: 60px;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍺 PaDrinks</h1>
+        <p class="tagline">El juego de fiesta definitivo para adultos</p>
+
+        <div class="description">
+            <p>
+                PaDrinks es un juego interactivo diseñado para animar tus fiestas.
+                Con más de 17 dinámicas diferentes, desafíos divertidos y preguntas atrevidas,
+                cada partida es una experiencia única.
+            </p>
+            <p style="margin-top: 15px;">
+                <strong>Solo para mayores de 18 años.</strong> Bebe responsablemente.
+            </p>
+        </div>
+
+        <div class="badges">
+            <span class="badge">🎮 17+ Dinámicas</span>
+            <span class="badge">👥 3-16 Jugadores</span>
+            <span class="badge">🎯 50+ Rondas</span>
+        </div>
+
+        <div class="links">
+            <a href="privacy-policy.html" class="link">📄 Política de Privacidad</a>
+            <a href="#" class="link" style="opacity: 0.6; cursor: not-allowed;">📱 Próximamente en Play Store</a>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 PaDrinks. Todos los derechos reservados.</p>
+            <p>privacy@padrinks.com</p>
+        </div>
+    </div>
+</body>
+</html>
