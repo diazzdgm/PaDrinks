@@ -5,33 +5,40 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Matriz de dispositivos de referencia con pesos por prioridad
 const REFERENCE_DEVICES = {
-  'iphone-se': { 
-    width: 568, 
-    height: 320, 
+  'iphone-se': {
+    width: 568,
+    height: 320,
     weight: 0.15,
     aspectRatio: 1.775,
-    category: 'phone-small' 
+    category: 'phone-small'
   },
-  'iphone-14-pro-max': { 
-    width: 932, 
-    height: 430, 
+  'samsung-s21': {
+    width: 844,
+    height: 384,
+    weight: 0.35,
+    aspectRatio: 2.198,
+    category: 'phone-ultrawide'
+  },
+  'iphone-14-pro-max': {
+    width: 932,
+    height: 430,
     weight: 0.4,
     aspectRatio: 2.167,
-    category: 'phone-large' 
+    category: 'phone-large'
   },
-  'pixel-8-pro': { 
-    width: 891, 
-    height: 412, 
+  'pixel-8-pro': {
+    width: 891,
+    height: 412,
     weight: 0.4,
     aspectRatio: 2.162,
-    category: 'phone-large' 
+    category: 'phone-large'
   },
-  'ipad': { 
-    width: 1024, 
-    height: 768, 
+  'ipad': {
+    width: 1024,
+    height: 768,
     weight: 0.25,
     aspectRatio: 1.333,
-    category: 'tablet' 
+    category: 'tablet'
   }
 };
 
@@ -136,45 +143,54 @@ export const scale = (size) => {
 export const scaleByContent = (size, contentType = 'default') => {
   const baseScale = scale(size);
   const fontScale = PixelRatio.getFontScale();
-  
-  // Detección específica por dimensiones reales de los dispositivos probados
+
   const screenSize = Math.max(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const screenHeight = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
   let deviceMultiplier = 1.0;
-  
-  if (screenSize >= 1280) {
-    // Pixel Tablet (1600x1024 o similar) - reducir más para evitar texto roto
+
+  // Detectar tablets primero (aspect ratio más cuadrado)
+  if (screenSize >= 1400 && aspectRatio < 1.8) {
     deviceMultiplier = 0.75;
-  } else if (screenSize >= 850) {
-    // Pixel 8 Pro (891x412) - volver al tamaño original
+  }
+  // Samsung S21 y phones ultra-wide con ALTURA REDUCIDA (< 400dp height)
+  else if (screenHeight < 400 && aspectRatio > 2.0) {
+    deviceMultiplier = 1.1;
+  }
+  // Phones ultra-wide con altura normal (Samsung S22+, OnePlus, etc.)
+  else if (screenSize >= 1000 && aspectRatio > 2.0) {
     deviceMultiplier = 1.35;
-  } else if (screenSize < 700) {
-    // Pixel 3 y dispositivos pequeños
+  }
+  // Pixel 8 Pro y phones similares con altura adecuada
+  else if (screenSize >= 850 && screenSize < 1000 && screenHeight >= 400) {
+    deviceMultiplier = 1.35;
+  }
+  // Phones medianos con altura reducida
+  else if (screenSize >= 800 && screenSize < 900 && screenHeight < 400) {
+    deviceMultiplier = 1.15;
+  }
+  // Dispositivos pequeños
+  else if (screenSize < 700) {
     deviceMultiplier = 0.95;
   }
-  
+
   switch (contentType) {
     case 'hero':
-      // Logos y elementos principales: escalan más agresivamente
       return baseScale * 1.15 * deviceMultiplier;
-      
+
     case 'interactive':
-      // Botones: mantienen mínimos de accesibilidad (44pt)
       return Math.max(baseScale * deviceMultiplier, 44);
-      
+
     case 'text':
-      // Texto: respeta configuraciones de accesibilidad del sistema
-      // Multiplicador extra para textos en Pixel 8 Pro
       const textMultiplier = (screenSize >= 850 && screenSize < 1280) ? 1.15 : 1.0;
       return Math.min(baseScale * fontScale * deviceMultiplier * textMultiplier, size * 1.8);
-      
+
     case 'spacing':
-      // Espaciado: escala moderadamente
       return baseScale * 0.85 * deviceMultiplier;
-      
+
     case 'icon':
-      // Iconos: escalado conservador
       return baseScale * 0.9 * deviceMultiplier;
-      
+
     default:
       return baseScale * deviceMultiplier;
   }
@@ -233,6 +249,25 @@ export const isSmallDevice = () => {
 export const isTablet = () => {
   const deviceType = getDeviceType();
   return deviceType === 'tablet-square' || deviceType === 'tablet-wide';
+};
+
+/**
+ * Detecta si es un dispositivo con altura reducida (como Samsung S21)
+ * Estos dispositivos necesitan layouts más compactos verticalmente
+ * @returns {boolean}
+ */
+export const isShortHeightDevice = () => {
+  const screenHeight = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
+  return screenHeight < 400 && aspectRatio > 2.0;
+};
+
+/**
+ * Obtiene la altura disponible de pantalla (la dimensión más corta en landscape)
+ * @returns {number}
+ */
+export const getScreenHeight = () => {
+  return Math.min(SCREEN_WIDTH, SCREEN_HEIGHT);
 };
 
 /**

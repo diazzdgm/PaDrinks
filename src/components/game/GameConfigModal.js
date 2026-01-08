@@ -23,6 +23,8 @@ import {
   getDeviceType,
   isSmallDevice,
   isTablet,
+  isShortHeightDevice,
+  getScreenHeight,
   RESPONSIVE,
   getDeviceInfo
 } from '../../utils/responsive';
@@ -478,9 +480,11 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
   );
 };
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
+const isShortHeight = isShortHeightDevice();
+const screenHeight = getScreenHeight();
 
 const styles = StyleSheet.create({
   absoluteModalOverlay: {
@@ -502,6 +506,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: isSmallScreen ? '90%' : '80%',
     maxWidth: 450,
+    maxHeight: isShortHeight ? screenHeight * 0.85 : undefined,
     backgroundColor: '#F8F6F0',
     borderRadius: 20,
     borderTopLeftRadius: 5,
@@ -560,7 +565,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: scaleByContent(25, 'spacing'),
-    paddingVertical: scaleByContent(20, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(12, 'spacing') : scaleByContent(20, 'spacing'),
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
@@ -598,13 +603,13 @@ const styles = StyleSheet.create({
   // Contenido
   modalContent: {
     paddingHorizontal: scaleByContent(20, 'spacing'),
-    paddingVertical: scaleByContent(15, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(10, 'spacing') : scaleByContent(15, 'spacing'),
   },
 
   buttonsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: scaleByContent(20, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(12, 'spacing') : scaleByContent(20, 'spacing'),
     gap: scaleByContent(10, 'spacing'),
   },
 
@@ -796,8 +801,8 @@ const styles = StyleSheet.create({
 
   limitsInfo: {
     alignItems: 'center',
-    marginTop: scaleByContent(15, 'spacing'),
-    paddingTop: scaleByContent(15, 'spacing'),
+    marginTop: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
+    paddingTop: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
     borderTopWidth: 1,
     borderTopColor: 'rgba(0, 0, 0, 0.1)',
   },

@@ -25,6 +25,8 @@ import {
   getDeviceType,
   isSmallDevice,
   isTablet,
+  isShortHeightDevice,
+  getScreenHeight,
   RESPONSIVE,
   getDeviceInfo
 } from '../../utils/responsive';
@@ -1232,6 +1234,8 @@ const GameScreen = ({ navigation, route }) => {
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
+const isShortHeight = isShortHeightDevice();
+const screenHeight = getScreenHeight();
 
 const styles = StyleSheet.create({
   container: {
@@ -1411,20 +1415,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: scaleByContent(120, 'spacing'),
-    paddingTop: scaleByContent(60, 'spacing'),
-    paddingBottom: scaleByContent(20, 'spacing'),
+    paddingTop: isShortHeight ? scaleByContent(25, 'spacing') : scaleByContent(40, 'spacing'),
+    paddingBottom: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
   },
 
   // Instrucción
   instructionContainer: {
     alignItems: 'center',
-    marginBottom: scaleByContent(30, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(12, 'spacing') : scaleByContent(20, 'spacing'),
     backgroundColor: theme.colors.postItPink,
     borderWidth: 3,
     borderColor: '#000000',
     borderRadius: 20,
     borderTopLeftRadius: 5,
-    paddingVertical: scaleByContent(15, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(12, 'spacing'),
     paddingHorizontal: scaleByContent(20, 'spacing'),
     shadowColor: '#000',
     shadowOffset: { width: 4, height: 4 },
@@ -1435,7 +1439,7 @@ const styles = StyleSheet.create({
   },
 
   instructionText: {
-    fontSize: scaleByContent(18, 'text'),
+    fontSize: isShortHeight ? scaleByContent(16, 'text') : scaleByContent(18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -1444,8 +1448,8 @@ const styles = StyleSheet.create({
   // Pregunta principal
   questionContainer: {
     flex: 1,
-    marginVertical: scaleByContent(20, 'spacing'),
-    maxHeight: isSmallScreen ? 300 : 400,
+    marginVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
+    maxHeight: isShortHeight ? 200 : undefined,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1454,7 +1458,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: scaleByContent(30, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(15, 'spacing') : scaleByContent(20, 'spacing'),
     paddingHorizontal: scaleByContent(25, 'spacing'),
   },
 
@@ -1462,7 +1466,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
     textAlign: 'center',
-    marginBottom: scaleByContent(15, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(12, 'spacing'),
   },
 
   playerNameUnderlined: {
@@ -1472,13 +1476,13 @@ const styles = StyleSheet.create({
   },
 
   questionEmoji: {
-    fontSize: scaleByContent(40, 'icon'),
+    fontSize: isShortHeight ? scaleByContent(32, 'icon') : scaleByContent(40, 'icon'),
     textAlign: 'center',
-    marginBottom: scaleByContent(15, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(12, 'spacing'),
   },
 
   instructionAction: {
-    fontSize: scaleByContent(20, 'text'),
+    fontSize: isShortHeight ? scaleByContent(18, 'text') : scaleByContent(20, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
     textAlign: 'center',
@@ -1489,7 +1493,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: scaleByContent(20, 'spacing'),
+    marginTop: isShortHeight ? scaleByContent(10, 'spacing') : scaleByContent(15, 'spacing'),
     paddingHorizontal: scaleByContent(20, 'spacing'),
   },
 

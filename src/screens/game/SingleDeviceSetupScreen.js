@@ -15,18 +15,20 @@ import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { useDispatch } from 'react-redux';
 import { theme } from '../../styles/theme';
-import { 
-  scale, 
-  scaleWidth, 
-  scaleHeight, 
-  scaleText, 
+import {
+  scale,
+  scaleWidth,
+  scaleHeight,
+  scaleText,
   scaleModerate,
   scaleByContent,
   getDeviceType,
   isSmallDevice,
   isTablet,
+  isShortHeightDevice,
+  getScreenHeight,
   RESPONSIVE,
-  getDeviceInfo 
+  getDeviceInfo
 } from '../../utils/responsive';
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
@@ -366,6 +368,8 @@ const { width, height } = Dimensions.get('window');
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
+const isShortHeight = isShortHeightDevice();
+const screenHeight = getScreenHeight();
 
 const styles = StyleSheet.create({
   container: {
@@ -467,15 +471,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: scaleByContent(120, 'spacing'),
-    paddingVertical: scaleByContent(20, 'spacing'),
-    paddingTop: Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? scaleByContent(20, 'spacing') : scaleByContent(80, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(10, 'spacing') : scaleByContent(20, 'spacing'),
+    paddingTop: isShortHeight ? scaleByContent(20, 'spacing') : (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? scaleByContent(20, 'spacing') : scaleByContent(80, 'spacing')),
   },
-  
+
   // Título
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 40,
-    marginTop: -60,
+    marginBottom: isShortHeight ? 15 : 40,
+    marginTop: isShortHeight ? 0 : -60,
   },
   
   title: {
@@ -498,20 +502,20 @@ const styles = StyleSheet.create({
   // Selector de jugadores
   selectorContainer: {
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop: -40,
+    marginBottom: isShortHeight ? 10 : 20,
+    marginTop: isShortHeight ? 0 : -40,
   },
-  
+
   playerCountDisplay: {
     backgroundColor: theme.colors.postItYellow,
     borderWidth: 3,
     borderColor: '#000000',
     borderRadius: 20,
     borderTopLeftRadius: 5,
-    paddingVertical: 20,
-    paddingHorizontal: 30,
+    paddingVertical: isShortHeight ? 12 : 20,
+    paddingHorizontal: isShortHeight ? 20 : 30,
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: isShortHeight ? 15 : 30,
     shadowColor: '#000',
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.25,
@@ -521,16 +525,16 @@ const styles = StyleSheet.create({
   },
   
   playerCountNumber: {
-    fontSize: scaleByContent(48, 'text'),
+    fontSize: isShortHeight ? scaleByContent(36, 'text') : scaleByContent(48, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
   },
-  
+
   playerCountLabel: {
-    fontSize: scaleByContent(18, 'text'),
+    fontSize: isShortHeight ? scaleByContent(14, 'text') : scaleByContent(18, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#2E2E2E',
-    marginTop: 5,
+    marginTop: isShortHeight ? 2 : 5,
   },
   
   // Grid de números
@@ -538,17 +542,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 10,
+    gap: isShortHeight ? 6 : 10,
     maxWidth: 400,
   },
-  
+
   numberButton: {
-    width: 42,
-    height: 42,
+    width: isShortHeight ? 36 : 42,
+    height: isShortHeight ? 36 : 42,
     backgroundColor: '#FFFFFF',
     borderWidth: 2,
     borderColor: '#000000',
-    borderRadius: 21,
+    borderRadius: isShortHeight ? 18 : 21,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

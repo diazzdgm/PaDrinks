@@ -23,20 +23,22 @@ import { theme } from '../../styles/theme';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Camera } from 'expo-camera';
-import { 
-  scale, 
-  scaleWidth, 
-  scaleHeight, 
-  scaleText, 
+import {
+  scale,
+  scaleWidth,
+  scaleHeight,
+  scaleText,
   scaleModerate,
   scaleByContent,
   getDeviceType,
   isSmallDevice,
   isTablet,
+  isShortHeightDevice,
+  getScreenHeight,
   RESPONSIVE,
   getDeviceInfo,
   SCREEN_WIDTH,
-  SCREEN_HEIGHT 
+  SCREEN_HEIGHT
 } from '../../utils/responsive';
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
@@ -985,6 +987,8 @@ const { width, height } = Dimensions.get('window');
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
+const isShortHeight = isShortHeightDevice();
+const screenHeight = getScreenHeight();
 
 const styles = StyleSheet.create({
   container: {
@@ -1109,7 +1113,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     paddingHorizontal: scaleByContent(isSmallScreen ? 90 : isTabletScreen ? 150 : 120, 'spacing'),
-    paddingBottom: scaleByContent(isSmallScreen ? 80 : isTabletScreen ? 120 : 100, 'spacing'),
+    paddingBottom: isShortHeight ? scaleByContent(50, 'spacing') : scaleByContent(isSmallScreen ? 80 : isTabletScreen ? 120 : 100, 'spacing'),
   },
   
   // Lado izquierdo - 35% del ancho
@@ -1141,7 +1145,7 @@ const styles = StyleSheet.create({
   // Contenedor de foto
   photoContainer: {
     width: '100%',
-    height: scaleByContent(150, 'interactive'),
+    height: isShortHeight ? scaleByContent(100, 'interactive') : scaleByContent(150, 'interactive'),
     backgroundColor: '#FFFFFF',
     borderRadius: scaleByContent(15, 'spacing'),
     borderTopLeftRadius: scaleByContent(5, 'spacing'),
@@ -1150,7 +1154,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: scaleByContent(15, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
     transform: [{ rotate: '-0.5deg' }],
   },
   
@@ -1185,12 +1189,12 @@ const styles = StyleSheet.create({
   
   // Botones de foto
   photoButtonsContainer: {
-    gap: scaleByContent(15, 'spacing'),
+    gap: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
   },
-  
+
   photoButton: {
     backgroundColor: '#FFE082',
-    paddingVertical: scaleByContent(12, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(12, 'spacing'),
     paddingHorizontal: scaleByContent(20, 'spacing'),
     borderRadius: scaleByContent(12, 'spacing'),
     borderTopLeftRadius: scaleByContent(3, 'spacing'),
@@ -1278,7 +1282,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderRadius: scaleByContent(12, 'spacing'),
     borderTopLeftRadius: scaleByContent(3, 'spacing'),
-    paddingVertical: scaleByContent(15, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(10, 'spacing') : scaleByContent(15, 'spacing'),
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
@@ -1324,7 +1328,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderRadius: scaleByContent(12, 'spacing'),
     borderTopLeftRadius: scaleByContent(3, 'spacing'),
-    paddingVertical: scaleByContent(15, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(10, 'spacing') : scaleByContent(15, 'spacing'),
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },

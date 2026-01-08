@@ -22,18 +22,20 @@ import { theme } from '../../styles/theme';
 import { useSocket, useRoom } from '../../hooks/useSocket';
 import { setRoomData } from '../../store/connectionSlice';
 import SocketService from '../../services/SocketService';
-import { 
-  scale, 
-  scaleWidth, 
-  scaleHeight, 
-  scaleText, 
+import {
+  scale,
+  scaleWidth,
+  scaleHeight,
+  scaleText,
   scaleModerate,
   scaleByContent,
   getDeviceType,
   isSmallDevice,
   isTablet,
+  isShortHeightDevice,
+  getScreenHeight,
   RESPONSIVE,
-  getDeviceInfo 
+  getDeviceInfo
 } from '../../utils/responsive';
 
 // Obtener información del dispositivo para estilos dinámicos
@@ -42,6 +44,8 @@ const { width, height } = Dimensions.get('window');
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
+const isShortHeight = isShortHeightDevice();
+const screenHeight = getScreenHeight();
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
 const CustomMuteIcon = ({ size, isMuted = false }) => {
@@ -726,18 +730,18 @@ const styles = StyleSheet.create({
 
   content: {
     flex: 1,
-    justifyContent: Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 'center' : 'flex-start',
+    justifyContent: isShortHeight ? 'center' : (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 'center' : 'flex-start'),
     paddingHorizontal: scaleByContent(40, 'spacing'),
-    paddingVertical: scaleByContent(10, 'spacing'),
-    paddingTop: Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? scaleByContent(20, 'spacing') : scaleByContent(40, 'spacing'),
-    paddingBottom: scaleByContent(120, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(5, 'spacing') : scaleByContent(10, 'spacing'),
+    paddingTop: isShortHeight ? scaleByContent(10, 'spacing') : (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? scaleByContent(20, 'spacing') : scaleByContent(40, 'spacing')),
+    paddingBottom: isShortHeight ? scaleByContent(40, 'spacing') : scaleByContent(120, 'spacing'),
     alignItems: 'center',
   },
 
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 10,
+    marginBottom: isShortHeight ? 10 : 20,
+    marginTop: isShortHeight ? 5 : 10,
   },
 
   title: {
@@ -767,8 +771,8 @@ const styles = StyleSheet.create({
 
   mainButton: {
     width: Math.min(width * 0.4, 260),
-    height: Math.min(width * 0.5, 320),
-    padding: 25,
+    height: isShortHeight ? Math.min(screenHeight * 0.55, 220) : Math.min(screenHeight * 0.65, 320),
+    padding: isShortHeight ? 15 : 25,
     borderRadius: 18,
     borderTopLeftRadius: 6,
     borderWidth: 3,
@@ -794,11 +798,11 @@ const styles = StyleSheet.create({
   },
 
   buttonIcon: {
-    marginBottom: 15,
+    marginBottom: isShortHeight ? 8 : 15,
   },
 
   iconText: {
-    fontSize: scaleByContent(50, 'text'),
+    fontSize: isShortHeight ? scaleByContent(40, 'text') : scaleByContent(50, 'text'),
   },
 
   buttonTitle: {
