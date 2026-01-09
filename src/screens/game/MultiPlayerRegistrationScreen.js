@@ -1113,7 +1113,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     paddingHorizontal: scaleByContent(isSmallScreen ? 90 : isTabletScreen ? 150 : 120, 'spacing'),
-    paddingBottom: isShortHeight ? scaleByContent(50, 'spacing') : scaleByContent(isSmallScreen ? 80 : isTabletScreen ? 120 : 100, 'spacing'),
+    paddingBottom: isShortHeight ? scaleByContent(50, 'spacing') : scaleByContent(isSmallScreen ? 80 : isTabletScreen ? 120 : 80, 'spacing'),
+    marginTop: scaleByContent(-20, 'spacing'),
   },
   
   // Lado izquierdo - 35% del ancho
