@@ -22,7 +22,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
+      "edgeToEdgeEnabled": false,
+      "softwareKeyboardLayoutMode": "pan",
       "permissions": [
         "CAMERA",
         "WRITE_EXTERNAL_STORAGE",

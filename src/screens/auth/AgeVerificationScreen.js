@@ -58,18 +58,10 @@ const AgeVerificationScreen = ({ navigation }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      // Bloquear botón de retroceso en Android
-      const onBackPress = () => {
-        return true; // Prevenir ir hacia atrás
-      };
-
-      const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      
       // Iniciar animaciones
       startAnimations();
 
       return () => {
-        backHandler.remove();
         // Limpiar sonido al salir
         cleanupSound();
       };
