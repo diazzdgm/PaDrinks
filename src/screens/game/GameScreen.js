@@ -960,7 +960,7 @@ const GameScreen = ({ navigation, route }) => {
         {/* Contenido de fin de juego */}
         <View style={styles.gameEndContainer}>
           <Text style={styles.gameEndTitle}>¡JUEGO TERMINADO!</Text>
-          <Text style={styles.gameEndSubtitle}>Has completado {currentRound - 1} rondas</Text>
+          <Text style={styles.gameEndSubtitle}>Has completado {currentRound} rondas</Text>
 
           {canExtend && (
             <TouchableOpacity
