@@ -227,6 +227,7 @@ The project includes a complete local game engine for single-device gameplay:
 - **Expo Haptics**: Feedback system with error handling for unsupported platforms
 - **Expo File System**: Required for image processing and file operations (SDK 54)
 - **Expo Asset**: Required for asset loading system (SDK 54)
+- **Expo Navigation Bar**: Android-only navigation bar control for immersive mode (requires edgeToEdgeEnabled: false)
 - **react-native-svg**: SVG support (installed but MainMenu uses PNG for megaphone icon)
 - **Connectivity Suite**: BLE Manager, WiFi P2P, Framer Motion for advanced animations
 - **UI Components**: React Native Paper for material design elements, Vector Icons, Super Grid
@@ -279,6 +280,74 @@ The app includes a complete QR code system for multiplayer room joining:
 - Haptic feedback requires try-catch error handling
 - Audio configuration differs between iOS and Android
 - Orientation locking/unlocking must be handled in App.js lifecycle
+
+### Android Immersive Mode Implementation
+Complete immersive experience with navigation bar hiding and back button blocking:
+
+#### Navigation Bar Hiding
+- **Package**: `expo-navigation-bar` for Android-only navigation bar control
+- **Configuration**: `edgeToEdgeEnabled: false` in app.json to avoid API conflicts
+- **Behavior**: `inset-swipe` mode allows temporary reappearance on swipe
+- **Visibility**: Set to `hidden` with automatic re-application every 500ms
+- **Transparency**: Background color `#00000001` (nearly transparent) when visible
+- **Button Style**: `light` style for minimal visibility
+
+#### Implementation in App.js
+```javascript
+const configureNavigationBar = async () => {
+  await NavigationBar.setBehaviorAsync('inset-swipe');
+  await NavigationBar.setBackgroundColorAsync('#00000001');
+  await NavigationBar.setButtonStyleAsync('light');
+  await NavigationBar.setVisibilityAsync('hidden');
+};
+
+// Re-apply every 500ms to maintain hidden state
+const intervalId = setInterval(() => {
+  NavigationBar.setVisibilityAsync('hidden').catch(() => {});
+}, 500);
+```
+
+#### Back Button Blocking (Multi-Layer Approach)
+Complete blocking of Android back button across all screens:
+
+1. **App.js Level**: Global BackHandler with duplicate registration for redundancy
+2. **AppNavigator Level**: BackHandler in NavigationContainer's useEffect
+3. **onStateChange Handler**: Re-registration after each navigation change
+4. **Screen Options**: `gestureEnabled: false` and `headerLeft: () => null` on all screens
+
+#### Critical Implementation Pattern
+```javascript
+// AppNavigator.js - Multiple blocking layers
+useEffect(() => {
+  const backHandler = BackHandler.addEventListener(
+    'hardwareBackPress',
+    () => {
+      console.log('🚫 Botón atrás bloqueado');
+      return true; // Block completely
+    }
+  );
+  return () => backHandler.remove();
+}, []);
+
+// Also in onStateChange
+<NavigationContainer
+  onStateChange={() => {
+    BackHandler.addEventListener('hardwareBackPress', () => true);
+  }}
+>
+```
+
+#### Why Multi-Layer Blocking is Required
+- React Navigation can override BackHandler on navigation changes
+- Single-layer blocking may not survive screen transitions
+- Duplicate handlers provide failsafe redundancy
+- onStateChange ensures blocking persists after navigation
+
+#### Important Notes
+- Users can only navigate using in-app buttons (navigation.navigate/reset)
+- To exit app, users must use Home button or task manager
+- Navigation bar reappears briefly on swipe but auto-hides in 0.5 seconds
+- All app navigation buttons continue working normally
 
 ### Touch Gesture Implementation
 - **Custom Touch Handlers**: Use `onTouchStart`, `onTouchMove`, `onTouchEnd` instead of PanResponder for better React Navigation compatibility
