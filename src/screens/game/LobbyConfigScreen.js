@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  Dimensions,
+  // Dimensions removed - using SCREEN_WIDTH/SCREEN_HEIGHT from responsive
   Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -14,6 +14,7 @@ import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { useDispatch } from 'react-redux';
 import { theme } from '../../styles/theme';
+import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
 import { 
   scale, 
   scaleWidth, 
@@ -62,7 +63,10 @@ const CustomMuteIcon = ({ size, isMuted = false }) => {
 const LobbyConfigScreen = ({ navigation, route }) => {
   // Redux
   const dispatch = useDispatch();
-  
+
+  // Safe area offsets para iOS
+  const { leftOffset, rightOffset, topOffset } = useSafeAreaOffsets();
+
   // Parámetros de navegación con valores por defecto
   const { 
     gameMode = 'classic', 
@@ -293,18 +297,26 @@ const LobbyConfigScreen = ({ navigation, route }) => {
 
       {/* Botón de regreso */}
       <TouchableOpacity
-        style={styles.backButton}
+        style={[
+          styles.backButton,
+          {
+            left: leftOffset,
+            top: topOffset + scaleByContent(30, 'spacing'),
+          },
+        ]}
         onPress={handleGoBack}
         activeOpacity={0.8}
       >
         <Text style={styles.backButtonText}>← Atrás</Text>
       </TouchableOpacity>
-      
+
       {/* Botón de Mute */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.sketchMuteButton,
           {
+            right: rightOffset,
+            top: topOffset + scaleByContent(20, 'spacing'),
             transform: [{ scale: muteButtonScale }],
           },
         ]}
@@ -314,8 +326,8 @@ const LobbyConfigScreen = ({ navigation, route }) => {
           style={styles.muteButtonTouchable}
           activeOpacity={0.8}
         >
-          <CustomMuteIcon 
-            size={50}
+          <CustomMuteIcon
+            size={scaleModerate(50, 0.3)}
             isMuted={isMuted}
           />
         </TouchableOpacity>
@@ -590,26 +602,26 @@ const styles = StyleSheet.create({
   // Botón de regreso
   backButton: {
     position: 'absolute',
-    top: 35,
-    left: 25,
+    top: scaleByContent(35, 'spacing'),
+    left: scaleByContent(25, 'spacing'),
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderTopLeftRadius: 4,
-    borderWidth: 2,
+    paddingHorizontal: scaleByContent(15, 'spacing'),
+    paddingVertical: scaleByContent(8, 'spacing'),
+    borderRadius: scaleByContent(12, 'spacing'),
+    borderTopLeftRadius: scaleByContent(4, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 3,
+    shadowRadius: scaleByContent(3, 'spacing'),
     elevation: 4,
     transform: [{ rotate: '-1deg' }],
     zIndex: 10,
   },
-  
+
   backButtonText: {
-    fontSize: 14,
+    fontSize: scaleByContent(14, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
@@ -621,7 +633,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: scaleByContent(60, 'spacing'),
-    paddingBottom: scaleByContent(130, 'spacing'),
+    paddingBottom: scaleByContent(80, 'spacing'),
     paddingHorizontal: scaleByContent(120, 'spacing'), // Espacio para agujeros y margen
   },
   
@@ -642,11 +654,11 @@ const styles = StyleSheet.create({
   },
   
   sectionTitle: {
-    fontSize: 18,
+    fontSize: scaleByContent(18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: scaleByContent(20, 'spacing'),
     transform: [{ rotate: '0.5deg' }],
   },
   
@@ -666,16 +678,16 @@ const styles = StyleSheet.create({
   optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: scaleByContent(12, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderTopLeftRadius: 4,
-    borderWidth: 2,
+    borderRadius: scaleByContent(12, 'spacing'),
+    borderTopLeftRadius: scaleByContent(4, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#CCCCCC',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.15,
-    shadowRadius: 3,
+    shadowRadius: scaleByContent(3, 'spacing'),
     elevation: 3,
     transform: [{ rotate: '-0.3deg' }],
   },
@@ -722,21 +734,21 @@ const styles = StyleSheet.create({
   },
   
   optionTitle: {
-    fontSize: 14,
+    fontSize: scaleByContent(14, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
-    marginBottom: 3,
+    marginBottom: scaleByContent(3, 'spacing'),
   },
-  
+
   optionSubtitle: {
-    fontSize: 12,
+    fontSize: scaleByContent(12, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     fontStyle: 'italic',
   },
-  
+
   optionDescription: {
-    fontSize: 12,
+    fontSize: scaleByContent(12, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666666',
   },
@@ -873,40 +885,40 @@ const styles = StyleSheet.create({
   // Botón continuar
   continueButton: {
     position: 'absolute',
-    bottom: 25,
+    bottom: scaleByContent(25, 'spacing'),
     alignSelf: 'center',
     left: '30%',
     right: '30%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 25,
+    paddingVertical: scaleByContent(12, 'spacing'),
+    paddingHorizontal: scaleByContent(25, 'spacing'),
     backgroundColor: theme.colors.postItGreen,
-    borderRadius: 15,
-    borderTopLeftRadius: 4,
-    borderWidth: 2,
+    borderRadius: scaleByContent(15, 'spacing'),
+    borderTopLeftRadius: scaleByContent(4, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
     shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowRadius: scaleByContent(6, 'spacing'),
     elevation: 8,
     transform: [{ rotate: '1deg' }],
   },
-  
+
   continueButtonText: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
     flex: 1,
     textAlign: 'center',
   },
-  
+
   continueButtonIcon: {
-    fontSize: 18,
+    fontSize: scaleByContent(18, 'text'),
     color: '#2E2E2E',
-    marginLeft: 8,
+    marginLeft: scaleByContent(8, 'spacing'),
   },
   
   // Estilos para el botón de mute

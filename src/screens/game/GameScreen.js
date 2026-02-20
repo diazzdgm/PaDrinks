@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  Dimensions,
   Image,
   ScrollView,
 } from 'react-native';
@@ -15,6 +14,7 @@ import { Audio } from 'expo-av';
 import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../styles/theme';
+import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
 import {
   scale,
   scaleWidth,
@@ -27,6 +27,8 @@ import {
   isTablet,
   isShortHeightDevice,
   getScreenHeight,
+  SCREEN_WIDTH,
+  SCREEN_HEIGHT,
   RESPONSIVE,
   getDeviceInfo
 } from '../../utils/responsive';
@@ -124,6 +126,9 @@ const GameScreen = ({ navigation, route }) => {
   } = useSelector(state => state.game);
 
   const { playersList } = useSelector(state => state.players);
+
+  // Safe area offsets para iOS
+  const { rightOffset, topOffset } = useSafeAreaOffsets();
 
   // Local state
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
@@ -501,7 +506,6 @@ const GameScreen = ({ navigation, route }) => {
   };
 
   // Obtener información del dispositivo para estilos dinámicos
-  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
   const isSmallScreen = isSmallDevice();
   const isTabletScreen = isTablet();
 
@@ -945,7 +949,7 @@ const GameScreen = ({ navigation, route }) => {
             {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 45 : 20)].map((_, index) => (
               <View
                 key={index}
-                style={[styles.line, { top: (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 20 : 40) + (index * (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 18 : 25)) }]}
+                style={[styles.line, { top: scaleByContent(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 20 : 40, 'spacing') + (index * scaleByContent(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 18 : 25, 'spacing')) }]}
               />
             ))}
           </View>
@@ -992,7 +996,7 @@ const GameScreen = ({ navigation, route }) => {
           {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 45 : 20)].map((_, index) => (
             <View
               key={index}
-              style={[styles.line, { top: (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 20 : 40) + (index * (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 18 : 25)) }]}
+              style={[styles.line, { top: scaleByContent(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 20 : 40, 'spacing') + (index * scaleByContent(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 18 : 25, 'spacing')) }]}
             />
           ))}
         </View>
@@ -1009,6 +1013,8 @@ const GameScreen = ({ navigation, route }) => {
         style={[
           styles.muteButton,
           {
+            right: rightOffset,
+            top: topOffset + scaleByContent(20, 'spacing'),
             transform: [{ scale: muteButtonScale }],
           },
         ]}
@@ -1019,7 +1025,7 @@ const GameScreen = ({ navigation, route }) => {
           activeOpacity={0.8}
         >
           <CustomMuteIcon
-            size={50}
+            size={scaleModerate(50, 0.3)}
             isMuted={isMuted}
           />
         </TouchableOpacity>
@@ -1030,6 +1036,8 @@ const GameScreen = ({ navigation, route }) => {
         style={[
           styles.configButton,
           {
+            right: rightOffset + scaleByContent(70, 'interactive'),
+            top: topOffset + scaleByContent(20, 'spacing'),
             transform: [{ scale: configButtonScale }],
           },
         ]}
@@ -1039,7 +1047,7 @@ const GameScreen = ({ navigation, route }) => {
           style={styles.iconButtonTouchable}
           activeOpacity={0.8}
         >
-          <CustomConfigIcon size={50} />
+          <CustomConfigIcon size={scaleModerate(50, 0.3)} />
         </TouchableOpacity>
       </Animated.View>
 
@@ -1231,7 +1239,6 @@ const GameScreen = ({ navigation, route }) => {
 };
 
 // Obtener información del dispositivo para estilos dinámicos
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
 const isShortHeight = isShortHeightDevice();
@@ -1256,8 +1263,8 @@ const styles = StyleSheet.create({
   notebookLines: {
     position: 'absolute',
     top: 0,
-    left: 100,
-    right: 20,
+    left: scaleByContent(100, 'spacing'),
+    right: scaleByContent(20, 'spacing'),
     bottom: 0,
   },
 
@@ -1272,55 +1279,55 @@ const styles = StyleSheet.create({
 
   redMarginLine: {
     position: 'absolute',
-    left: 95,
+    left: scaleByContent(95, 'spacing'),
     top: 0,
     bottom: 0,
-    width: 2,
+    width: scaleByContent(2, 'spacing'),
     backgroundColor: '#FF6B6B',
     opacity: 0.5,
   },
 
   holesPunch: {
     position: 'absolute',
-    left: 30,
-    top: 60,
-    bottom: 60,
-    width: 25,
+    left: scaleByContent(30, 'spacing'),
+    top: scaleByContent(60, 'spacing'),
+    bottom: scaleByContent(60, 'spacing'),
+    width: scaleByContent(25, 'spacing'),
     justifyContent: 'space-around',
     alignItems: 'center',
   },
 
   hole: {
-    width: 18,
-    height: 18,
-    borderRadius: 10,
+    width: scaleByContent(18, 'spacing'),
+    height: scaleByContent(18, 'spacing'),
+    borderRadius: scaleByContent(10, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
   },
 
   // Botones superiores
   muteButton: {
     position: 'absolute',
-    top: 30,
-    right: 20,
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    top: scaleByContent(30, 'spacing'),
+    right: scaleByContent(20, 'spacing'),
+    width: scaleByContent(70, 'interactive'),
+    height: scaleByContent(70, 'interactive'),
+    borderRadius: scaleByContent(35, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 6,
     transform: [{ rotate: '2deg' }],
     zIndex: 15,
@@ -1328,20 +1335,20 @@ const styles = StyleSheet.create({
 
   configButton: {
     position: 'absolute',
-    top: 30,
-    right: 90,
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    top: scaleByContent(30, 'spacing'),
+    right: scaleByContent(90, 'spacing'),
+    width: scaleByContent(70, 'interactive'),
+    height: scaleByContent(70, 'interactive'),
+    borderRadius: scaleByContent(35, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 6,
     transform: [{ rotate: '-2deg' }],
     zIndex: 15,
@@ -1377,27 +1384,27 @@ const styles = StyleSheet.create({
 
   mutedLine: {
     width: '80%',
-    height: 3,
-    borderRadius: 2,
+    height: scaleByContent(3, 'spacing'),
+    borderRadius: scaleByContent(2, 'spacing'),
     transform: [{ rotate: '45deg' }],
   },
 
   // Indicador de ronda
   roundIndicator: {
     position: 'absolute',
-    top: 30,
-    left: 30,
+    top: scaleByContent(30, 'spacing'),
+    left: scaleByContent(30, 'spacing'),
     backgroundColor: theme.colors.postItYellow,
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    borderRadius: 15,
-    borderTopLeftRadius: 5,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
+    borderRadius: scaleByContent(15, 'spacing'),
+    borderTopLeftRadius: scaleByContent(5, 'spacing'),
+    paddingVertical: scaleByContent(8, 'spacing'),
+    paddingHorizontal: scaleByContent(15, 'spacing'),
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
     transform: [{ rotate: '-1deg' }],
     zIndex: 10,
@@ -1449,7 +1456,7 @@ const styles = StyleSheet.create({
   questionContainer: {
     flex: 1,
     marginVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
-    maxHeight: isShortHeight ? 200 : undefined,
+    maxHeight: isShortHeight ? scaleByContent(200, 'interactive') : undefined,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1499,16 +1506,16 @@ const styles = StyleSheet.create({
 
   skipButton: {
     backgroundColor: theme.colors.postItPink,
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    borderRadius: 8,
-    borderTopLeftRadius: 3,
-    paddingVertical: 6,
-    paddingHorizontal: 18,
+    borderRadius: scaleByContent(8, 'spacing'),
+    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    paddingVertical: scaleByContent(6, 'spacing'),
+    paddingHorizontal: scaleByContent(18, 'spacing'),
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.2,
-    shadowRadius: 2,
+    shadowRadius: scaleByContent(2, 'spacing'),
     elevation: 2,
     transform: [{ rotate: '-2deg' }],
   },
@@ -1522,16 +1529,16 @@ const styles = StyleSheet.create({
 
   continueButton: {
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    borderRadius: 8,
-    borderTopLeftRadius: 3,
-    paddingVertical: 6,
-    paddingHorizontal: 22,
+    borderRadius: scaleByContent(8, 'spacing'),
+    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    paddingVertical: scaleByContent(6, 'spacing'),
+    paddingHorizontal: scaleByContent(22, 'spacing'),
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.2,
-    shadowRadius: 2,
+    shadowRadius: scaleByContent(2, 'spacing'),
     elevation: 2,
     transform: [{ rotate: '2deg' }],
   },

@@ -51,15 +51,15 @@ export const getServerUrl = () => {
  * Configuración manual para testing
  * Descomenta y modifica según tu red
  */
-export const MANUAL_SERVER_URL = 'http://192.168.100.18:3001'; // Tu IP actual (Windows)
-// export const MANUAL_SERVER_URL = null;
+// export const MANUAL_SERVER_URL = 'http://192.168.100.18:3001'; // Para desarrollo local
+export const MANUAL_SERVER_URL = null; // Deshabilitado para producción (modo local)
 
 /**
  * Configuración para modo túnel
  * Cuando uses túnel de Expo, también necesitas túnel para el backend
  */
-export const TUNNEL_SERVER_URL = 'https://c3508bc55266.ngrok-free.app'; // URL de ngrok
-// export const TUNNEL_SERVER_URL = null; // Descomenta esta línea para deshabilitar el túnel
+// export const TUNNEL_SERVER_URL = 'https://YOUR_NGROK_URL.ngrok-free.app'; // URL de ngrok para desarrollo
+export const TUNNEL_SERVER_URL = null; // Deshabilitado para producción (modo local)
 
 /**
  * Obtener URL final del servidor

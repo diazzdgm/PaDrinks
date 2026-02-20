@@ -5,12 +5,18 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "ios": {
+        "distribution": "internal"
       },
       "node": "20.18.1",
       "env": {
@@ -19,9 +25,15 @@
     },
     "production": {
       "android": {
-        "buildType": "apk"
+        "buildType": "app-bundle"
       },
-      "node": "20.18.1"
+      "ios": {
+        "distribution": "store"
+      },
+      "node": "20.18.1",
+      "env": {
+        "NODE_ENV": "production"
+      }
     }
   },
   "submit": {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Platform, BackHandler } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Font from 'expo-font';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as NavigationBar from 'expo-navigation-bar';
@@ -129,10 +130,12 @@ export default function App() {
   }
 
   return (
-    <Provider store={store}>
-      <StatusBar style="light" hidden={true} />
-      <AppNavigator />
-    </Provider>
+    <SafeAreaProvider>
+      <Provider store={store}>
+        <StatusBar style="light" hidden={true} />
+        <AppNavigator />
+      </Provider>
+    </SafeAreaProvider>
   );
 }
 

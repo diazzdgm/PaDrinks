@@ -9,7 +9,6 @@ import {
   Image,
   TextInput,
   Alert,
-  Modal,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
@@ -18,6 +17,7 @@ import * as Haptics from 'expo-haptics';
 import { useDispatch } from 'react-redux';
 import { setGameSettings } from '../../store/gameSlice';
 import { theme } from '../../styles/theme';
+import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
 import SocketService from '../../services/SocketService';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
@@ -33,10 +33,11 @@ import {
   getDeviceType,
   isSmallDevice,
   isTablet,
+  isShortHeightDevice,
   RESPONSIVE,
   getDeviceInfo,
   SCREEN_WIDTH,
-  SCREEN_HEIGHT 
+  SCREEN_HEIGHT
 } from '../../utils/responsive';
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
@@ -72,7 +73,10 @@ const CustomMuteIcon = ({ size, isMuted = false }) => {
 const PlayerRegistrationScreen = ({ navigation, route }) => {
   // Redux
   const dispatch = useDispatch();
-  
+
+  // Safe area offsets para iOS
+  const { leftOffset, rightOffset, topOffset } = useSafeAreaOffsets();
+
   // Parámetros de navegación
   const { gameMode, playMethod, connectionType, isJoining, roomCode, roomData } = route.params;
   
@@ -243,22 +247,50 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
       // Opciones para la cámara
       const options = {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1], // Cuadrado para foto de perfil
-        quality: 0.5, // Reducido de 0.8 a 0.5 para menor tamaño
+        allowsEditing: false, // Deshabilitado para evitar barras negras en landscape iOS
+        quality: 1.0, // Calidad alta para mejor crop manual
         cameraType: ImagePicker.CameraType.front, // Cámara frontal para selfie
         exif: false, // No incluir metadatos EXIF
       };
-      
+
       // Abrir cámara
       const result = await ImagePicker.launchCameraAsync(options);
-      
+
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const tempUri = result.assets[0].uri;
-        console.log('📸 Foto tomada exitosamente (temporal):', tempUri);
-        
-        // Procesar imagen (redimensionar y convertir a base64)
-        const processedUri = await processImageForUpload(tempUri);
+        const originalUri = result.assets[0].uri;
+        console.log('📸 Foto tomada exitosamente (original):', originalUri);
+
+        // Center-crop manual a cuadrado para evitar barras negras en iOS landscape
+        const { width: imgWidth, height: imgHeight } = result.assets[0];
+        const smallerDimension = Math.min(imgWidth, imgHeight);
+        const cropX = (imgWidth - smallerDimension) / 2;
+        const cropY = (imgHeight - smallerDimension) / 2;
+
+        const croppedImage = await manipulateAsync(
+          originalUri,
+          [
+            {
+              crop: {
+                originX: cropX,
+                originY: cropY,
+                width: smallerDimension,
+                height: smallerDimension,
+              }
+            },
+            {
+              resize: { width: 500, height: 500 }
+            }
+          ],
+          {
+            compress: 0.8,
+            format: SaveFormat.JPEG
+          }
+        );
+
+        console.log('✂️ Foto cropeada a cuadrado:', croppedImage.uri);
+
+        // Procesar imagen cropeada (redimensionar y convertir a base64)
+        const processedUri = await processImageForUpload(croppedImage.uri);
         setPhotoUri(processedUri);
         setPlayerPhoto('photo');
         setSelectedEmoji(''); // Limpiar emoji si había uno seleccionado
@@ -595,18 +627,26 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
 
       {/* Botón de regreso */}
       <TouchableOpacity
-        style={styles.backButton}
+        style={[
+          styles.backButton,
+          {
+            left: leftOffset,
+            top: topOffset + scaleByContent(30, 'spacing'),
+          },
+        ]}
         onPress={handleGoBack}
         activeOpacity={0.8}
       >
         <Text style={styles.backButtonText}>← Atrás</Text>
       </TouchableOpacity>
-      
+
       {/* Botón de Mute */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.sketchMuteButton,
           {
+            right: rightOffset,
+            top: topOffset + scaleByContent(20, 'spacing'),
             transform: [{ scale: muteButtonScale }],
           },
         ]}
@@ -922,6 +962,7 @@ const { width, height } = Dimensions.get('window');
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
+const isShortHeight = isShortHeightDevice();
 
 const styles = StyleSheet.create({
   container: {
@@ -1046,7 +1087,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     paddingHorizontal: scaleByContent(isSmallScreen ? 90 : isTabletScreen ? 150 : 120, 'spacing'),
-    paddingBottom: scaleByContent(isSmallScreen ? 80 : isTabletScreen ? 120 : 100, 'spacing'),
+    paddingBottom: scaleByContent(isShortHeight ? 35 : 55, 'spacing'),
   },
   
   // Lado izquierdo - 35% del ancho
@@ -1060,10 +1101,10 @@ const styles = StyleSheet.create({
   rightSide: {
     flex: isSmallScreen ? 0.6 : 0.65,
     paddingLeft: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 25 : 20, 'spacing'),
-    paddingTop: scaleByContent(-5, 'spacing'),
     borderLeftWidth: scaleByContent(2, 'spacing'),
     borderLeftColor: '#A8C8EC',
     borderLeftStyle: 'dashed',
+    justifyContent: 'space-between',
   },
   
   sectionTitle: {
@@ -1155,29 +1196,25 @@ const styles = StyleSheet.create({
   
   // Campos del formulario
   fieldContainer: {
-    marginBottom: scaleByContent(10, 'spacing'),
   },
-  
+
   upperFieldContainer: {
-    marginTop: scaleByContent(-12, 'spacing'),
   },
-  
+
   orientationFieldContainer: {
-    marginTop: scaleByContent(-5, 'spacing'),
   },
-  
+
   genderFieldContainer: {
-    marginTop: scaleByContent(-25, 'spacing'),
   },
   
   fieldLabel: {
     fontSize: scaleByContent(18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
-    marginBottom: scaleByContent(10, 'spacing'),
+    marginBottom: scaleByContent(5, 'spacing'),
     transform: [{ rotate: '0.3deg' }],
   },
-  
+
   // Input de texto
   textInput: {
     backgroundColor: '#FFFFFF',
@@ -1215,7 +1252,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderRadius: scaleByContent(12, 'spacing'),
     borderTopLeftRadius: scaleByContent(3, 'spacing'),
-    paddingVertical: scaleByContent(15, 'spacing'),
+    paddingVertical: scaleByContent(10, 'spacing'),
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
@@ -1261,7 +1298,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderRadius: scaleByContent(12, 'spacing'),
     borderTopLeftRadius: scaleByContent(3, 'spacing'),
-    paddingVertical: scaleByContent(15, 'spacing'),
+    paddingVertical: scaleByContent(10, 'spacing'),
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },

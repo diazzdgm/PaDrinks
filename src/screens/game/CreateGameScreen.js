@@ -5,10 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  Dimensions,
   Alert,
   Image,
-  Modal,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
@@ -16,6 +14,7 @@ import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../../styles/theme';
+import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
 import { setGameMode } from '../../store/gameSlice';
 import { useSocket, useRoom } from '../../hooks/useSocket';
 import { setSocketConnected, setRoomData } from '../../store/connectionSlice';
@@ -73,7 +72,10 @@ const CreateGameScreen = ({ navigation }) => {
   // Socket hooks
   const { connect, disconnect, connected } = useSocket();
   const { createRoom, loading: roomLoading, error: roomError } = useRoom();
-  
+
+  // Safe area offsets para iOS
+  const { leftOffset, rightOffset, topOffset } = useSafeAreaOffsets();
+
   // Device info para responsive design
   const deviceInfo = getDeviceInfo();
   const deviceType = getDeviceType();
@@ -445,7 +447,13 @@ const CreateGameScreen = ({ navigation }) => {
 
       {/* Botón de regreso */}
       <TouchableOpacity
-        style={styles.backButton}
+        style={[
+          styles.backButton,
+          {
+            left: leftOffset,
+            top: topOffset + scaleByContent(30, 'spacing'),
+          },
+        ]}
         onPress={handleGoBack}
         activeOpacity={0.8}
       >
@@ -453,10 +461,12 @@ const CreateGameScreen = ({ navigation }) => {
       </TouchableOpacity>
       
       {/* Botón de Mute */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.sketchMuteButton,
           {
+            right: rightOffset,
+            top: topOffset + scaleByContent(20, 'spacing'),
             transform: [{ scale: muteButtonScale }],
           },
         ]}
@@ -466,8 +476,8 @@ const CreateGameScreen = ({ navigation }) => {
           style={styles.muteButtonTouchable}
           activeOpacity={0.8}
         >
-          <CustomMuteIcon 
-            size={50}
+          <CustomMuteIcon
+            size={scaleModerate(50, 0.3)}
             isMuted={isMuted}
           />
         </TouchableOpacity>
@@ -576,7 +586,8 @@ const CreateGameScreen = ({ navigation }) => {
 };
 
 // Obtener información del dispositivo para estilos dinámicos
-const { width, height } = Dimensions.get('window');
+const width = SCREEN_WIDTH;
+const height = SCREEN_HEIGHT;
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
@@ -1114,67 +1125,67 @@ const styles = StyleSheet.create({
   // Estilos simplificados para iOS
   modalContainerSimple: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 30,
+    borderRadius: scaleByContent(20, 'spacing'),
+    padding: scaleByContent(30, 'spacing'),
     alignItems: 'center',
     justifyContent: 'center',
-    maxWidth: 400,
+    maxWidth: scaleByContent(400, 'interactive'),
     width: '85%',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: scaleByContent(4, 'spacing') },
     shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowRadius: scaleByContent(10, 'spacing'),
     elevation: 10,
   },
 
   modalIconSimple: {
-    fontSize: 60,
-    marginBottom: 20,
+    fontSize: scaleByContent(60, 'icon'),
+    marginBottom: scaleByContent(20, 'spacing'),
   },
 
   modalTitleSimple: {
-    fontSize: 24,
+    fontSize: scaleByContent(24, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: scaleByContent(15, 'spacing'),
   },
 
   modalMessageSimple: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#333333',
     textAlign: 'center',
-    marginBottom: 10,
-    lineHeight: 22,
+    marginBottom: scaleByContent(10, 'spacing'),
+    lineHeight: scaleByContent(22, 'text'),
   },
 
   modalSubMessageSimple: {
-    fontSize: 14,
+    fontSize: scaleByContent(14, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
-    marginBottom: 25,
+    marginBottom: scaleByContent(25, 'spacing'),
     fontStyle: 'italic',
-    lineHeight: 18,
+    lineHeight: scaleByContent(18, 'text'),
   },
 
   modalButtonSimple: {
     backgroundColor: '#FFE082',
-    paddingHorizontal: 30,
-    paddingVertical: 12,
-    borderRadius: 15,
-    borderWidth: 2,
+    paddingHorizontal: scaleByContent(30, 'spacing'),
+    paddingVertical: scaleByContent(12, 'spacing'),
+    borderRadius: scaleByContent(15, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
   },
 
   modalButtonTextSimple: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },

@@ -9,7 +9,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../styles/theme';
-import { scaleByContent, isSmallDevice } from '../../utils/responsive';
+import { scaleByContent, isSmallDevice, isShortHeightDevice } from '../../utils/responsive';
 import {
   initializePreferenceVote,
   setPreferenceVotePhase,
@@ -496,6 +496,7 @@ const PreferenceVoteDisplay = ({
 };
 
 const isSmallScreen = isSmallDevice();
+const isShortHeight = isShortHeightDevice();
 
 const styles = StyleSheet.create({
   instructionContainer: {
@@ -544,7 +545,7 @@ const styles = StyleSheet.create({
   questionContainer: {
     flex: 1,
     marginVertical: scaleByContent(20, 'spacing'),
-    maxHeight: isSmallScreen ? 300 : 400,
+    maxHeight: isShortHeight ? scaleByContent(200, 'interactive') : isSmallScreen ? scaleByContent(300, 'interactive') : scaleByContent(400, 'interactive'),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -553,7 +554,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: scaleByContent(10, 'spacing'),
     marginBottom: scaleByContent(20, 'spacing'),
-    maxHeight: isSmallScreen ? 300 : 400,
+    maxHeight: isShortHeight ? scaleByContent(200, 'interactive') : isSmallScreen ? scaleByContent(300, 'interactive') : scaleByContent(400, 'interactive'),
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
@@ -790,10 +791,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.postItPink,
     borderWidth: 1,
     borderColor: '#000000',
-    borderRadius: 8,
-    borderTopLeftRadius: 3,
-    paddingVertical: 6,
-    paddingHorizontal: 18,
+    borderRadius: scaleByContent(8, 'spacing'),
+    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    paddingVertical: scaleByContent(6, 'spacing'),
+    paddingHorizontal: scaleByContent(18, 'spacing'),
     shadowColor: '#000',
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.15,
@@ -814,10 +815,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.postItYellow,
     borderWidth: 1,
     borderColor: '#000000',
-    borderRadius: 8,
-    borderTopLeftRadius: 3,
-    paddingVertical: 6,
-    paddingHorizontal: 18,
+    borderRadius: scaleByContent(8, 'spacing'),
+    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    paddingVertical: scaleByContent(6, 'spacing'),
+    paddingHorizontal: scaleByContent(18, 'spacing'),
     shadowColor: '#000',
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.15,
@@ -836,16 +837,16 @@ const styles = StyleSheet.create({
 
   continueButton: {
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#000000',
-    borderRadius: 8,
-    borderTopLeftRadius: 3,
-    paddingVertical: 6,
-    paddingHorizontal: 22,
+    borderRadius: scaleByContent(8, 'spacing'),
+    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    paddingVertical: scaleByContent(6, 'spacing'),
+    paddingHorizontal: scaleByContent(22, 'spacing'),
     shadowColor: '#000',
-    shadowOffset: { width: 4, height: 4 },
+    shadowOffset: { width: scaleByContent(4, 'spacing'), height: scaleByContent(4, 'spacing') },
     shadowOpacity: 0.35,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 6,
     transform: [{ rotate: '2deg' }],
   },

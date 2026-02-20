@@ -7,7 +7,7 @@
   "questions": [
     {
       "id": "hhs_001",
-      "text": "{player1} mirate fijamente de cerca por 1 minuto con {player2} y llenense los cachetes de su trago, el jugador que se ria o escupa, toma shot",
+      "text": "{player1} y {player2}, mirense 1m de cerca con trago en la boca, quien ria o escupa, toma shot",
       "instruction": "Ojo con ojo, trago con trago",
       "emoji": "👁️💦"
     }

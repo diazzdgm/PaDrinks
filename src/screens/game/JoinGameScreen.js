@@ -5,10 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  Dimensions,
   Alert,
   Image,
-  Modal,
   TextInput,
   ActivityIndicator,
 } from 'react-native';
@@ -19,6 +17,7 @@ import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../../styles/theme';
+import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
 import { useSocket, useRoom } from '../../hooks/useSocket';
 import { setRoomData } from '../../store/connectionSlice';
 import SocketService from '../../services/SocketService';
@@ -34,13 +33,15 @@ import {
   isTablet,
   isShortHeightDevice,
   getScreenHeight,
+  SCREEN_WIDTH,
+  SCREEN_HEIGHT,
   RESPONSIVE,
   getDeviceInfo
 } from '../../utils/responsive';
 
 // Obtener información del dispositivo para estilos dinámicos
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const { width, height } = Dimensions.get('window');
+const width = SCREEN_WIDTH;
+const height = SCREEN_HEIGHT;
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
@@ -84,7 +85,10 @@ const JoinGameScreen = ({ navigation }) => {
   // Socket hooks
   const { connect, disconnect, connected } = useSocket();
   const { joinRoom, loading: roomLoading, error: roomError } = useRoom();
-  
+
+  // Safe area offsets para iOS
+  const { leftOffset, rightOffset, topOffset } = useSafeAreaOffsets();
+
   // Estados
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [roomCode, setRoomCode] = useState('');
@@ -426,7 +430,7 @@ const JoinGameScreen = ({ navigation }) => {
         
         {/* Líneas horizontales azules */}
         {[...Array(25)].map((_, i) => (
-          <View key={i} style={[styles.blueLine, { top: 80 + i * 30 }]} />
+          <View key={i} style={[styles.blueLine, { top: scaleByContent(80, 'spacing') + i * scaleByContent(30, 'spacing') }]} />
         ))}
       </View>
 
@@ -474,7 +478,13 @@ const JoinGameScreen = ({ navigation }) => {
 
       {/* Botón de regreso */}
       <TouchableOpacity
-        style={styles.backButton}
+        style={[
+          styles.backButton,
+          {
+            left: leftOffset,
+            top: topOffset + scaleByContent(30, 'spacing'),
+          },
+        ]}
         onPress={handleGoBack}
         activeOpacity={0.7}
       >
@@ -493,10 +503,12 @@ const JoinGameScreen = ({ navigation }) => {
       </View>
 
       {/* Botón de mute */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.sketchMuteButton,
           {
+            right: rightOffset,
+            top: topOffset + scaleByContent(20, 'spacing'),
             transform: [{ scale: muteButtonScale }],
           },
         ]}
@@ -506,8 +518,8 @@ const JoinGameScreen = ({ navigation }) => {
           style={styles.muteButtonTouchable}
           activeOpacity={0.8}
         >
-          <CustomMuteIcon 
-            size={50}
+          <CustomMuteIcon
+            size={scaleModerate(50, 0.3)}
             isMuted={isMuted}
           />
         </TouchableOpacity>
@@ -687,42 +699,42 @@ const styles = StyleSheet.create({
 
   holes: {
     position: 'absolute',
-    left: 30,
-    top: 60,
-    bottom: 60,
-    width: 25,
+    left: scaleByContent(30, 'spacing'),
+    top: scaleByContent(60, 'spacing'),
+    bottom: scaleByContent(60, 'spacing'),
+    width: scaleByContent(25, 'spacing'),
     justifyContent: 'space-around',
     alignItems: 'center',
   },
 
   hole: {
-    width: 18,
-    height: 18,
-    borderRadius: 10,
+    width: scaleByContent(18, 'spacing'),
+    height: scaleByContent(18, 'spacing'),
+    borderRadius: scaleByContent(10, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
   },
 
   redLine: {
     position: 'absolute',
-    left: 95,
+    left: scaleByContent(95, 'spacing'),
     top: 0,
     bottom: 0,
-    width: 2,
+    width: scaleByContent(2, 'spacing'),
     backgroundColor: '#FF6B6B',
     opacity: 0.5,
   },
 
   blueLine: {
     position: 'absolute',
-    left: 100,
-    right: 20,
+    left: scaleByContent(100, 'spacing'),
+    right: scaleByContent(20, 'spacing'),
     height: 1,
     backgroundColor: '#A8C8EC',
     opacity: 0.6,
@@ -740,8 +752,8 @@ const styles = StyleSheet.create({
 
   titleContainer: {
     alignItems: 'center',
-    marginBottom: isShortHeight ? 10 : 20,
-    marginTop: isShortHeight ? 5 : 10,
+    marginBottom: isShortHeight ? scaleByContent(10, 'spacing') : scaleByContent(20, 'spacing'),
+    marginTop: isShortHeight ? scaleByContent(5, 'spacing') : scaleByContent(10, 'spacing'),
   },
 
   title: {
@@ -749,7 +761,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: scaleByContent(8, 'spacing'),
     transform: [{ rotate: '0.5deg' }],
   },
 
@@ -765,22 +777,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    gap: 10,
+    paddingHorizontal: scaleByContent(20, 'spacing'),
+    gap: scaleByContent(10, 'spacing'),
   },
 
   mainButton: {
-    width: Math.min(width * 0.4, 260),
-    height: isShortHeight ? Math.min(screenHeight * 0.55, 220) : Math.min(screenHeight * 0.65, 320),
-    padding: isShortHeight ? 15 : 25,
-    borderRadius: 18,
-    borderTopLeftRadius: 6,
-    borderWidth: 3,
+    width: Math.min(width * 0.4, scaleByContent(260, 'interactive')),
+    height: isShortHeight ? Math.min(screenHeight * 0.55, scaleByContent(220, 'interactive')) : Math.min(screenHeight * 0.65, scaleByContent(320, 'interactive')),
+    padding: isShortHeight ? scaleByContent(15, 'spacing') : scaleByContent(25, 'spacing'),
+    borderRadius: scaleByContent(18, 'spacing'),
+    borderTopLeftRadius: scaleByContent(6, 'spacing'),
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 5, height: 5 },
+    shadowOffset: { width: scaleByContent(5, 'spacing'), height: scaleByContent(5, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 10,
+    shadowRadius: scaleByContent(10, 'spacing'),
     elevation: 10,
     alignItems: 'center',
     justifyContent: 'center',
@@ -798,7 +810,7 @@ const styles = StyleSheet.create({
   },
 
   buttonIcon: {
-    marginBottom: isShortHeight ? 8 : 15,
+    marginBottom: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
   },
 
   iconText: {
@@ -810,7 +822,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: scaleByContent(8, 'spacing'),
   },
 
   buttonDescription: {
@@ -818,31 +830,31 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primary,
     color: '#000000',
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: scaleByContent(18, 'text'),
     opacity: 0.8,
-    paddingHorizontal: 5,
+    paddingHorizontal: scaleByContent(5, 'spacing'),
   },
 
   connectionIndicator: {
     position: 'absolute',
-    top: 30,
-    right: 110, // Lado izquierdo del botón MUTE
+    top: scaleByContent(30, 'spacing'),
+    right: scaleByContent(110, 'spacing'),
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-    borderWidth: 2,
-    borderColor: '#000000', // Contorno negro
+    paddingHorizontal: scaleByContent(12, 'spacing'),
+    paddingVertical: scaleByContent(6, 'spacing'),
+    borderRadius: scaleByContent(15, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
+    borderColor: '#000000',
     zIndex: 1000,
   },
 
   connectionDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
+    width: scaleByContent(8, 'icon'),
+    height: scaleByContent(8, 'icon'),
+    borderRadius: scaleByContent(4, 'spacing'),
+    marginRight: scaleByContent(6, 'spacing'),
   },
 
   connectionText: {
@@ -853,19 +865,19 @@ const styles = StyleSheet.create({
 
   backButton: {
     position: 'absolute',
-    top: 40,
-    left: 30,
+    top: scaleByContent(40, 'spacing'),
+    left: scaleByContent(30, 'spacing'),
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 15,
-    borderTopLeftRadius: 5,
-    borderWidth: 2,
+    paddingHorizontal: scaleByContent(20, 'spacing'),
+    paddingVertical: scaleByContent(10, 'spacing'),
+    borderRadius: scaleByContent(15, 'spacing'),
+    borderTopLeftRadius: scaleByContent(5, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
     transform: [{ rotate: '-1deg' }],
     zIndex: 10,
@@ -880,23 +892,23 @@ const styles = StyleSheet.create({
   // Estilos para el botón de mute (idéntico a otras pantallas)
   sketchMuteButton: {
     position: 'absolute',
-    top: 30,
-    right: 30,
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    top: scaleByContent(30, 'spacing'),
+    right: scaleByContent(30, 'spacing'),
+    width: scaleByContent(70, 'interactive'),
+    height: scaleByContent(70, 'interactive'),
+    borderRadius: scaleByContent(35, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { 
-      width: 3, 
-      height: 3 
+    shadowOffset: {
+      width: scaleByContent(3, 'spacing'),
+      height: scaleByContent(3, 'spacing')
     },
     shadowOpacity: 0.25,
-    shadowRadius: 6,
+    shadowRadius: scaleByContent(6, 'spacing'),
     elevation: 6,
     transform: [{ rotate: '1.5deg' }],
     zIndex: 15,
@@ -932,8 +944,8 @@ const styles = StyleSheet.create({
   
   mutedLine: {
     width: '80%',
-    height: 3,
-    borderRadius: 2,
+    height: scaleByContent(3, 'spacing'),
+    borderRadius: scaleByContent(2, 'spacing'),
     transform: [{ rotate: '45deg' }],
   },
 
@@ -963,15 +975,15 @@ const styles = StyleSheet.create({
 
   modalContainer: {
     width: width * 0.8,
-    maxWidth: 400,
+    maxWidth: scaleByContent(400, 'interactive'),
     backgroundColor: '#F8F6F0',
-    borderRadius: 20,
-    borderWidth: 3,
+    borderRadius: scaleByContent(20, 'spacing'),
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#8B4513',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: scaleByContent(10, 'spacing') },
     shadowOpacity: 0.3,
-    shadowRadius: 20,
+    shadowRadius: scaleByContent(20, 'spacing'),
     elevation: 20,
   },
 
@@ -982,31 +994,31 @@ const styles = StyleSheet.create({
 
   modalHoles: {
     position: 'absolute',
-    left: 25,
-    top: 40,
+    left: scaleByContent(25, 'spacing'),
+    top: scaleByContent(40, 'spacing'),
     flexDirection: 'column',
   },
 
   modalHole: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: scaleByContent(12, 'spacing'),
+    height: scaleByContent(12, 'spacing'),
+    borderRadius: scaleByContent(6, 'spacing'),
     backgroundColor: '#E0E0E0',
-    marginBottom: 40,
+    marginBottom: scaleByContent(40, 'spacing'),
   },
 
   modalRedLine: {
     position: 'absolute',
-    left: 50,
+    left: scaleByContent(50, 'spacing'),
     top: 0,
     bottom: 0,
-    width: 2,
+    width: scaleByContent(2, 'spacing'),
     backgroundColor: '#FF6B6B',
   },
 
   modalContent: {
-    padding: 30,
-    paddingLeft: 70,
+    padding: scaleByContent(30, 'spacing'),
+    paddingLeft: scaleByContent(70, 'spacing'),
   },
 
   modalTitle: {
@@ -1014,7 +1026,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: scaleByContent(8, 'spacing'),
     transform: [{ rotate: '-0.5deg' }],
   },
 
@@ -1023,28 +1035,28 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: scaleByContent(30, 'spacing'),
     transform: [{ rotate: '0.3deg' }],
   },
 
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: scaleByContent(20, 'spacing'),
   },
 
   inputLabel: {
     fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#000000',
-    marginBottom: 8,
+    marginBottom: scaleByContent(8, 'spacing'),
     transform: [{ rotate: '-0.2deg' }],
   },
 
   textInput: {
     backgroundColor: '#FFF',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    borderRadius: 12,
-    paddingHorizontal: 15,
+    borderRadius: scaleByContent(12, 'spacing'),
+    paddingHorizontal: scaleByContent(15, 'spacing'),
     paddingVertical: scaleByContent(12, 'spacing'),
     fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
@@ -1053,10 +1065,10 @@ const styles = StyleSheet.create({
 
   codeInput: {
     backgroundColor: '#FFF',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    borderRadius: 12,
-    paddingHorizontal: 15,
+    borderRadius: scaleByContent(12, 'spacing'),
+    paddingHorizontal: scaleByContent(15, 'spacing'),
     paddingVertical: scaleByContent(15, 'spacing'),
     fontSize: scaleByContent(24, 'text'),
     fontFamily: theme.fonts.primaryBold,
@@ -1067,15 +1079,15 @@ const styles = StyleSheet.create({
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 30,
+    marginTop: scaleByContent(30, 'spacing'),
   },
 
   modalButton: {
     flex: 1,
-    paddingVertical: 15,
-    borderRadius: 12,
+    paddingVertical: scaleByContent(15, 'spacing'),
+    borderRadius: scaleByContent(12, 'spacing'),
     alignItems: 'center',
-    marginHorizontal: 5,
+    marginHorizontal: scaleByContent(5, 'spacing'),
   },
 
   cancelButton: {

@@ -9,7 +9,6 @@ import {
   Image,
   ScrollView,
   Alert,
-  Modal,
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useFocusEffect } from '@react-navigation/native';
@@ -18,6 +17,7 @@ import audioService from '../../services/AudioService';
 import * as Haptics from 'expo-haptics';
 import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../../styles/theme';
+import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
 import { useSocket, useRoom } from '../../hooks/useSocket';
 import { setRoomData } from '../../store/connectionSlice';
 import { clearAllPlayers } from '../../store/playersSlice';
@@ -77,7 +77,10 @@ const CreateLobbyScreen = ({ navigation, route }) => {
   // Socket hooks
   const { connected } = useSocket();
   const { createRoom, loading: roomLoading, error: roomError } = useRoom();
-  
+
+  // Safe area offsets para iOS
+  const { leftOffset, rightOffset, topOffset } = useSafeAreaOffsets();
+
   // Parámetros de navegación
   const { 
     gameMode, 
@@ -1042,18 +1045,26 @@ const CreateLobbyScreen = ({ navigation, route }) => {
 
       {/* Botón de regreso */}
       <TouchableOpacity
-        style={styles.backButton}
+        style={[
+          styles.backButton,
+          {
+            left: leftOffset,
+            top: topOffset + scaleByContent(30, 'spacing'),
+          },
+        ]}
         onPress={handleGoBack}
         activeOpacity={0.8}
       >
         <Text style={styles.backButtonText}>← Atrás</Text>
       </TouchableOpacity>
-      
+
       {/* Botón de Mute */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.sketchMuteButton,
           {
+            right: rightOffset,
+            top: topOffset + scaleByContent(20, 'spacing'),
             transform: [{ scale: muteButtonScale }],
           },
         ]}

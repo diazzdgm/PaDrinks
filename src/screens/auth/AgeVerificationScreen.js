@@ -7,7 +7,6 @@ import {
   Animated,
   BackHandler,
   Dimensions,
-  Modal,
   Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';

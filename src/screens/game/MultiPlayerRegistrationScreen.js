@@ -5,11 +5,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  Dimensions,
   Image,
   TextInput,
   Alert,
-  Modal,
   Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -20,6 +18,7 @@ import { useDispatch } from 'react-redux';
 import { addPlayer } from '../../store/playersSlice';
 import { getGameEngine } from '../../game/GameEngine';
 import { theme } from '../../styles/theme';
+import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Camera } from 'expo-camera';
@@ -74,7 +73,10 @@ const CustomMuteIcon = ({ size, isMuted = false }) => {
 const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   // Redux
   const dispatch = useDispatch();
-  
+
+  // Safe area offsets para iOS
+  const { leftOffset, rightOffset, topOffset } = useSafeAreaOffsets();
+
   // Parámetros de navegación
   const {
     gameMode,
@@ -691,18 +693,26 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
 
       {/* Botón de regreso */}
       <TouchableOpacity
-        style={styles.backButton}
+        style={[
+          styles.backButton,
+          {
+            left: leftOffset,
+            top: topOffset + scaleByContent(30, 'spacing'),
+          },
+        ]}
         onPress={handleGoBack}
         activeOpacity={0.8}
       >
         <Text style={styles.backButtonText}>← Atrás</Text>
       </TouchableOpacity>
-      
+
       {/* Botón de Mute */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.sketchMuteButton,
           {
+            right: rightOffset,
+            top: topOffset + scaleByContent(20, 'spacing'),
             transform: [{ scale: muteButtonScale }],
           },
         ]}
@@ -712,8 +722,8 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
           style={styles.muteButtonTouchable}
           activeOpacity={0.8}
         >
-          <CustomMuteIcon 
-            size={50}
+          <CustomMuteIcon
+            size={scaleModerate(50, 0.3)}
             isMuted={isMuted}
           />
         </TouchableOpacity>
@@ -983,7 +993,8 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
 };
 
 // Obtener información del dispositivo para estilos dinámicos
-const { width, height } = Dimensions.get('window');
+const width = SCREEN_WIDTH;
+const height = SCREEN_HEIGHT;
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
@@ -1018,7 +1029,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 1,
+    height: scaleByContent(1, 'spacing'),
     backgroundColor: '#A8C8EC',
     opacity: 0.6,
   },
@@ -1113,7 +1124,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     paddingHorizontal: scaleByContent(isSmallScreen ? 90 : isTabletScreen ? 150 : 120, 'spacing'),
-    paddingBottom: isShortHeight ? scaleByContent(50, 'spacing') : scaleByContent(isSmallScreen ? 80 : isTabletScreen ? 120 : 80, 'spacing'),
+    paddingBottom: scaleByContent(isShortHeight ? 35 : 55, 'spacing'),
     marginTop: scaleByContent(-20, 'spacing'),
   },
   
@@ -1128,10 +1139,10 @@ const styles = StyleSheet.create({
   rightSide: {
     flex: isSmallScreen ? 0.6 : 0.65,
     paddingLeft: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 25 : 20, 'spacing'),
-    paddingTop: scaleByContent(-5, 'spacing'),
     borderLeftWidth: scaleByContent(2, 'spacing'),
     borderLeftColor: '#A8C8EC',
     borderLeftStyle: 'dashed',
+    justifyContent: 'space-between',
   },
   
   sectionTitle: {
@@ -1223,26 +1234,22 @@ const styles = StyleSheet.create({
   
   // Campos del formulario
   fieldContainer: {
-    marginBottom: scaleByContent(10, 'spacing'),
   },
-  
+
   upperFieldContainer: {
-    marginTop: scaleByContent(-12, 'spacing'),
   },
-  
+
   genderFieldContainer: {
-    marginTop: scaleByContent(-25, 'spacing'),
   },
-  
+
   orientationFieldContainer: {
-    marginTop: scaleByContent(-5, 'spacing'),
   },
   
   fieldLabel: {
     fontSize: scaleByContent(18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
-    marginBottom: scaleByContent(10, 'spacing'),
+    marginBottom: scaleByContent(5, 'spacing'),
     transform: [{ rotate: '0.3deg' }],
   },
   
@@ -1283,7 +1290,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderRadius: scaleByContent(12, 'spacing'),
     borderTopLeftRadius: scaleByContent(3, 'spacing'),
-    paddingVertical: isShortHeight ? scaleByContent(10, 'spacing') : scaleByContent(15, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(10, 'spacing'),
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
@@ -1329,7 +1336,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderRadius: scaleByContent(12, 'spacing'),
     borderTopLeftRadius: scaleByContent(3, 'spacing'),
-    paddingVertical: isShortHeight ? scaleByContent(10, 'spacing') : scaleByContent(15, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(10, 'spacing'),
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
@@ -1458,8 +1465,8 @@ const styles = StyleSheet.create({
   
   mutedLine: {
     width: '80%',
-    height: 3,
-    borderRadius: 2,
+    height: scaleByContent(3, 'spacing'),
+    borderRadius: scaleByContent(2, 'spacing'),
     transform: [{ rotate: '45deg' }],
   },
 
@@ -1489,19 +1496,19 @@ const styles = StyleSheet.create({
   
   emojiModalContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 25,
-    maxWidth: 350,
+    borderRadius: scaleByContent(20, 'spacing'),
+    padding: scaleByContent(25, 'spacing'),
+    maxWidth: scaleByContent(350, 'interactive'),
     width: '85%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: scaleByContent(4, 'spacing'),
     },
     shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowRadius: scaleByContent(10, 'spacing'),
     elevation: 10,
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
   },
   
@@ -1564,47 +1571,47 @@ const styles = StyleSheet.create({
   },
 
   emojiModalTitle: {
-    fontSize: 20,
+    fontSize: scaleByContent(20, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: scaleByContent(20, 'spacing'),
   },
 
   emojiGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 10,
-    marginBottom: 20,
+    gap: scaleByContent(10, 'spacing'),
+    marginBottom: scaleByContent(20, 'spacing'),
   },
 
   emojiOption: {
-    width: 45,
-    height: 45,
+    width: scaleByContent(45, 'interactive'),
+    height: scaleByContent(45, 'interactive'),
     backgroundColor: '#F0F0F0',
-    borderRadius: 22.5,
-    borderWidth: 2,
+    borderRadius: scaleByContent(22.5, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#CCCCCC',
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   emojiOptionText: {
-    fontSize: 24,
+    fontSize: scaleByContent(24, 'icon'),
   },
 
   emojiModalButton: {
     backgroundColor: '#FFE082',
-    paddingHorizontal: 25,
-    paddingVertical: 10,
-    borderRadius: 15,
-    borderWidth: 2,
+    paddingHorizontal: scaleByContent(25, 'spacing'),
+    paddingVertical: scaleByContent(10, 'spacing'),
+    borderRadius: scaleByContent(15, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
   },
 
   emojiModalButtonText: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
@@ -1624,19 +1631,19 @@ const styles = StyleSheet.create({
 
   errorModalContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 30,
-    maxWidth: 350,
+    borderRadius: scaleByContent(20, 'spacing'),
+    padding: scaleByContent(30, 'spacing'),
+    maxWidth: scaleByContent(350, 'interactive'),
     width: '85%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: scaleByContent(4, 'spacing'),
     },
     shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowRadius: scaleByContent(10, 'spacing'),
     elevation: 10,
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#FF6B6B',
   },
 
@@ -1646,33 +1653,33 @@ const styles = StyleSheet.create({
   },
 
   errorModalTitle: {
-    fontSize: 24,
+    fontSize: scaleByContent(24, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: scaleByContent(15, 'spacing'),
   },
 
   errorModalMessage: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
-    marginBottom: 25,
-    lineHeight: 22,
+    marginBottom: scaleByContent(25, 'spacing'),
+    lineHeight: scaleByContent(22, 'text'),
   },
 
   errorModalButton: {
     backgroundColor: '#FF6B6B',
-    paddingHorizontal: 30,
-    paddingVertical: 12,
-    borderRadius: 15,
-    borderWidth: 2,
+    paddingHorizontal: scaleByContent(30, 'spacing'),
+    paddingVertical: scaleByContent(12, 'spacing'),
+    borderRadius: scaleByContent(15, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
   },
 
   errorModalButtonText: {
-    fontSize: 16,
+    fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#FFFFFF',
   },

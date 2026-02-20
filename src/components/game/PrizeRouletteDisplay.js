@@ -5,13 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  Modal,
   Easing,
 } from 'react-native';
 import Svg, { Path, Circle, G, Text as SvgText } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../styles/theme';
-import { scaleByContent, isSmallDevice } from '../../utils/responsive';
+import { scaleByContent, isSmallDevice, isShortHeightDevice } from '../../utils/responsive';
 import audioService from '../../services/AudioService';
 
 const PrizeRouletteDisplay = ({
@@ -267,7 +266,7 @@ const PrizeRouletteDisplay = ({
               }]
             }}
           >
-            <Svg width={200} height={200} viewBox="0 0 200 200">
+            <Svg width={scaleByContent(isShortHeight ? 140 : 200, 'interactive')} height={scaleByContent(isShortHeight ? 140 : 200, 'interactive')} viewBox="0 0 200 200">
               <G>
                 {prizes.map((prize, index) => {
                   const textPos = getTextPosition(index, prizes.length, 100);
@@ -412,6 +411,7 @@ const PrizeRouletteDisplay = ({
 };
 
 const isSmallScreen = isSmallDevice();
+const isShortHeight = isShortHeightDevice();
 
 const styles = StyleSheet.create({
   instructionContainer: {
@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
   questionContainer: {
     flex: 1,
     marginVertical: scaleByContent(20, 'spacing'),
-    maxHeight: isSmallScreen ? 300 : 400,
+    maxHeight: isShortHeight ? scaleByContent(200, 'interactive') : isSmallScreen ? scaleByContent(300, 'interactive') : scaleByContent(400, 'interactive'),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -460,18 +460,18 @@ const styles = StyleSheet.create({
   },
   spinButton: {
     position: 'absolute',
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: scaleByContent(70, 'interactive'),
+    height: scaleByContent(70, 'interactive'),
+    borderRadius: scaleByContent(35, 'spacing'),
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: 3,
+    borderWidth: scaleByContent(3, 'spacing'),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 5,
   },
   spinButtonText: {
@@ -503,16 +503,16 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     backgroundColor: theme.colors.postItPink,
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    borderRadius: 8,
-    borderTopLeftRadius: 3,
-    paddingVertical: 6,
-    paddingHorizontal: 18,
+    borderRadius: scaleByContent(8, 'spacing'),
+    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    paddingVertical: scaleByContent(6, 'spacing'),
+    paddingHorizontal: scaleByContent(18, 'spacing'),
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.2,
-    shadowRadius: 2,
+    shadowRadius: scaleByContent(2, 'spacing'),
     elevation: 2,
     transform: [{ rotate: '-2deg' }],
   },
@@ -524,16 +524,16 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    borderRadius: 8,
-    borderTopLeftRadius: 3,
-    paddingVertical: 6,
-    paddingHorizontal: 22,
+    borderRadius: scaleByContent(8, 'spacing'),
+    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    paddingVertical: scaleByContent(6, 'spacing'),
+    paddingHorizontal: scaleByContent(22, 'spacing'),
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.2,
-    shadowRadius: 2,
+    shadowRadius: scaleByContent(2, 'spacing'),
     elevation: 2,
     transform: [{ rotate: '2deg' }],
   },
@@ -637,16 +637,16 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
-    borderRadius: 8,
-    borderTopLeftRadius: 3,
-    paddingVertical: 8,
-    paddingHorizontal: 30,
+    borderRadius: scaleByContent(8, 'spacing'),
+    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    paddingVertical: scaleByContent(8, 'spacing'),
+    paddingHorizontal: scaleByContent(30, 'spacing'),
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.2,
-    shadowRadius: 2,
+    shadowRadius: scaleByContent(2, 'spacing'),
     elevation: 2,
     transform: [{ rotate: '-1deg' }],
   },

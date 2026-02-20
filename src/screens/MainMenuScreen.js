@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  Dimensions,
   Image,
   Alert,
 } from 'react-native';
@@ -16,19 +15,22 @@ import * as Haptics from 'expo-haptics';
 import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../styles/theme';
 import { useSocket } from '../hooks/useSocket';
+import { useSafeAreaOffsets } from '../hooks/useSafeAreaOffsets';
 import { setSocketConnected } from '../store/connectionSlice';
-import { 
-  scale, 
-  scaleWidth, 
-  scaleHeight, 
-  scaleText, 
+import {
+  scale,
+  scaleWidth,
+  scaleHeight,
+  scaleText,
   scaleModerate,
   scaleByContent,
   getDeviceType,
   isSmallDevice,
   isTablet,
   RESPONSIVE,
-  getDeviceInfo 
+  getDeviceInfo,
+  SCREEN_WIDTH,
+  SCREEN_HEIGHT
 } from '../utils/responsive';
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
@@ -68,7 +70,10 @@ const MainMenuScreen = ({ navigation }) => {
   
   // Socket hooks
   const { connect, disconnect, connected } = useSocket();
-  
+
+  // Safe area offsets para iOS
+  const { rightOffset, topOffset } = useSafeAreaOffsets();
+
   // Device info para debugging responsive
   const deviceInfo = getDeviceInfo();
   const deviceType = getDeviceType();
@@ -420,13 +425,13 @@ const MainMenuScreen = ({ navigation }) => {
       <View style={styles.paperBackground}>
         {/* Líneas horizontales de libreta */}
         <View style={styles.notebookLines}>
-          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 50 : Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) < 700 ? 16 : 20)].map((_, index) => (
-            <View 
-              key={index} 
+          {[...Array(notebookLineCount)].map((_, index) => (
+            <View
+              key={index}
               style={[
-                styles.line, 
-                { top: (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 15 : scaleByContent(25, 'spacing')) + (index * (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 15 : scaleByContent(25, 'spacing'))) }
-              ]} 
+                styles.line,
+                { top: notebookLineSpacing + (index * notebookLineSpacing) }
+              ]}
             />
           ))}
         </View>
@@ -648,10 +653,12 @@ const MainMenuScreen = ({ navigation }) => {
       </View>
 
       {/* Botón de Mute estilo sketch con SVG */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.sketchMuteButton,
           {
+            right: rightOffset,
+            top: topOffset + scaleHeight(isSmallDevice() ? 10 : isTablet() ? 15 : 12),
             transform: [{ scale: muteButtonScale }],
           },
         ]}
@@ -681,12 +688,15 @@ const MainMenuScreen = ({ navigation }) => {
 };
 
 // Obtener información del dispositivo para estilos dinámicos
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const { width, height } = Dimensions.get('window');
+const width = SCREEN_WIDTH;
+const height = SCREEN_HEIGHT;
 
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
+
+const notebookLineSpacing = isTabletScreen ? 15 : scaleByContent(25, 'spacing');
+const notebookLineCount = Math.ceil(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / notebookLineSpacing) + 2;
 
 const styles = StyleSheet.create({
   container: {
@@ -708,8 +718,8 @@ const styles = StyleSheet.create({
   notebookLines: {
     position: 'absolute',
     top: 0,
-    left: 100, // Después de agujeros y margen
-    right: 20,
+    left: scaleByContent(100, 'spacing'),
+    right: scaleByContent(20, 'spacing'),
     bottom: 0,
   },
   
@@ -717,7 +727,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 1,
+    height: scaleByContent(1, 'spacing'),
     backgroundColor: '#A8C8EC',
     opacity: 0.6,
   },
@@ -725,10 +735,10 @@ const styles = StyleSheet.create({
   // Línea roja del margen
   redMarginLine: {
     position: 'absolute',
-    left: 95,
+    left: scaleByContent(95, 'spacing'),
     top: 0,
     bottom: 0,
-    width: 2,
+    width: scaleByContent(2, 'spacing'),
     backgroundColor: '#FF6B6B',
     opacity: 0.5,
   },
@@ -736,10 +746,10 @@ const styles = StyleSheet.create({
   // Agujeros de perforación
   holesPunch: {
     position: 'absolute',
-    left: 30,
-    top: 60,
-    bottom: 60,
-    width: 25,
+    left: scaleByContent(30, 'spacing'),
+    top: scaleByContent(60, 'spacing'),
+    bottom: scaleByContent(60, 'spacing'),
+    width: scaleByContent(25, 'spacing'),
     justifyContent: 'space-around',
     alignItems: 'center',
   },
@@ -749,15 +759,15 @@ const styles = StyleSheet.create({
     height: scaleByContent(18, 'spacing'),
     borderRadius: scaleByContent(10, 'spacing'),
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
     shadowOffset: {
-      width: 2,
-      height: 2,
+      width: scaleByContent(2, 'spacing'),
+      height: scaleByContent(2, 'spacing'),
     },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
   },
   
@@ -779,8 +789,8 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     flexDirection: 'row', // Layout horizontal
-    paddingHorizontal: scaleWidth(isSmallDevice() ? 20 : isTablet() ? 60 : 40),
-    paddingVertical: scaleHeight(isSmallDevice() ? 15 : isTablet() ? 40 : 30),
+    paddingHorizontal: scaleWidth(isSmallDevice() ? 20 : isTablet() ? 30 : 40),
+    paddingVertical: scaleHeight(isSmallDevice() ? 15 : isTablet() ? 20 : 30),
   },
   
   // LADO IZQUIERDO - Logo
@@ -789,7 +799,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingRight: scaleWidth(isSmallDevice() ? 10 : 20),
-    paddingLeft: scaleWidth(isSmallDevice() ? 30 : isTablet() ? 80 : 60),
+    paddingLeft: scaleWidth(isSmallDevice() ? 30 : isTablet() ? 40 : 60),
   },
   
   logoContainer: {
@@ -801,12 +811,12 @@ const styles = StyleSheet.create({
   },
   
   logoImage: {
-    width: isSmallDevice() ? scale(160) : isTablet() ? scale(280) : scale(220),
-    height: isSmallDevice() ? scale(160) : isTablet() ? scale(280) : scale(220),
+    width: isSmallDevice() ? scale(160) : isTablet() ? scale(130) : scale(220),
+    height: isSmallDevice() ? scale(160) : isTablet() ? scale(130) : scale(220),
   },
   
   appTitle: {
-    fontSize: isSmallDevice() ? scaleText(36) : isTablet() ? scaleText(60) : scaleText(48),
+    fontSize: isSmallDevice() ? scaleText(36) : isTablet() ? scaleText(40) : scaleText(48),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -825,7 +835,7 @@ const styles = StyleSheet.create({
   },
   
   appVersion: {
-    fontSize: isSmallDevice() ? scaleText(10) : isTablet() ? scaleText(16) : scaleText(12),
+    fontSize: isSmallDevice() ? scaleText(10) : isTablet() ? scaleText(10) : scaleText(12),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
@@ -840,15 +850,15 @@ const styles = StyleSheet.create({
   },
   
   mainButtonsContainer: {
-    gap: scaleHeight(isSmallDevice() ? 12 : isTablet() ? 20 : 16), // Reducir separación entre botones
+    gap: scaleHeight(isSmallDevice() ? 12 : isTablet() ? 10 : 16),
   },
   
   mainButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: scaleHeight(isSmallDevice() ? 8 : isTablet() ? 16 : 12), // Reducir altura
-    paddingHorizontal: scaleWidth(isSmallDevice() ? 12 : isTablet() ? 24 : 18), // Reducir ancho
-    borderRadius: scale(isSmallDevice() ? 12 : isTablet() ? 18 : 15),
+    paddingVertical: scaleHeight(isSmallDevice() ? 8 : isTablet() ? 9 : 12),
+    paddingHorizontal: scaleWidth(isSmallDevice() ? 12 : isTablet() ? 16 : 18),
+    borderRadius: scale(isSmallDevice() ? 12 : isTablet() ? 10 : 15),
     borderTopLeftRadius: scale(5),
     shadowColor: '#000',
     shadowOffset: {
@@ -875,12 +885,12 @@ const styles = StyleSheet.create({
   
   
   buttonIcon: {
-    fontSize: isSmallDevice() ? scaleText(20) : isTablet() ? scaleText(30) : scaleText(24),
+    fontSize: isSmallDevice() ? scaleText(20) : isTablet() ? scaleText(20) : scaleText(24),
     marginRight: scaleWidth(isSmallDevice() ? 8 : isTablet() ? 16 : 12),
   },
   
   buttonText: {
-    fontSize: isSmallDevice() ? scaleText(16) : isTablet() ? scaleText(26) : scaleText(20), // Aumentar tamaño de texto
+    fontSize: isSmallDevice() ? scaleText(16) : isTablet() ? scaleText(18) : scaleText(20),
     fontFamily: theme.fonts.primaryBold,
     flex: 1,
   },
@@ -901,11 +911,11 @@ const styles = StyleSheet.create({
   // Efectos glow
   buttonGlow: {
     position: 'absolute',
-    top: -10,
-    left: -10,
-    right: -10,
-    bottom: -10,
-    borderRadius: 25,
+    top: scaleByContent(-10, 'spacing'),
+    left: scaleByContent(-10, 'spacing'),
+    right: scaleByContent(-10, 'spacing'),
+    bottom: scaleByContent(-10, 'spacing'),
+    borderRadius: scaleByContent(25, 'spacing'),
     zIndex: -1,
   },
   
@@ -930,13 +940,13 @@ const styles = StyleSheet.create({
   // Partículas
   particle: {
     position: 'absolute',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: scaleByContent(12, 'icon'),
+    height: scaleByContent(12, 'icon'),
+    borderRadius: scaleByContent(6, 'spacing'),
     top: '50%',
     left: '50%',
-    marginTop: -6,
-    marginLeft: -6,
+    marginTop: scaleByContent(-6, 'spacing'),
+    marginLeft: scaleByContent(-6, 'spacing'),
     zIndex: 2,
   },
   
@@ -962,15 +972,15 @@ const styles = StyleSheet.create({
   connectionIndicator: {
     position: 'absolute',
     top: scaleHeight(isSmallDevice() ? 10 : isTablet() ? 15 : 12),
-    right: scaleWidth(isSmallDevice() ? 100 : isTablet() ? 120 : 110), // Lado izquierdo del botón MUTE
+    right: scaleWidth(isSmallDevice() ? 100 : isTablet() ? 120 : 110),
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     paddingHorizontal: scaleWidth(12),
     paddingVertical: scaleHeight(6),
     borderRadius: scale(15),
-    borderWidth: 2,
-    borderColor: '#000000', // Contorno negro
+    borderWidth: scaleByContent(2, 'spacing'),
+    borderColor: '#000000',
     zIndex: 1000,
   },
   
@@ -982,7 +992,7 @@ const styles = StyleSheet.create({
   },
   
   connectionText: {
-    fontSize: isSmallDevice() ? scaleText(10) : isTablet() ? scaleText(16) : scaleText(12),
+    fontSize: isSmallDevice() ? scaleText(10) : isTablet() ? scaleText(12) : scaleText(12),
     fontFamily: theme.fonts.primary,
     color: '#333',
   },
@@ -992,9 +1002,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: scaleHeight(isSmallDevice() ? 10 : isTablet() ? 15 : 12),
     right: scaleWidth(isSmallDevice() ? 15 : isTablet() ? 25 : 20),
-    width: scaleModerate(isSmallDevice() ? 55 : isTablet() ? 85 : 70, 0.3),
-    height: scaleModerate(isSmallDevice() ? 55 : isTablet() ? 85 : 70, 0.3),
-    borderRadius: scaleModerate(isSmallDevice() ? 27.5 : isTablet() ? 42.5 : 35, 0.3),
+    width: scaleModerate(isSmallDevice() ? 55 : isTablet() ? 60 : 70, 0.3),
+    height: scaleModerate(isSmallDevice() ? 55 : isTablet() ? 60 : 70, 0.3),
+    borderRadius: scaleModerate(isSmallDevice() ? 27.5 : isTablet() ? 30 : 35, 0.3),
     backgroundColor: '#FFFFFF',
     borderWidth: scale(3),
     borderColor: '#000000',
@@ -1152,8 +1162,8 @@ const styles = StyleSheet.create({
   
   mutedLine: {
     width: '80%',
-    height: 3,
-    borderRadius: 2,
+    height: scaleByContent(3, 'spacing'),
+    borderRadius: scaleByContent(2, 'spacing'),
     transform: [{ rotate: '45deg' }],
   },
   
@@ -1167,7 +1177,7 @@ const styles = StyleSheet.create({
   },
   
   footerText: {
-    fontSize: isSmallDevice() ? scaleText(9, 8, 11) : isTablet() ? scaleText(14, 12, 16) : scaleText(11, 9, 13),
+    fontSize: isSmallDevice() ? scaleText(9, 8, 11) : isTablet() ? scaleText(10, 8, 12) : scaleText(11, 9, 13),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',

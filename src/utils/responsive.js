@@ -1,7 +1,7 @@
 import { Dimensions, PixelRatio } from 'react-native';
 
 // Obtener dimensiones de la pantalla
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+export const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Matriz de dispositivos de referencia con pesos por prioridad
 const REFERENCE_DEVICES = {
@@ -149,9 +149,14 @@ export const scaleByContent = (size, contentType = 'default') => {
   const aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
   let deviceMultiplier = 1.0;
 
-  // Detectar tablets primero (aspect ratio más cuadrado)
-  if (screenSize >= 1400 && aspectRatio < 1.8) {
-    deviceMultiplier = 0.75;
+  if (aspectRatio < 1.65 && screenHeight >= 700) {
+    if (screenHeight < 800) {
+      deviceMultiplier = 0.68;
+    } else if (screenHeight < 900) {
+      deviceMultiplier = 0.63;
+    } else {
+      deviceMultiplier = 0.52;
+    }
   }
   // Samsung S21 y phones ultra-wide con ALTURA REDUCIDA (< 400dp height)
   else if (screenHeight < 400 && aspectRatio > 2.0) {
@@ -182,7 +187,7 @@ export const scaleByContent = (size, contentType = 'default') => {
       return Math.max(baseScale * deviceMultiplier, 44);
 
     case 'text':
-      const textMultiplier = (screenSize >= 850 && screenSize < 1280) ? 1.15 : 1.0;
+      const textMultiplier = (screenSize >= 850) ? 1.15 : 1.0;
       return Math.min(baseScale * fontScale * deviceMultiplier * textMultiplier, size * 1.8);
 
     case 'spacing':
@@ -223,9 +228,12 @@ export const scaleModerate = (size, factor = 0.5) => {
  */
 export const getDeviceType = () => {
   const screenSize = Math.max(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const screenHeight = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT);
   const aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
-  
-  if (screenSize < 750) {
+
+  if (aspectRatio < 1.65 && screenHeight >= 700) {
+    return 'tablet-square';
+  } else if (screenSize < 750) {
     return 'phone-small';
   } else if (screenSize < 1100) {
     return aspectRatio > 2.0 ? 'phone-ultrawide' : 'phone-large';
@@ -319,12 +327,12 @@ export const getDeviceInfo = () => {
 
 // Breakpoints mejorados para diferentes dispositivos
 export const BREAKPOINTS = {
-  PHONE_SMALL: 750,     // iPhone SE, Android compactos (ajustado upward)
-  PHONE_LARGE: 1100,    // iPhone Pro Max, Pixel Pro (mejor separación)
-  TABLET_SMALL: 1400,   // iPad Mini, tablets pequeñas (nueva categoría)  
-  TABLET_LARGE: 1400,   // iPad Pro, tablets grandes
-  ASPECT_ULTRAWIDE: 2.0, // Relación de aspecto para ultra-wide
-  ASPECT_SQUARE: 1.8,    // Relación de aspecto para tablets cuadradas
+  PHONE_SMALL: 750,
+  PHONE_LARGE: 1100,
+  TABLET_DETECT_ASPECT: 1.65,
+  TABLET_DETECT_MIN_HEIGHT: 700,
+  ASPECT_ULTRAWIDE: 2.0,
+  ASPECT_SQUARE: 1.8,
 };
 
 // Valores responsive comunes usando el nuevo sistema

@@ -2,7 +2,7 @@
   "id": "mention_challenge",
   "name": "Menciona X cosa",
   "type": "mention_challenge",
-  "instruction": "Menciona lo que se te pide de manera rápida y si no puedes shot o trago",
+  "instruction": "Responde rápido, si fallas, ¡bebes!",
   "minPlayers": 2,
   "questions": [
     {

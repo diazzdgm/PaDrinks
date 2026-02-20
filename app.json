@@ -13,7 +13,16 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.padrinks.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "PaDrinks necesita acceso a la camara para tomar fotos de perfil y escanear codigos QR para unirse a partidas.",
+        "NSPhotoLibraryUsageDescription": "PaDrinks necesita acceso a tu galeria de fotos para seleccionar una foto de perfil.",
+        "NSBluetoothAlwaysUsageDescription": "PaDrinks usa Bluetooth para conectar dispositivos en modo multijugador local.",
+        "UIRequiresFullScreen": true,
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.padrinks.app",
@@ -27,8 +36,7 @@
       "permissions": [
         "CAMERA",
         "WRITE_EXTERNAL_STORAGE",
-        "READ_EXTERNAL_STORAGE",
-        "RECORD_AUDIO"
+        "READ_EXTERNAL_STORAGE"
       ]
     },
     "web": {
