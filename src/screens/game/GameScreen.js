@@ -511,11 +511,11 @@ const GameScreen = ({ navigation, route }) => {
 
   // Ajustar tamaño de fuente para preguntas largas
   const getQuestionFontSize = (text) => {
-    if (!text) return scaleByContent(28, 'text');
+    if (!text) return scaleByContent(isTabletScreen ? 18 : 28, 'text');
 
-    if (text.length > 80) return scaleByContent(isSmallScreen ? 22 : 24, 'text');
-    if (text.length > 60) return scaleByContent(isSmallScreen ? 24 : 26, 'text');
-    return scaleByContent(isSmallScreen ? 26 : 28, 'text');
+    if (text.length > 80) return scaleByContent(isSmallScreen ? 22 : isTabletScreen ? 15 : 24, 'text');
+    if (text.length > 60) return scaleByContent(isSmallScreen ? 24 : isTabletScreen ? 16 : 26, 'text');
+    return scaleByContent(isSmallScreen ? 26 : isTabletScreen ? 18 : 28, 'text');
   };
 
   // Efecto para seleccionar jugador aleatorio cuando cambia la pregunta (con rotación independiente por dinámica)
@@ -946,10 +946,10 @@ const GameScreen = ({ navigation, route }) => {
         {/* Fondo de papel */}
         <View style={styles.paperBackground}>
           <View style={styles.notebookLines}>
-            {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 45 : 20)].map((_, index) => (
+            {[...Array(notebookLineCount)].map((_, index) => (
               <View
                 key={index}
-                style={[styles.line, { top: scaleByContent(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 20 : 40, 'spacing') + (index * scaleByContent(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 18 : 25, 'spacing')) }]}
+                style={[styles.line, { top: notebookLineSpacing + (index * notebookLineSpacing) }]}
               />
             ))}
           </View>
@@ -993,10 +993,10 @@ const GameScreen = ({ navigation, route }) => {
       {/* Fondo de papel con líneas */}
       <View style={styles.paperBackground}>
         <View style={styles.notebookLines}>
-          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 45 : 20)].map((_, index) => (
+          {[...Array(notebookLineCount)].map((_, index) => (
             <View
               key={index}
-              style={[styles.line, { top: scaleByContent(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 20 : 40, 'spacing') + (index * scaleByContent(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 18 : 25, 'spacing')) }]}
+              style={[styles.line, { top: notebookLineSpacing + (index * notebookLineSpacing) }]}
             />
           ))}
         </View>
@@ -1243,6 +1243,8 @@ const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
 const isShortHeight = isShortHeightDevice();
 const screenHeight = getScreenHeight();
+const notebookLineSpacing = isTabletScreen ? 15 : scaleByContent(25, 'spacing');
+const notebookLineCount = Math.ceil(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / notebookLineSpacing) + 2;
 
 const styles = StyleSheet.create({
   container: {
@@ -1411,7 +1413,7 @@ const styles = StyleSheet.create({
   },
 
   roundText: {
-    fontSize: scaleByContent(14, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 10 : 14, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
@@ -1422,7 +1424,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: scaleByContent(120, 'spacing'),
-    paddingTop: isShortHeight ? scaleByContent(25, 'spacing') : scaleByContent(40, 'spacing'),
+    paddingTop: isShortHeight ? scaleByContent(25, 'spacing') : isTabletScreen ? 120 : scaleByContent(40, 'spacing'),
     paddingBottom: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
   },
 
@@ -1446,7 +1448,7 @@ const styles = StyleSheet.create({
   },
 
   instructionText: {
-    fontSize: isShortHeight ? scaleByContent(16, 'text') : scaleByContent(18, 'text'),
+    fontSize: isShortHeight ? scaleByContent(16, 'text') : scaleByContent(isTabletScreen ? 12 : 18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -1483,13 +1485,13 @@ const styles = StyleSheet.create({
   },
 
   questionEmoji: {
-    fontSize: isShortHeight ? scaleByContent(32, 'icon') : scaleByContent(40, 'icon'),
+    fontSize: isShortHeight ? scaleByContent(32, 'icon') : scaleByContent(isTabletScreen ? 28 : 40, 'icon'),
     textAlign: 'center',
     marginBottom: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(12, 'spacing'),
   },
 
   instructionAction: {
-    fontSize: isShortHeight ? scaleByContent(18, 'text') : scaleByContent(20, 'text'),
+    fontSize: isShortHeight ? scaleByContent(18, 'text') : scaleByContent(isTabletScreen ? 13 : 20, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
     textAlign: 'center',
@@ -1521,7 +1523,7 @@ const styles = StyleSheet.create({
   },
 
   skipButtonText: {
-    fontSize: scaleByContent(12, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -1544,7 +1546,7 @@ const styles = StyleSheet.create({
   },
 
   continueButtonText: {
-    fontSize: scaleByContent(12, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -1559,7 +1561,7 @@ const styles = StyleSheet.create({
   },
 
   gameEndTitle: {
-    fontSize: scaleByContent(32, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 22 : 32, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -1568,7 +1570,7 @@ const styles = StyleSheet.create({
   },
 
   gameEndSubtitle: {
-    fontSize: scaleByContent(18, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 12 : 18, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#000000',
     textAlign: 'center',
@@ -1594,7 +1596,7 @@ const styles = StyleSheet.create({
   },
 
   extendButtonText: {
-    fontSize: scaleByContent(16, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 11 : 16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -1617,7 +1619,7 @@ const styles = StyleSheet.create({
   },
 
   endGameButtonText: {
-    fontSize: scaleByContent(16, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 11 : 16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',

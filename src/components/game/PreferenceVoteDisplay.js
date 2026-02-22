@@ -9,7 +9,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../styles/theme';
-import { scaleByContent, isSmallDevice, isShortHeightDevice } from '../../utils/responsive';
+import { scaleByContent, isSmallDevice, isShortHeightDevice, isTablet } from '../../utils/responsive';
 import {
   initializePreferenceVote,
   setPreferenceVotePhase,
@@ -497,6 +497,7 @@ const PreferenceVoteDisplay = ({
 
 const isSmallScreen = isSmallDevice();
 const isShortHeight = isShortHeightDevice();
+const isTabletScreen = isTablet();
 
 const styles = StyleSheet.create({
   instructionContainer: {
@@ -536,7 +537,7 @@ const styles = StyleSheet.create({
   },
 
   instructionText: {
-    fontSize: scaleByContent(18, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 12 : 18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -574,7 +575,7 @@ const styles = StyleSheet.create({
   },
 
   passingPhoneText: {
-    fontSize: scaleByContent(24, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 16 : 24, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
     textAlign: 'center',
@@ -582,14 +583,14 @@ const styles = StyleSheet.create({
   },
 
   playerNameHighlight: {
-    fontSize: scaleByContent(28, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 18 : 28, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textDecorationLine: 'underline',
   },
 
   questionTitle: {
-    fontSize: scaleByContent(22, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 14 : 22, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
     textAlign: 'center',
@@ -640,20 +641,20 @@ const styles = StyleSheet.create({
   },
 
   optionButtonText: {
-    fontSize: scaleByContent(18, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 12 : 18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
   },
 
   questionEmoji: {
-    fontSize: scaleByContent(35, 'icon'),
+    fontSize: scaleByContent(isTabletScreen ? 24 : 35, 'icon'),
     textAlign: 'center',
     marginBottom: scaleByContent(8, 'spacing'),
   },
 
   instructionAction: {
-    fontSize: scaleByContent(16, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 11 : 16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
     textAlign: 'center',
@@ -667,7 +668,7 @@ const styles = StyleSheet.create({
   },
 
   returningPhoneText: {
-    fontSize: scaleByContent(24, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 16 : 24, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
     textAlign: 'center',
@@ -681,7 +682,7 @@ const styles = StyleSheet.create({
   },
 
   resultsTitle: {
-    fontSize: scaleByContent(28, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 18 : 28, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -719,7 +720,7 @@ const styles = StyleSheet.create({
   },
 
   resultOptionText: {
-    fontSize: scaleByContent(20, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 13 : 20, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -744,7 +745,7 @@ const styles = StyleSheet.create({
   },
 
   resultVotesText: {
-    fontSize: scaleByContent(18, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 12 : 18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -757,7 +758,7 @@ const styles = StyleSheet.create({
   },
 
   penaltyText: {
-    fontSize: scaleByContent(26, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 17 : 26, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -765,7 +766,7 @@ const styles = StyleSheet.create({
   },
 
   penaltyAction: {
-    fontSize: scaleByContent(20, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 13 : 20, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#2E2E2E',
     textAlign: 'center',
@@ -805,7 +806,7 @@ const styles = StyleSheet.create({
   },
 
   skipButtonText: {
-    fontSize: scaleByContent(12, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#000000',
     textAlign: 'center',
@@ -829,7 +830,7 @@ const styles = StyleSheet.create({
   },
 
   skipPlayerButtonText: {
-    fontSize: scaleByContent(12, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#000000',
     textAlign: 'center',
@@ -852,7 +853,7 @@ const styles = StyleSheet.create({
   },
 
   continueButtonText: {
-    fontSize: scaleByContent(12, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',

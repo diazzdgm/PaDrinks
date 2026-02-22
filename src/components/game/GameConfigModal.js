@@ -237,7 +237,8 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
     onClose();
   };
 
-  const { width: SCREEN_WIDTH } = Dimensions.get('window');
+  const { width: _rw, height: _rh } = Dimensions.get('window');
+  const SCREEN_WIDTH = Math.max(_rw, _rh);
   const isSmallScreen = isSmallDevice();
 
   if (!visible) return null;
@@ -480,7 +481,9 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
   );
 };
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: _rawW, height: _rawH } = Dimensions.get('window');
+const SCREEN_WIDTH = Math.max(_rawW, _rawH);
+const SCREEN_HEIGHT = Math.min(_rawW, _rawH);
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
 const isShortHeight = isShortHeightDevice();

@@ -1,7 +1,8 @@
 import { Dimensions, PixelRatio } from 'react-native';
 
-// Obtener dimensiones de la pantalla
-export const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: _rawWidth, height: _rawHeight } = Dimensions.get('window');
+export const SCREEN_WIDTH = Math.max(_rawWidth, _rawHeight);
+export const SCREEN_HEIGHT = Math.min(_rawWidth, _rawHeight);
 
 // Matriz de dispositivos de referencia con pesos por prioridad
 const REFERENCE_DEVICES = {

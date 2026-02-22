@@ -248,10 +248,10 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
       {/* Fondo de papel con líneas */}
       <View style={styles.paperBackground}>
         <View style={styles.notebookLines}>
-          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 45 : 20)].map((_, index) => (
-            <View 
-              key={index} 
-              style={[styles.line, { top: scaleByContent(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 20 : 40, 'spacing') + (index * scaleByContent(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 18 : 25, 'spacing')) }]} 
+          {[...Array(notebookLineCount)].map((_, index) => (
+            <View
+              key={index}
+              style={[styles.line, { top: notebookLineSpacing + (index * notebookLineSpacing) }]}
             />
           ))}
         </View>
@@ -381,6 +381,8 @@ const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
 const isShortHeight = isShortHeightDevice();
 const screenHeight = getScreenHeight();
+const notebookLineSpacing = isTabletScreen ? 15 : scaleByContent(25, 'spacing');
+const notebookLineCount = Math.ceil(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / notebookLineSpacing) + 2;
 
 const styles = StyleSheet.create({
   container: {

@@ -1028,10 +1028,10 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       {/* Fondo de papel con líneas */}
       <View style={styles.paperBackground}>
         <View style={styles.notebookLines}>
-          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 50 : Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) < 700 ? 20 : 25)].map((_, index) => (
-            <View 
-              key={index} 
-              style={[styles.line, { top: scaleByContent(40, 'spacing') + (index * scaleByContent(25, 'spacing')) }]} 
+          {[...Array(notebookLineCount)].map((_, index) => (
+            <View
+              key={index}
+              style={[styles.line, { top: notebookLineSpacing + (index * notebookLineSpacing) }]}
             />
           ))}
         </View>
@@ -1714,10 +1714,14 @@ const CreateLobbyScreen = ({ navigation, route }) => {
 };
 
 // Obtener información del dispositivo para estilos dinámicos
-const { width, height } = Dimensions.get('window');
+const { width: _rw, height: _rh } = Dimensions.get('window');
+const width = Math.max(_rw, _rh);
+const height = Math.min(_rw, _rh);
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
+const notebookLineSpacing = isTabletScreen ? 15 : scaleByContent(25, 'spacing');
+const notebookLineCount = Math.ceil(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / notebookLineSpacing) + 2;
 
 const styles = StyleSheet.create({
   container: {
@@ -1789,35 +1793,34 @@ const styles = StyleSheet.create({
   // Botón de regreso
   backButton: {
     position: 'absolute',
-    top: 35,
-    left: 25,
+    top: scaleByContent(isTabletScreen ? 50 : 35, 'spacing'),
+    left: scaleByContent(isTabletScreen ? 40 : 25, 'spacing'),
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderTopLeftRadius: 4,
-    borderWidth: 2,
+    paddingHorizontal: scaleByContent(15, 'spacing'),
+    paddingVertical: scaleByContent(8, 'spacing'),
+    borderRadius: scaleByContent(12, 'spacing'),
+    borderTopLeftRadius: scaleByContent(4, 'spacing'),
+    borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 3,
+    shadowRadius: scaleByContent(3, 'spacing'),
     elevation: 4,
     transform: [{ rotate: '-1deg' }],
     zIndex: 10,
   },
   
   backButtonText: {
-    fontSize: 14,
+    fontSize: scaleByContent(isTabletScreen ? 20 : 14, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
-  
-  // Contenido principal
+
   mainContent: {
     flex: 1,
     flexDirection: 'row',
-    paddingTop: scaleByContent(60, 'spacing'),
+    paddingTop: scaleByContent(isTabletScreen ? 85 : 60, 'spacing'),
     paddingBottom: scaleByContent(20, 'spacing'),
     paddingHorizontal: scaleByContent(120, 'spacing'),
   },
@@ -1905,14 +1908,14 @@ const styles = StyleSheet.create({
   },
   
   playerItemFixedSafe: {
-    height: scaleByContent(56, 'interactive'),
+    minHeight: scaleByContent(56, 'interactive'),
     overflow: 'visible',
   },
   
   playerAvatar: {
-    width: scaleByContent(40, 'interactive'),
-    height: scaleByContent(40, 'interactive'),
-    borderRadius: scaleByContent(20, 'spacing'),
+    width: scaleByContent(isTabletScreen ? 32 : 40, 'interactive'),
+    height: scaleByContent(isTabletScreen ? 32 : 40, 'interactive'),
+    borderRadius: scaleByContent(isTabletScreen ? 16 : 20, 'spacing'),
     backgroundColor: theme.colors.postItPink,
     borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#000000',
@@ -1937,7 +1940,7 @@ const styles = StyleSheet.create({
   },
   
   avatarEmoji: {
-    fontSize: scaleByContent(20, 'icon'),
+    fontSize: scaleByContent(isTabletScreen ? 16 : 20, 'icon'),
   },
   
   playerInfo: {
@@ -1950,18 +1953,18 @@ const styles = StyleSheet.create({
   },
   
   playerName: {
-    fontSize: scaleByContent(16, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 14 : 16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
   },
   
   crownEmoji: {
-    fontSize: scaleByContent(18, 'icon'),
+    fontSize: scaleByContent(isTabletScreen ? 14 : 18, 'icon'),
     marginLeft: scaleByContent(5, 'spacing'),
   },
   
   youIndicator: {
-    fontSize: scaleByContent(14, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 11 : 14, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     marginLeft: scaleByContent(5, 'spacing'),
@@ -1981,7 +1984,7 @@ const styles = StyleSheet.create({
   },
   
   playerDetail: {
-    fontSize: scaleByContent(12, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 10 : 12, 'text'),
     marginRight: scaleByContent(5, 'spacing'),
   },
   
@@ -1992,7 +1995,7 @@ const styles = StyleSheet.create({
   },
   
   connectionDot: {
-    fontSize: scaleByContent(8, 'icon'),
+    fontSize: scaleByContent(isTabletScreen ? 6 : 8, 'icon'),
   },
   
   kickButton: {
@@ -2004,7 +2007,7 @@ const styles = StyleSheet.create({
   },
   
   kickButtonText: {
-    fontSize: scaleByContent(18, 'icon'),
+    fontSize: scaleByContent(isTabletScreen ? 14 : 18, 'icon'),
   },
   
   emptySlot: {

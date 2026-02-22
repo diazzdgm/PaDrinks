@@ -419,10 +419,10 @@ const CreateGameScreen = ({ navigation }) => {
       {/* Fondo de papel con líneas */}
       <View style={styles.paperBackground}>
         <View style={styles.notebookLines}>
-          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 50 : Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) < 700 ? 20 : 25)].map((_, index) => (
-            <View 
-              key={index} 
-              style={[styles.line, { top: scaleByContent(40, 'spacing') + (index * scaleByContent(25, 'spacing')) }]} 
+          {[...Array(notebookLineCount)].map((_, index) => (
+            <View
+              key={index}
+              style={[styles.line, { top: notebookLineSpacing + (index * notebookLineSpacing) }]}
             />
           ))}
         </View>
@@ -591,6 +591,8 @@ const height = SCREEN_HEIGHT;
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
+const notebookLineSpacing = isTabletScreen ? 15 : scaleByContent(25, 'spacing');
+const notebookLineCount = Math.ceil(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / notebookLineSpacing) + 2;
 
 const styles = StyleSheet.create({
   container: {
@@ -602,7 +604,7 @@ const styles = StyleSheet.create({
   connectionIndicator: {
     position: 'absolute',
     top: scaleByContent(30, 'spacing'),
-    right: scaleByContent(isSmallScreen ? 100 : isTabletScreen ? 120 : 110, 'spacing'), // Lado izquierdo del botón MUTE
+    right: scaleByContent(isSmallScreen ? 100 : 110, 'spacing'),
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -615,14 +617,14 @@ const styles = StyleSheet.create({
   },
   
   connectionDot: {
-    width: scaleByContent(isSmallScreen ? 6 : isTabletScreen ? 10 : 8, 'spacing'),
-    height: scaleByContent(isSmallScreen ? 6 : isTabletScreen ? 10 : 8, 'spacing'),
-    borderRadius: scaleByContent(isSmallScreen ? 3 : isTabletScreen ? 5 : 4, 'spacing'),
+    width: scaleByContent(isSmallScreen ? 6 : 8, 'spacing'),
+    height: scaleByContent(isSmallScreen ? 6 : 8, 'spacing'),
+    borderRadius: scaleByContent(isSmallScreen ? 3 : 4, 'spacing'),
     marginRight: scaleByContent(6, 'spacing'),
   },
   
   connectionText: {
-    fontSize: scaleByContent(isSmallScreen ? 10 : isTabletScreen ? 16 : 12, 'text'),
+    fontSize: scaleByContent(isSmallScreen ? 10 : 12, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#333',
   },
@@ -719,25 +721,23 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: scaleByContent(isSmallScreen ? 25 : isTabletScreen ? 60 : 40, 'spacing'),
-    paddingTop: scaleByContent(100, 'spacing'),
-    paddingBottom: scaleByContent(100, 'spacing'),
-    justifyContent: 'center',
+    paddingTop: isTabletScreen ? 120 : scaleByContent(100, 'spacing'),
+    paddingBottom: scaleByContent(isTabletScreen ? 30 : 100, 'spacing'),
+    justifyContent: isTabletScreen ? 'flex-start' : 'center',
     alignItems: 'center',
   },
-  
-  // Título
+
   titleContainer: {
     alignItems: 'center',
-    marginBottom: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 35 : 25, 'spacing'),
-    position: 'absolute',
-    top: scaleByContent(20, 'spacing'),
+    marginBottom: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 10 : 25, 'spacing'),
+    ...(isTabletScreen ? {} : { position: 'absolute', top: scaleByContent(20, 'spacing') }),
     left: 0,
     right: 0,
     zIndex: 5,
   },
-  
+
   title: {
-    fontSize: scaleByContent(isSmallScreen ? 26 : isTabletScreen ? 42 : 32, 'text'),
+    fontSize: scaleByContent(isSmallScreen ? 26 : 32, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -746,7 +746,7 @@ const styles = StyleSheet.create({
   },
   
   subtitle: {
-    fontSize: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 24 : 18, 'text'),
+    fontSize: scaleByContent(isSmallScreen ? 15 : 18, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#666666',
     textAlign: 'center',
@@ -763,7 +763,7 @@ const styles = StyleSheet.create({
   // Área principal del carrusel - Más grande
   carouselMainArea: {
     width: '100%',
-    height: scaleByContent(isSmallScreen ? 280 : isTabletScreen ? 480 : 320, 'interactive'),
+    height: scaleByContent(isSmallScreen ? 280 : 320, 'interactive'),
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
@@ -779,18 +779,14 @@ const styles = StyleSheet.create({
   
   // Botón del modo - Con padding reducido para contenido compacto
   modeButton: {
-    width: isSmallScreen 
-      ? Math.min(width * 0.75, scaleByContent(320, 'interactive')) 
-      : isTabletScreen 
-        ? Math.min(width * 0.6, scaleByContent(450, 'interactive'))
-        : Math.min(width * 0.6, scaleByContent(320, 'interactive')),
-    height: isSmallScreen 
+    width: isSmallScreen
+      ? Math.min(width * 0.75, scaleByContent(320, 'interactive'))
+      : Math.min(width * 0.6, scaleByContent(320, 'interactive')),
+    height: isSmallScreen
       ? Math.min(width * 0.45, scaleByContent(200, 'interactive'))
-      : isTabletScreen
-        ? Math.min(width * 0.35, scaleByContent(300, 'interactive'))
-        : Math.min(width * 0.35, scaleByContent(200, 'interactive')),
-    paddingHorizontal: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 25 : 20, 'spacing'),
-    paddingVertical: scaleByContent(isSmallScreen ? 12 : isTabletScreen ? 20 : 16, 'spacing'),
+      : Math.min(width * 0.35, scaleByContent(200, 'interactive')),
+    paddingHorizontal: scaleByContent(isSmallScreen ? 15 : 20, 'spacing'),
+    paddingVertical: scaleByContent(isSmallScreen ? 12 : 16, 'spacing'),
     borderRadius: scaleByContent(18, 'spacing'),
     borderTopLeftRadius: scaleByContent(6, 'spacing'),
     borderWidth: scaleByContent(3, 'spacing'),
@@ -813,25 +809,25 @@ const styles = StyleSheet.create({
   
   // Estilos del botón del modo - Más compactos
   modeIcon: {
-    fontSize: scaleByContent(isSmallScreen ? 40 : isTabletScreen ? 65 : 52, 'icon'),
-    marginBottom: scaleByContent(isSmallScreen ? 6 : isTabletScreen ? 10 : 8, 'spacing'),
+    fontSize: scaleByContent(isSmallScreen ? 40 : 52, 'icon'),
+    marginBottom: scaleByContent(isSmallScreen ? 6 : 8, 'spacing'),
   },
 
   modeTitle: {
-    fontSize: scaleByContent(isSmallScreen ? 18 : isTabletScreen ? 28 : 22, 'text'),
+    fontSize: scaleByContent(isSmallScreen ? 18 : 22, 'text'),
     fontFamily: theme.fonts.primaryBold,
     marginBottom: scaleByContent(4, 'spacing'),
     textAlign: 'center',
-    lineHeight: scaleByContent(isSmallScreen ? 24 : isTabletScreen ? 36 : 28, 'text'),
+    lineHeight: scaleByContent(isSmallScreen ? 24 : 28, 'text'),
     includeFontPadding: false,
   },
 
   modeDescription: {
-    fontSize: scaleByContent(isSmallScreen ? 12 : isTabletScreen ? 18 : 15, 'text'),
+    fontSize: scaleByContent(isSmallScreen ? 12 : 15, 'text'),
     fontFamily: theme.fonts.primary,
     textAlign: 'center',
     opacity: 0.8,
-    lineHeight: scaleByContent(isSmallScreen ? 18 : isTabletScreen ? 26 : 22, 'text'),
+    lineHeight: scaleByContent(isSmallScreen ? 18 : 22, 'text'),
     includeFontPadding: false,
   },
   
@@ -850,7 +846,7 @@ const styles = StyleSheet.create({
   },
   
   comingSoonText: {
-    fontSize: scaleByContent(isSmallScreen ? 10 : isTabletScreen ? 16 : 12, 'text'),
+    fontSize: scaleByContent(isSmallScreen ? 10 : 12, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#FFFFFF',
   },
@@ -858,21 +854,21 @@ const styles = StyleSheet.create({
   // Indicadores del carrusel - Más abajo
   carouselIndicators: {
     position: 'absolute',
-    bottom: scaleByContent(isSmallScreen ? 10 : isTabletScreen ? 15 : 12, 'spacing'),
+    bottom: scaleByContent(isSmallScreen ? 10 : 12, 'spacing'),
     left: 0,
     right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 25 : 20, 'spacing'),
+    gap: scaleByContent(isSmallScreen ? 15 : 20, 'spacing'),
     paddingHorizontal: scaleByContent(20, 'spacing'),
   },
   
   // Indicador individual
   indicator: {
-    width: scaleByContent(isSmallScreen ? 40 : isTabletScreen ? 60 : 50, 'interactive'),
-    height: scaleByContent(isSmallScreen ? 40 : isTabletScreen ? 60 : 50, 'interactive'),
-    borderRadius: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 30 : 25, 'spacing'),
+    width: scaleByContent(isSmallScreen ? 40 : 50, 'interactive'),
+    height: scaleByContent(isSmallScreen ? 40 : 50, 'interactive'),
+    borderRadius: scaleByContent(isSmallScreen ? 20 : 25, 'spacing'),
     backgroundColor: '#FFFFFF',
     borderWidth: scaleByContent(2, 'spacing'),
     borderColor: '#CCCCCC',
@@ -895,12 +891,12 @@ const styles = StyleSheet.create({
   
   // Estilos de indicadores
   indicatorEmoji: {
-    fontSize: scaleByContent(isSmallScreen ? 16 : isTabletScreen ? 26 : 20, 'icon'),
+    fontSize: scaleByContent(isSmallScreen ? 16 : 20, 'icon'),
     opacity: 0.6,
   },
-  
+
   activeIndicatorEmoji: {
-    fontSize: scaleByContent(isSmallScreen ? 18 : isTabletScreen ? 28 : 22, 'icon'),
+    fontSize: scaleByContent(isSmallScreen ? 18 : 22, 'icon'),
     opacity: 1,
     color: '#FFFFFF',
   },

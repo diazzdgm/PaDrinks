@@ -610,10 +610,10 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
       {/* Fondo de papel con líneas */}
       <View style={styles.paperBackground}>
         <View style={styles.notebookLines}>
-          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 50 : Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) < 700 ? 20 : 25)].map((_, index) => (
-            <View 
-              key={index} 
-              style={[styles.line, { top: scaleByContent(40, 'spacing') + (index * scaleByContent(25, 'spacing')) }]} 
+          {[...Array(notebookLineCount)].map((_, index) => (
+            <View
+              key={index}
+              style={[styles.line, { top: notebookLineSpacing + (index * notebookLineSpacing) }]}
             />
           ))}
         </View>
@@ -958,11 +958,15 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
 };
 
 // Obtener información del dispositivo para estilos dinámicos
-const { width, height } = Dimensions.get('window');
+const { width: _rw, height: _rh } = Dimensions.get('window');
+const width = Math.max(_rw, _rh);
+const height = Math.min(_rw, _rh);
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
 const isShortHeight = isShortHeightDevice();
+const notebookLineSpacing = isTabletScreen ? 15 : scaleByContent(25, 'spacing');
+const notebookLineCount = Math.ceil(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / notebookLineSpacing) + 2;
 
 const styles = StyleSheet.create({
   container: {

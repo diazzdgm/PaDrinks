@@ -10,7 +10,9 @@ import {
   RESPONSIVE
 } from '../../utils/responsive';
 
-const { width, height } = Dimensions.get('window');
+const { width: _rw, height: _rh } = Dimensions.get('window');
+const width = Math.max(_rw, _rh);
+const height = Math.min(_rw, _rh);
 
 const CircularText = ({
   text = "PADRINKS*PADRINKS*PADRINKS*",

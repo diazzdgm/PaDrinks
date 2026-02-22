@@ -21,7 +21,11 @@
         "NSPhotoLibraryUsageDescription": "PaDrinks necesita acceso a tu galeria de fotos para seleccionar una foto de perfil.",
         "NSBluetoothAlwaysUsageDescription": "PaDrinks usa Bluetooth para conectar dispositivos en modo multijugador local.",
         "UIRequiresFullScreen": true,
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
       }
     },
     "android": {
@@ -43,7 +47,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      ["expo-screen-orientation", { "initialOrientation": "LANDSCAPE" }]
     ],
     "extra": {
       "eas": {

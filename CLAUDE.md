@@ -90,7 +90,23 @@ JSON-based dynamics stored in `src/data/dynamics/`. Each dynamic has `id`, `name
 - `charades_dynamic`: Has its own component with timer and phrase bank
 
 ### Responsive Design
-`src/utils/responsive.js` provides `scaleByContent(size, contentType)` with content types: 'text', 'icon', 'interactive', 'spacing'. Use `isSmallScreen` / `isTabletScreen` for conditional styling.
+`src/utils/responsive.js` is the central scaling system. ALL pixel values in StyleSheets must use it - never hardcode raw numbers.
+
+**Primary function:** `scaleByContent(size, contentType)` - scales values based on device dimensions and content type:
+- `'text'` - fontSize (respects system fontScale, capped at 1.8x)
+- `'interactive'` - button/input width/height (minimum 44dp touch target)
+- `'spacing'` - padding, margin, borderWidth, borderRadius, shadowOffset (scales at 85%)
+- `'icon'` - emoji/image sizes (scales at 90%)
+- `'hero'` - large logos/prominent elements (scales at 115%)
+
+**Other key exports:**
+- `scaleModerate(size, factor)` - for elements that shouldn't scale too aggressively (e.g., mute button icons: `scaleModerate(50, 0.3)`)
+- `isShortHeightDevice()` - true for ultra-wide phones with height < 400dp (Samsung S21). Use for 3-tier conditional layouts
+- `isSmallDevice()`, `isTablet()`, `getDeviceType()` - device classification
+- `SCREEN_WIDTH`, `SCREEN_HEIGHT` - use these instead of `Dimensions.get('window')` anywhere outside responsive.js
+- `RESPONSIVE` - pre-calculated common values (spacing.xs/sm/md/lg, fontSize.small/medium/large, button.height, etc.)
+
+**Pattern for conditional sizing:** `isShortHeight ? scaleByContent(200, 'interactive') : isSmallScreen ? scaleByContent(300, 'interactive') : scaleByContent(400, 'interactive')`
 
 ### Folder Structure
 ```

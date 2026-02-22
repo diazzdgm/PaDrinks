@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../styles/theme';
-import { scaleByContent, isSmallDevice, isShortHeightDevice } from '../../utils/responsive';
+import { scaleByContent, isSmallDevice, isShortHeightDevice, isTablet } from '../../utils/responsive';
 import audioService from '../../services/AudioService';
 
 const CharadesDisplay = ({
@@ -334,6 +334,7 @@ const CharadesDisplay = ({
 
 const isSmallScreen = isSmallDevice();
 const isShortHeight = isShortHeightDevice();
+const isTabletScreen = isTablet();
 
 const styles = StyleSheet.create({
   instructionContainer: {
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '1deg' }],
   },
   instructionText: {
-    fontSize: scaleByContent(18, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 12 : 18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -368,10 +369,10 @@ const styles = StyleSheet.create({
   },
   questionText: {
     fontFamily: theme.fonts.primaryBold,
-    fontSize: scaleByContent(26, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 17 : 26, 'text'),
     color: '#2E2E2E',
     textAlign: 'center',
-    lineHeight: scaleByContent(34, 'text'),
+    lineHeight: scaleByContent(isTabletScreen ? 22 : 34, 'text'),
     marginBottom: scaleByContent(15, 'spacing'),
   },
   charadesButtonsRow: {
@@ -404,7 +405,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '-2deg' }],
   },
   phraseButtonText: {
-    fontSize: scaleByContent(12, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -425,7 +426,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '2deg' }],
   },
   timerButtonText: {
-    fontSize: scaleByContent(12, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -449,7 +450,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '-2deg' }],
   },
   skipButtonText: {
-    fontSize: scaleByContent(12, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -470,7 +471,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '2deg' }],
   },
   continueButtonText: {
-    fontSize: scaleByContent(12, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -549,18 +550,18 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontFamily: theme.fonts.primaryBold,
-    fontSize: scaleByContent(24, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 16 : 24, 'text'),
     color: '#000000',
     marginBottom: scaleByContent(20, 'spacing'),
     textAlign: 'center',
   },
   modalPhrase: {
     fontFamily: theme.fonts.primaryBold,
-    fontSize: scaleByContent(32, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 22 : 32, 'text'),
     color: '#D32F2F',
     marginBottom: scaleByContent(30, 'spacing'),
     textAlign: 'center',
-    lineHeight: scaleByContent(40, 'text'),
+    lineHeight: scaleByContent(isTabletScreen ? 28 : 40, 'text'),
   },
   modalButton: {
     backgroundColor: theme.colors.postItGreen,
@@ -579,7 +580,7 @@ const styles = StyleSheet.create({
   },
   modalButtonText: {
     fontFamily: theme.fonts.primaryBold,
-    fontSize: scaleByContent(18, 'text'),
+    fontSize: scaleByContent(isTabletScreen ? 12 : 18, 'text'),
     color: '#000000',
     textAlign: 'center',
   },

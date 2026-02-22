@@ -676,10 +676,10 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
       {/* Fondo de papel con líneas */}
       <View style={styles.paperBackground}>
         <View style={styles.notebookLines}>
-          {[...Array(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? 50 : Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) < 700 ? 20 : 25)].map((_, index) => (
-            <View 
-              key={index} 
-              style={[styles.line, { top: scaleByContent(40, 'spacing') + (index * scaleByContent(25, 'spacing')) }]} 
+          {[...Array(notebookLineCount)].map((_, index) => (
+            <View
+              key={index}
+              style={[styles.line, { top: notebookLineSpacing + (index * notebookLineSpacing) }]}
             />
           ))}
         </View>
@@ -1000,6 +1000,8 @@ const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
 const isShortHeight = isShortHeightDevice();
 const screenHeight = getScreenHeight();
+const notebookLineSpacing = isTabletScreen ? 15 : scaleByContent(25, 'spacing');
+const notebookLineCount = Math.ceil(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / notebookLineSpacing) + 2;
 
 const styles = StyleSheet.create({
   container: {
@@ -1098,12 +1100,12 @@ const styles = StyleSheet.create({
   // Título
   titleContainer: {
     alignItems: 'center',
-    paddingTop: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 20 : 5, 'spacing'),
-    marginBottom: scaleByContent(15, 'spacing'),
+    paddingTop: isTabletScreen ? 80 : scaleByContent(isSmallScreen ? 20 : 5, 'spacing'),
+    marginBottom: scaleByContent(isTabletScreen ? 5 : 15, 'spacing'),
   },
   
   title: {
-    fontSize: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 32 : 24, 'text'),
+    fontSize: scaleByContent(isSmallScreen ? 20 : 24, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -1124,8 +1126,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     paddingHorizontal: scaleByContent(isSmallScreen ? 90 : isTabletScreen ? 150 : 120, 'spacing'),
-    paddingBottom: scaleByContent(isShortHeight ? 35 : 55, 'spacing'),
-    marginTop: scaleByContent(-20, 'spacing'),
+    paddingBottom: scaleByContent(isShortHeight ? 35 : isTabletScreen ? 25 : 55, 'spacing'),
+    marginTop: scaleByContent(isTabletScreen ? -5 : -20, 'spacing'),
   },
   
   // Lado izquierdo - 35% del ancho
@@ -1157,7 +1159,7 @@ const styles = StyleSheet.create({
   // Contenedor de foto
   photoContainer: {
     width: '100%',
-    height: isShortHeight ? scaleByContent(100, 'interactive') : scaleByContent(150, 'interactive'),
+    height: isShortHeight ? scaleByContent(100, 'interactive') : isTabletScreen ? scaleByContent(110, 'interactive') : scaleByContent(150, 'interactive'),
     backgroundColor: '#FFFFFF',
     borderRadius: scaleByContent(15, 'spacing'),
     borderTopLeftRadius: scaleByContent(5, 'spacing'),
