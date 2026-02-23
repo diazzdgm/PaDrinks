@@ -435,17 +435,6 @@ const CreateGameScreen = ({ navigation }) => {
         </View>
       </View>
 
-      {/* Indicador de conexión */}
-      <View style={styles.connectionIndicator}>
-        <View style={[
-          styles.connectionDot,
-          { backgroundColor: connected ? '#4CAF50' : connectionStatus === 'connecting' ? '#FF9800' : '#F44336' }
-        ]} />
-        <Text style={styles.connectionText}>
-          {connected ? 'Online' : connectionStatus === 'connecting' ? 'Conectando...' : 'Offline'}
-        </Text>
-      </View>
-
       {/* Botón de regreso */}
       <TouchableOpacity
         style={[
@@ -460,7 +449,7 @@ const CreateGameScreen = ({ navigation }) => {
       >
         <Text style={styles.backButtonText}>← Atrás</Text>
       </TouchableOpacity>
-      
+
       {/* Botón de Mute */}
       <Animated.View
         style={[
@@ -483,6 +472,23 @@ const CreateGameScreen = ({ navigation }) => {
           />
         </TouchableOpacity>
       </Animated.View>
+
+      {/* Indicador de conexión */}
+      <View style={[
+        styles.connectionIndicator,
+        {
+          top: topOffset + scaleByContent(20, 'spacing') + scaleByContent(70, 'interactive') + scaleByContent(8, 'spacing'),
+          right: rightOffset,
+        },
+      ]}>
+        <View style={[
+          styles.connectionDot,
+          { backgroundColor: connected ? '#4CAF50' : connectionStatus === 'connecting' ? '#FF9800' : '#F44336' }
+        ]} />
+        <Text style={styles.connectionText}>
+          {connected ? 'Online' : connectionStatus === 'connecting' ? 'Conectando...' : 'Offline'}
+        </Text>
+      </View>
 
       {/* Contenido principal */}
       <View style={styles.content}>
@@ -604,8 +610,6 @@ const styles = StyleSheet.create({
   // Indicador de conexión
   connectionIndicator: {
     position: 'absolute',
-    top: scaleByContent(30, 'spacing'),
-    right: scaleByContent(isSmallScreen ? 100 : 110, 'spacing'),
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -613,7 +617,7 @@ const styles = StyleSheet.create({
     paddingVertical: scaleByContent(6, 'spacing'),
     borderRadius: scaleBorder(15),
     borderWidth: scaleBorder(2),
-    borderColor: '#000000', // Contorno negro
+    borderColor: '#000000',
     zIndex: 1000,
   },
   

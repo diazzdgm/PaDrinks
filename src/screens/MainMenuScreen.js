@@ -642,17 +642,6 @@ const MainMenuScreen = ({ navigation }) => {
 
       </View>
 
-      {/* Indicador de conexión */}
-      <View style={styles.connectionIndicator}>
-        <View style={[
-          styles.connectionDot,
-          { backgroundColor: connected ? '#4CAF50' : isConnecting ? '#FF9800' : '#F44336' }
-        ]} />
-        <Text style={styles.connectionText}>
-          {connected ? 'Online' : isConnecting ? 'Conectando...' : 'Offline'}
-        </Text>
-      </View>
-
       {/* Botón de Mute estilo sketch con SVG */}
       <Animated.View
         style={[
@@ -675,6 +664,23 @@ const MainMenuScreen = ({ navigation }) => {
           />
         </TouchableOpacity>
       </Animated.View>
+
+      {/* Indicador de conexión */}
+      <View style={[
+        styles.connectionIndicator,
+        {
+          top: topOffset + scaleHeight(isSmallDevice() ? 10 : isTablet() ? 15 : 12) + scaleModerate(isSmallDevice() ? 55 : isTablet() ? 60 : 70, 0.3) + scaleByContent(8, 'spacing'),
+          right: rightOffset,
+        },
+      ]}>
+        <View style={[
+          styles.connectionDot,
+          { backgroundColor: connected ? '#4CAF50' : isConnecting ? '#FF9800' : '#F44336' }
+        ]} />
+        <Text style={styles.connectionText}>
+          {connected ? 'Online' : isConnecting ? 'Conectando...' : 'Offline'}
+        </Text>
+      </View>
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -972,14 +978,12 @@ const styles = StyleSheet.create({
   // Indicador de conexión
   connectionIndicator: {
     position: 'absolute',
-    top: scaleHeight(isSmallDevice() ? 10 : isTablet() ? 15 : 12),
-    right: scaleWidth(isSmallDevice() ? 100 : isTablet() ? 120 : 110),
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingHorizontal: scaleWidth(12),
-    paddingVertical: scaleHeight(6),
-    borderRadius: scale(15),
+    paddingHorizontal: scaleByContent(12, 'spacing'),
+    paddingVertical: scaleByContent(6, 'spacing'),
+    borderRadius: scaleBorder(15),
     borderWidth: scaleBorder(2),
     borderColor: '#000000',
     zIndex: 1000,
