@@ -22,6 +22,7 @@ import {
   scaleText,
   scaleModerate,
   scaleByContent,
+  scaleBorder,
   getDeviceType,
   isSmallDevice,
   isTablet,
@@ -1302,9 +1303,9 @@ const styles = StyleSheet.create({
   hole: {
     width: scaleByContent(18, 'spacing'),
     height: scaleByContent(18, 'spacing'),
-    borderRadius: scaleByContent(10, 'spacing'),
+    borderRadius: scaleBorder(10),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
@@ -1320,9 +1321,9 @@ const styles = StyleSheet.create({
     right: scaleByContent(20, 'spacing'),
     width: scaleByContent(70, 'interactive'),
     height: scaleByContent(70, 'interactive'),
-    borderRadius: scaleByContent(35, 'spacing'),
+    borderRadius: scaleBorder(35),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1331,7 +1332,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 6,
-    transform: [{ rotate: '2deg' }],
+    transform: [{ rotate: '0deg' }],
     zIndex: 15,
   },
 
@@ -1341,9 +1342,9 @@ const styles = StyleSheet.create({
     right: scaleByContent(90, 'spacing'),
     width: scaleByContent(70, 'interactive'),
     height: scaleByContent(70, 'interactive'),
-    borderRadius: scaleByContent(35, 'spacing'),
+    borderRadius: scaleBorder(35),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1352,7 +1353,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 6,
-    transform: [{ rotate: '-2deg' }],
+    transform: [{ rotate: '0deg' }],
     zIndex: 15,
   },
 
@@ -1367,7 +1368,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-    transform: [{ rotate: '-1.5deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   configImage: {},
@@ -1387,7 +1388,7 @@ const styles = StyleSheet.create({
   mutedLine: {
     width: '80%',
     height: scaleByContent(3, 'spacing'),
-    borderRadius: scaleByContent(2, 'spacing'),
+    borderRadius: scaleBorder(2),
     transform: [{ rotate: '45deg' }],
   },
 
@@ -1397,10 +1398,10 @@ const styles = StyleSheet.create({
     top: scaleByContent(30, 'spacing'),
     left: scaleByContent(30, 'spacing'),
     backgroundColor: theme.colors.postItYellow,
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: scaleByContent(15, 'spacing'),
-    borderTopLeftRadius: scaleByContent(5, 'spacing'),
+    borderRadius: scaleBorder(15),
+    borderTopLeftRadius: scaleBorder(5),
     paddingVertical: scaleByContent(8, 'spacing'),
     paddingHorizontal: scaleByContent(15, 'spacing'),
     shadowColor: '#000',
@@ -1408,7 +1409,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
-    transform: [{ rotate: '-1deg' }],
+    transform: [{ rotate: '0deg' }],
     zIndex: 10,
   },
 
@@ -1433,7 +1434,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: isShortHeight ? scaleByContent(12, 'spacing') : scaleByContent(20, 'spacing'),
     backgroundColor: theme.colors.postItPink,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 20,
     borderTopLeftRadius: 5,
@@ -1444,7 +1445,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 6,
-    transform: [{ rotate: '1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   instructionText: {
@@ -1508,10 +1509,10 @@ const styles = StyleSheet.create({
 
   skipButton: {
     backgroundColor: theme.colors.postItPink,
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: scaleByContent(8, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(8),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: scaleByContent(6, 'spacing'),
     paddingHorizontal: scaleByContent(18, 'spacing'),
     shadowColor: '#000',
@@ -1519,7 +1520,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: scaleByContent(2, 'spacing'),
     elevation: 2,
-    transform: [{ rotate: '-2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   skipButtonText: {
@@ -1531,10 +1532,10 @@ const styles = StyleSheet.create({
 
   continueButton: {
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: scaleByContent(8, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(8),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: scaleByContent(6, 'spacing'),
     paddingHorizontal: scaleByContent(22, 'spacing'),
     shadowColor: '#000',
@@ -1542,7 +1543,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: scaleByContent(2, 'spacing'),
     elevation: 2,
-    transform: [{ rotate: '2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   continueButtonText: {
@@ -1566,7 +1567,7 @@ const styles = StyleSheet.create({
     color: '#000000',
     textAlign: 'center',
     marginBottom: scaleByContent(20, 'spacing'),
-    transform: [{ rotate: '1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   gameEndSubtitle: {
@@ -1575,12 +1576,12 @@ const styles = StyleSheet.create({
     color: '#000000',
     textAlign: 'center',
     marginBottom: scaleByContent(40, 'spacing'),
-    transform: [{ rotate: '-0.5deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   extendButton: {
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 20,
     borderTopLeftRadius: 5,
@@ -1592,7 +1593,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 6,
-    transform: [{ rotate: '2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   extendButtonText: {
@@ -1604,7 +1605,7 @@ const styles = StyleSheet.create({
 
   endGameButton: {
     backgroundColor: theme.colors.postItPink,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 20,
     borderTopLeftRadius: 5,
@@ -1615,7 +1616,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 6,
-    transform: [{ rotate: '-2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   endGameButtonText: {

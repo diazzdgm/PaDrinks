@@ -223,6 +223,10 @@ export const scaleModerate = (size, factor = 0.5) => {
   return size + (scale(size) - size) * factor;
 };
 
+export const scaleBorder = (size) => {
+  return Math.round(scaleByContent(size, 'spacing'));
+};
+
 /**
  * Detecta el tipo de dispositivo basado en dimensiones y aspecto
  * @returns {string} - 'phone-small' | 'phone-large' | 'phone-ultrawide' | 'tablet-square' | 'tablet-wide'
@@ -363,7 +367,7 @@ export const RESPONSIVE = {
     height: scaleByContent(50, 'interactive'),
     paddingHorizontal: scaleByContent(25, 'spacing'),
     paddingVertical: scaleByContent(12, 'spacing'),
-    borderRadius: scaleByContent(15, 'spacing'),
+    borderRadius: scaleBorder(15),
   },
   
   // Tamaños de logo/imagen

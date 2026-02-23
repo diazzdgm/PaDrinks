@@ -21,6 +21,7 @@ import {
   scaleText, 
   scaleModerate,
   scaleByContent,
+  scaleBorder,
   getDeviceType,
   isSmallDevice,
   isTablet,
@@ -531,9 +532,9 @@ const styles = StyleSheet.create({
   hole: {
     width: scaleByContent(18, 'spacing'),
     height: scaleByContent(18, 'spacing'),
-    borderRadius: scaleByContent(10, 'spacing'),
+    borderRadius: scaleBorder(10),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
     shadowOffset: {
@@ -581,7 +582,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    transform: [{ rotate: '0.5deg' }],
+    transform: [{ rotate: '0deg' }],
     lineHeight: Platform.OS === 'ios' ? scaleByContent(32, 'text') : scaleByContent(28, 'text'),
     includeFontPadding: false,
     paddingTop: Platform.OS === 'ios' ? 5 : 0,
@@ -620,16 +621,16 @@ const styles = StyleSheet.create({
   
   yesButton: {
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: theme.colors.success,
-    transform: [{ rotate: '-1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   noButton: {
     backgroundColor: theme.colors.postItPink,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: theme.colors.error,
-    transform: [{ rotate: '1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   selectedButton: {
@@ -670,8 +671,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(211, 47, 47, 0.1)',
     paddingHorizontal: scaleByContent(16, 'spacing'),
     paddingVertical: scaleByContent(2, 'spacing'),
-    borderRadius: scaleByContent(8, 'spacing'),
-    borderWidth: 1,
+    borderRadius: scaleBorder(8),
+    borderWidth: scaleBorder(1),
     borderColor: theme.colors.error,
     borderStyle: 'dashed',
   },
@@ -698,7 +699,7 @@ const styles = StyleSheet.create({
   
   modalContainer: {
     backgroundColor: '#F8F6F0',
-    borderRadius: scaleByContent(25, 'spacing'),
+    borderRadius: scaleBorder(25),
     padding: scaleByContent(20, 'spacing'),
     maxWidth: scaleByContent(500, 'interactive'), // Igual que CreateGameScreen
     width: '90%',
@@ -708,10 +709,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: scaleByContent(20, 'spacing'),
     elevation: 20,
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
-    borderTopLeftRadius: scaleByContent(5, 'spacing'),
-    transform: [{ rotate: '-1deg' }],
+    borderTopLeftRadius: scaleBorder(5),
+    transform: [{ rotate: '0deg' }],
     position: 'relative',
   },
   
@@ -721,7 +722,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    borderRadius: scaleByContent(22, 'spacing'), // Ligeramente menor que el container
+    borderRadius: scaleBorder(22), // Ligeramente menor que el container
     backgroundColor: '#F8F6F0', // Asegurar fondo sólido
     zIndex: -1,
   },
@@ -758,9 +759,9 @@ const styles = StyleSheet.create({
   modalHole: {
     width: scaleByContent(14, 'spacing'),
     height: scaleByContent(14, 'spacing'),
-    borderRadius: scaleByContent(7, 'spacing'),
+    borderRadius: scaleBorder(7),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#CCCCCC',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
@@ -791,7 +792,7 @@ const styles = StyleSheet.create({
     color: '#000000',
     textAlign: 'center',
     marginBottom: scaleByContent(15, 'spacing'),
-    transform: [{ rotate: '0.5deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   modalMessage: {
@@ -817,16 +818,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFE082',
     paddingHorizontal: scaleByContent(30, 'interactive'), // Valores fijos apropiados
     paddingVertical: scaleByContent(12, 'interactive'),
-    borderRadius: scaleByContent(15, 'spacing'),
-    borderTopLeftRadius: scaleByContent(5, 'spacing'),
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderRadius: scaleBorder(15),
+    borderTopLeftRadius: scaleBorder(5),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
     shadowOpacity: 0.25,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
-    transform: [{ rotate: '-1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   modalButtonText: {

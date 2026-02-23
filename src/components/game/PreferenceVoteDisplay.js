@@ -9,7 +9,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../styles/theme';
-import { scaleByContent, isSmallDevice, isShortHeightDevice, isTablet } from '../../utils/responsive';
+import { scaleByContent, scaleBorder, isSmallDevice, isShortHeightDevice, isTablet } from '../../utils/responsive';
 import {
   initializePreferenceVote,
   setPreferenceVotePhase,
@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: scaleByContent(30, 'spacing'),
     backgroundColor: theme.colors.postItPink,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 20,
     borderTopLeftRadius: 5,
@@ -515,14 +515,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 6,
-    transform: [{ rotate: '1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   instructionContainerVoting: {
     alignItems: 'center',
     marginBottom: scaleByContent(25, 'spacing'),
     backgroundColor: theme.colors.postItPink,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 20,
     borderTopLeftRadius: 5,
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 6,
-    transform: [{ rotate: '1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   instructionText: {
@@ -609,7 +609,7 @@ const styles = StyleSheet.create({
   optionButton: {
     flex: 1,
     backgroundColor: theme.colors.postItYellow,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 15,
     paddingVertical: scaleByContent(20, 'interactive'),
@@ -625,16 +625,16 @@ const styles = StyleSheet.create({
   },
 
   optionButtonLeft: {
-    transform: [{ rotate: '-2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   optionButtonRight: {
-    transform: [{ rotate: '2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   optionButtonSelected: {
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: 4,
+    borderWidth: scaleBorder(4),
     shadowOffset: { width: 5, height: 5 },
     shadowOpacity: 0.35,
     elevation: 8,
@@ -706,12 +706,12 @@ const styles = StyleSheet.create({
     flex: 2,
     marginRight: scaleByContent(15, 'spacing'),
     backgroundColor: theme.colors.postItYellow,
-    borderWidth: 2,
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     borderRadius: 12,
     paddingVertical: scaleByContent(12, 'spacing'),
     paddingHorizontal: scaleByContent(15, 'spacing'),
-    transform: [{ rotate: '-1deg' }],
+    transform: [{ rotate: '0deg' }],
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.2,
@@ -729,14 +729,14 @@ const styles = StyleSheet.create({
   resultVotesContainer: {
     flex: 1,
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 12,
     paddingVertical: scaleByContent(12, 'spacing'),
     paddingHorizontal: scaleByContent(15, 'spacing'),
     alignItems: 'center',
     justifyContent: 'center',
-    transform: [{ rotate: '1deg' }],
+    transform: [{ rotate: '0deg' }],
     shadowColor: '#000',
     shadowOffset: { width: 3, height: 3 },
     shadowOpacity: 0.25,
@@ -790,10 +790,10 @@ const styles = StyleSheet.create({
 
   skipButton: {
     backgroundColor: theme.colors.postItPink,
-    borderWidth: 1,
+    borderWidth: scaleBorder(1),
     borderColor: '#000000',
-    borderRadius: scaleByContent(8, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(8),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: scaleByContent(6, 'spacing'),
     paddingHorizontal: scaleByContent(18, 'spacing'),
     shadowColor: '#000',
@@ -801,7 +801,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 1,
     elevation: 1,
-    transform: [{ rotate: '-2deg' }],
+    transform: [{ rotate: '0deg' }],
     opacity: 0.75,
   },
 
@@ -814,10 +814,10 @@ const styles = StyleSheet.create({
 
   skipPlayerButton: {
     backgroundColor: theme.colors.postItYellow,
-    borderWidth: 1,
+    borderWidth: scaleBorder(1),
     borderColor: '#000000',
-    borderRadius: scaleByContent(8, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(8),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: scaleByContent(6, 'spacing'),
     paddingHorizontal: scaleByContent(18, 'spacing'),
     shadowColor: '#000',
@@ -825,7 +825,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 1,
     elevation: 1,
-    transform: [{ rotate: '1deg' }],
+    transform: [{ rotate: '0deg' }],
     opacity: 0.75,
   },
 
@@ -838,10 +838,10 @@ const styles = StyleSheet.create({
 
   continueButton: {
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
-    borderRadius: scaleByContent(8, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(8),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: scaleByContent(6, 'spacing'),
     paddingHorizontal: scaleByContent(22, 'spacing'),
     shadowColor: '#000',
@@ -849,7 +849,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 6,
-    transform: [{ rotate: '2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   continueButtonText: {

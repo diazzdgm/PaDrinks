@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../styles/theme';
-import { scaleByContent, isSmallDevice, isShortHeightDevice, isTablet } from '../../utils/responsive';
+import { scaleByContent, scaleBorder, isSmallDevice, isShortHeightDevice, isTablet } from '../../utils/responsive';
 import audioService from '../../services/AudioService';
 
 const CharadesDisplay = ({
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: scaleByContent(30, 'spacing'),
     backgroundColor: theme.colors.postItPink,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 20,
     borderTopLeftRadius: 5,
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 6,
-    transform: [{ rotate: '1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   instructionText: {
     fontSize: scaleByContent(isTabletScreen ? 12 : 18, 'text'),
@@ -391,10 +391,10 @@ const styles = StyleSheet.create({
   },
   phraseButton: {
     backgroundColor: theme.colors.postItPink,
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: scaleByContent(8, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(8),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: scaleByContent(6, 'spacing'),
     paddingHorizontal: scaleByContent(18, 'spacing'),
     shadowColor: '#000',
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: scaleByContent(2, 'spacing'),
     elevation: 2,
-    transform: [{ rotate: '-2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   phraseButtonText: {
     fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
@@ -412,10 +412,10 @@ const styles = StyleSheet.create({
   },
   timerButton: {
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: scaleByContent(8, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(8),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: scaleByContent(6, 'spacing'),
     paddingHorizontal: scaleByContent(22, 'spacing'),
     shadowColor: '#000',
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: scaleByContent(2, 'spacing'),
     elevation: 2,
-    transform: [{ rotate: '2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   timerButtonText: {
     fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
@@ -436,10 +436,10 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     backgroundColor: theme.colors.postItPink,
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: scaleByContent(8, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(8),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: scaleByContent(6, 'spacing'),
     paddingHorizontal: scaleByContent(18, 'spacing'),
     shadowColor: '#000',
@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: scaleByContent(2, 'spacing'),
     elevation: 2,
-    transform: [{ rotate: '-2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   skipButtonText: {
     fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
@@ -457,10 +457,10 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: scaleByContent(8, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(8),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: scaleByContent(6, 'spacing'),
     paddingHorizontal: scaleByContent(22, 'spacing'),
     shadowColor: '#000',
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: scaleByContent(2, 'spacing'),
     elevation: 2,
-    transform: [{ rotate: '2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   continueButtonText: {
     fontSize: scaleByContent(isTabletScreen ? 9 : 12, 'text'),
@@ -499,14 +499,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F6F0',
     borderRadius: 20,
     borderTopLeftRadius: 5,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     shadowColor: '#000',
     shadowOffset: { width: 6, height: 6 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 10,
-    transform: [{ rotate: '-0.5deg' }],
+    transform: [{ rotate: '0deg' }],
     overflow: 'hidden',
   },
   modalPaperBackground: {
@@ -565,10 +565,10 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: scaleByContent(8, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(8),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: scaleByContent(8, 'spacing'),
     paddingHorizontal: scaleByContent(30, 'spacing'),
     shadowColor: '#000',
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: scaleByContent(2, 'spacing'),
     elevation: 2,
-    transform: [{ rotate: '-1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   modalButtonText: {
     fontFamily: theme.fonts.primaryBold,

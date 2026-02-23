@@ -20,6 +20,7 @@ import {
   scaleText,
   scaleModerate,
   scaleByContent,
+  scaleBorder,
   getDeviceType,
   isSmallDevice,
   isTablet,
@@ -513,14 +514,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F6F0',
     borderRadius: 20,
     borderTopLeftRadius: 5,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     shadowColor: '#000',
     shadowOffset: { width: 6, height: 6 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 10,
-    transform: [{ rotate: '-0.5deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   // Fondo de papel del modal
@@ -569,7 +570,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: scaleByContent(25, 'spacing'),
     paddingVertical: isShortHeight ? scaleByContent(12, 'spacing') : scaleByContent(20, 'spacing'),
-    borderBottomWidth: 2,
+    borderBottomWidth: scaleBorder(2),
     borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
 
@@ -577,7 +578,7 @@ const styles = StyleSheet.create({
     fontSize: scaleByContent(22, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
-    transform: [{ rotate: '0.5deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   closeButton: {
@@ -585,7 +586,7 @@ const styles = StyleSheet.create({
     height: 35,
     backgroundColor: '#FF6B6B',
     borderRadius: 17.5,
-    borderWidth: 2,
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
@@ -594,7 +595,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 4,
-    transform: [{ rotate: '3deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   closeButtonText: {
@@ -621,7 +622,7 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     backgroundColor: theme.colors.postItGreen,
-    borderWidth: 2,
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     borderRadius: 12,
     borderTopLeftRadius: 3,
@@ -632,12 +633,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3,
     elevation: 3,
-    transform: [{ rotate: '-1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   kickModeButton: {
     backgroundColor: theme.colors.postItPink,
-    transform: [{ rotate: '1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   actionButtonText: {
@@ -673,7 +674,7 @@ const styles = StyleSheet.create({
 
   backButton: {
     backgroundColor: theme.colors.postItYellow,
-    borderWidth: 2,
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     borderRadius: 8,
     paddingVertical: scaleByContent(4, 'interactive'),
@@ -705,7 +706,7 @@ const styles = StyleSheet.create({
 
   playerCard: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     borderRadius: 10,
     paddingVertical: scaleByContent(8, 'spacing'),
@@ -721,7 +722,7 @@ const styles = StyleSheet.create({
 
   playerCardList: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     borderRadius: 10,
     paddingVertical: scaleByContent(12, 'spacing'),
@@ -753,7 +754,7 @@ const styles = StyleSheet.create({
 
   kickButton: {
     backgroundColor: '#FF6B6B',
-    borderWidth: 2,
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     borderRadius: 8,
     paddingVertical: scaleByContent(6, 'interactive'),
@@ -806,7 +807,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
     paddingTop: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
-    borderTopWidth: 1,
+    borderTopWidth: scaleBorder(1),
     borderTopColor: 'rgba(0, 0, 0, 0.1)',
   },
 
@@ -829,7 +830,7 @@ const styles = StyleSheet.create({
   // Botón terminar juego
   endGameButton: {
     backgroundColor: '#FF6B6B',
-    borderWidth: 2,
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     borderRadius: 12,
     borderTopLeftRadius: 3,
@@ -841,7 +842,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3,
     elevation: 3,
-    transform: [{ rotate: '1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   endGameButtonText: {
@@ -863,7 +864,7 @@ const styles = StyleSheet.create({
     color: '#000000',
     textAlign: 'center',
     marginBottom: scaleByContent(15, 'spacing'),
-    transform: [{ rotate: '0.5deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   confirmationText: {
@@ -883,7 +884,7 @@ const styles = StyleSheet.create({
 
   cancelButton: {
     backgroundColor: theme.colors.postItYellow,
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 15,
     borderTopLeftRadius: 3,
@@ -894,7 +895,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 4,
-    transform: [{ rotate: '-2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   cancelButtonText: {
@@ -906,7 +907,7 @@ const styles = StyleSheet.create({
 
   confirmButton: {
     backgroundColor: '#FF6B6B',
-    borderWidth: 3,
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 15,
     borderTopLeftRadius: 3,
@@ -917,7 +918,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 4,
-    transform: [{ rotate: '2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   confirmButtonText: {

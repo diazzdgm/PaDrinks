@@ -8,6 +8,7 @@ import {
   scaleHeight, 
   scaleText, 
   scaleModerate,
+  scaleBorder,
   getDeviceType,
   isSmallDevice,
   isTablet,
@@ -211,10 +212,10 @@ const styles = StyleSheet.create({
     padding: scale(10),
     backgroundColor: 'white',
     borderRadius: scale(10),
-    borderWidth: 1,
+    borderWidth: scaleBorder(1),
     borderColor: '#DDD',
   },
-  
+
   statusDot: {
     width: scale(12),
     height: scale(12),
@@ -245,7 +246,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(15),
     paddingVertical: scale(10),
     borderRadius: scale(8),
-    borderWidth: 1,
+    borderWidth: scaleBorder(1),
     marginHorizontal: scale(5),
   },
   
@@ -280,11 +281,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: scale(15),
     borderRadius: scale(10),
-    borderWidth: 1,
+    borderWidth: scaleBorder(1),
     borderColor: '#DDD',
     marginBottom: scale(20),
   },
-  
+
   roomTitle: {
     fontSize: scaleText(16),
     fontFamily: theme.fonts.primaryBold,
@@ -303,11 +304,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: scale(15),
     borderRadius: scale(10),
-    borderWidth: 1,
+    borderWidth: scaleBorder(1),
     borderColor: '#DDD',
     marginBottom: scale(20),
   },
-  
+
   playerTitle: {
     fontSize: scaleText(16),
     fontFamily: theme.fonts.primaryBold,
@@ -326,7 +327,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFEBEE',
     padding: scale(10),
     borderRadius: scale(8),
-    borderWidth: 1,
+    borderWidth: scaleBorder(1),
     borderColor: '#F44336',
     marginBottom: scale(10),
   },
@@ -342,7 +343,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E3F2FD',
     padding: scale(10),
     borderRadius: scale(8),
-    borderWidth: 1,
+    borderWidth: scaleBorder(1),
     borderColor: '#2196F3',
   },
   

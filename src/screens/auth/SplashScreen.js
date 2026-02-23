@@ -19,6 +19,7 @@ import {
   scaleText, 
   scaleModerate,
   scaleByContent,
+  scaleBorder,
   getDeviceType,
   isSmallDevice,
   isTablet,
@@ -367,9 +368,9 @@ const styles = StyleSheet.create({
   hole: {
     width: scaleByContent(18, 'spacing'),
     height: scaleByContent(18, 'spacing'),
-    borderRadius: scaleByContent(10, 'spacing'),
+    borderRadius: scaleBorder(10),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
     shadowOffset: {

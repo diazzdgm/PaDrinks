@@ -29,6 +29,7 @@ import {
   scaleText,
   scaleModerate,
   scaleByContent,
+  scaleBorder,
   getDeviceType,
   isSmallDevice,
   isTablet,
@@ -1059,9 +1060,9 @@ const styles = StyleSheet.create({
   hole: {
     width: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 22 : 18, 'spacing'),
     height: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 22 : 18, 'spacing'),
-    borderRadius: scaleByContent(isSmallScreen ? 7.5 : isTabletScreen ? 11 : 10, 'spacing'),
+    borderRadius: scaleBorder(isSmallScreen ? 7.5 : isTabletScreen ? 11 : 10),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
@@ -1078,16 +1079,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingHorizontal: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 25 : 20, 'spacing'),
     paddingVertical: scaleByContent(isSmallScreen ? 8 : isTabletScreen ? 12 : 10, 'spacing'),
-    borderRadius: scaleByContent(15, 'spacing'),
-    borderTopLeftRadius: scaleByContent(5, 'spacing'),
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderRadius: scaleBorder(15),
+    borderTopLeftRadius: scaleBorder(5),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
-    transform: [{ rotate: '-1deg' }],
+    transform: [{ rotate: '0deg' }],
     zIndex: 10,
   },
   
@@ -1110,7 +1111,7 @@ const styles = StyleSheet.create({
     color: '#000000',
     textAlign: 'center',
     marginBottom: scaleByContent(3, 'spacing'),
-    transform: [{ rotate: '0.5deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   subtitle: {
@@ -1118,7 +1119,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primary,
     color: '#000000',
     textAlign: 'center',
-    transform: [{ rotate: '-0.3deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   // Contenido principal
@@ -1141,7 +1142,7 @@ const styles = StyleSheet.create({
   rightSide: {
     flex: isSmallScreen ? 0.6 : 0.65,
     paddingLeft: scaleByContent(isSmallScreen ? 15 : isTabletScreen ? 25 : 20, 'spacing'),
-    borderLeftWidth: scaleByContent(2, 'spacing'),
+    borderLeftWidth: scaleBorder(2),
     borderLeftColor: '#A8C8EC',
     borderLeftStyle: 'dashed',
     justifyContent: 'space-between',
@@ -1153,7 +1154,7 @@ const styles = StyleSheet.create({
     color: '#000000',
     textAlign: 'center',
     marginBottom: scaleByContent(15, 'spacing'),
-    transform: [{ rotate: '0.5deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   // Contenedor de foto
@@ -1161,15 +1162,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: isShortHeight ? scaleByContent(100, 'interactive') : isTabletScreen ? scaleByContent(110, 'interactive') : scaleByContent(150, 'interactive'),
     backgroundColor: '#FFFFFF',
-    borderRadius: scaleByContent(15, 'spacing'),
-    borderTopLeftRadius: scaleByContent(5, 'spacing'),
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(15),
+    borderTopLeftRadius: scaleBorder(5),
+    borderWidth: scaleBorder(3),
     borderColor: '#CCCCCC',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
-    transform: [{ rotate: '-0.5deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   cameraPlaceholder: {
@@ -1184,10 +1185,10 @@ const styles = StyleSheet.create({
   circularPhotoContainer: {
     width: scaleByContent(120, 'interactive'),
     height: scaleByContent(120, 'interactive'),
-    borderRadius: scaleByContent(60, 'spacing'),
+    borderRadius: scaleBorder(60),
     overflow: 'hidden',
     alignSelf: 'center',
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
@@ -1210,21 +1211,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFE082',
     paddingVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(12, 'spacing'),
     paddingHorizontal: scaleByContent(20, 'spacing'),
-    borderRadius: scaleByContent(12, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderRadius: scaleBorder(12),
+    borderTopLeftRadius: scaleBorder(3),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.15,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
-    transform: [{ rotate: '-0.3deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   emojiButton: {
     backgroundColor: '#C8E6C9',
-    transform: [{ rotate: '0.4deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   photoButtonText: {
@@ -1252,22 +1253,22 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     marginBottom: scaleByContent(5, 'spacing'),
-    transform: [{ rotate: '0.3deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   // Input de texto
   textInput: {
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#CCCCCC',
-    borderRadius: scaleByContent(12, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(12),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: scaleByContent(12, 'spacing'),
     paddingHorizontal: scaleByContent(16, 'spacing'),
     fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#000000',
-    transform: [{ rotate: '-0.2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   charCount: {
@@ -1288,10 +1289,10 @@ const styles = StyleSheet.create({
   optionButton: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: scaleByContent(12, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(12),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(10, 'spacing'),
     alignItems: 'center',
     shadowColor: '#000',
@@ -1299,12 +1300,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
-    transform: [{ rotate: '-0.2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   selectedButton: {
     borderColor: '#000000',
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderWidth: scaleBorder(3),
     transform: [{ rotate: '0deg' }],
   },
   
@@ -1334,10 +1335,10 @@ const styles = StyleSheet.create({
   // Botones de orientación (post-it style)
   orientationButton: {
     flex: 1,
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: scaleByContent(12, 'spacing'),
-    borderTopLeftRadius: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(12),
+    borderTopLeftRadius: scaleBorder(3),
     paddingVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(10, 'spacing'),
     alignItems: 'center',
     shadowColor: '#000',
@@ -1345,7 +1346,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
-    transform: [{ rotate: '-0.3deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   menButton: {
@@ -1354,12 +1355,12 @@ const styles = StyleSheet.create({
   
   womenButton: {
     backgroundColor: '#FFFFFF', // Fondo blanco
-    transform: [{ rotate: '0.2deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   bothButton: {
     backgroundColor: '#FFFFFF', // Fondo blanco
-    transform: [{ rotate: '-0.1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   selectedMenButton: {
@@ -1375,7 +1376,7 @@ const styles = StyleSheet.create({
   },
   
   selectedOrientationButton: {
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderWidth: scaleBorder(3),
     transform: [{ rotate: '0deg' }],
   },
   
@@ -1398,8 +1399,8 @@ const styles = StyleSheet.create({
     width: scaleByContent(60, 'interactive'),
     height: scaleByContent(60, 'interactive'),
     backgroundColor: theme.colors.postItGreen,
-    borderRadius: scaleByContent(30, 'spacing'),
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(30),
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1424,9 +1425,9 @@ const styles = StyleSheet.create({
     right: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 40 : 30, 'spacing'),
     width: scaleByContent(isSmallScreen ? 55 : isTabletScreen ? 85 : 70, 'interactive'),
     height: scaleByContent(isSmallScreen ? 55 : isTabletScreen ? 85 : 70, 'interactive'),
-    borderRadius: scaleByContent(isSmallScreen ? 27.5 : isTabletScreen ? 42.5 : 35, 'spacing'),
+    borderRadius: scaleBorder(isSmallScreen ? 27.5 : isTabletScreen ? 42.5 : 35),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1435,7 +1436,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 6,
-    transform: [{ rotate: '2deg' }],
+    transform: [{ rotate: '0deg' }],
     zIndex: 15,
   },
   
@@ -1450,7 +1451,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-    transform: [{ rotate: '-1.5deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   megaphoneImage: {},
@@ -1468,7 +1469,7 @@ const styles = StyleSheet.create({
   mutedLine: {
     width: '80%',
     height: scaleByContent(3, 'spacing'),
-    borderRadius: scaleByContent(2, 'spacing'),
+    borderRadius: scaleBorder(2),
     transform: [{ rotate: '45deg' }],
   },
 
@@ -1498,7 +1499,7 @@ const styles = StyleSheet.create({
   
   emojiModalContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: scaleByContent(20, 'spacing'),
+    borderRadius: scaleBorder(20),
     padding: scaleByContent(25, 'spacing'),
     maxWidth: scaleByContent(350, 'interactive'),
     width: '85%',
@@ -1510,7 +1511,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: scaleByContent(10, 'spacing'),
     elevation: 10,
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
   },
   
@@ -1520,7 +1521,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    borderRadius: scaleByContent(22, 'spacing'),
+    borderRadius: scaleBorder(22),
     backgroundColor: '#F8F6F0',
   },
   
@@ -1556,9 +1557,9 @@ const styles = StyleSheet.create({
   emojiModalHole: {
     width: scaleByContent(14, 'spacing'),
     height: scaleByContent(14, 'spacing'),
-    borderRadius: scaleByContent(7, 'spacing'),
+    borderRadius: scaleBorder(7),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#CCCCCC',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
@@ -1592,8 +1593,8 @@ const styles = StyleSheet.create({
     width: scaleByContent(45, 'interactive'),
     height: scaleByContent(45, 'interactive'),
     backgroundColor: '#F0F0F0',
-    borderRadius: scaleByContent(22.5, 'spacing'),
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderRadius: scaleBorder(22.5),
+    borderWidth: scaleBorder(2),
     borderColor: '#CCCCCC',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1607,8 +1608,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFE082',
     paddingHorizontal: scaleByContent(25, 'spacing'),
     paddingVertical: scaleByContent(10, 'spacing'),
-    borderRadius: scaleByContent(15, 'spacing'),
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderRadius: scaleBorder(15),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
   },
 
@@ -1633,7 +1634,7 @@ const styles = StyleSheet.create({
 
   errorModalContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: scaleByContent(20, 'spacing'),
+    borderRadius: scaleBorder(20),
     padding: scaleByContent(30, 'spacing'),
     maxWidth: scaleByContent(350, 'interactive'),
     width: '85%',
@@ -1645,7 +1646,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: scaleByContent(10, 'spacing'),
     elevation: 10,
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderWidth: scaleBorder(3),
     borderColor: '#FF6B6B',
   },
 
@@ -1675,8 +1676,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6B6B',
     paddingHorizontal: scaleByContent(30, 'spacing'),
     paddingVertical: scaleByContent(12, 'spacing'),
-    borderRadius: scaleByContent(15, 'spacing'),
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderRadius: scaleBorder(15),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
   },
 

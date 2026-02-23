@@ -47,7 +47,7 @@ eas build -p ios --profile production   # App Store
 
 ## Project Overview
 
-PaDrinks is a React Native drinking game app built with Expo SDK 54 (React 19.1.0, RN 0.81.5). Landscape-only orientation. Post-it note aesthetic with notebook paper backgrounds and Kalam handwriting font.
+PaDrinks is a React Native drinking game app built with Expo SDK 54 (React 19.1.0, RN 0.81.5, New Architecture enabled). Landscape-only orientation (`expo-screen-orientation` plugin + `ScreenOrientation.lockAsync` in App.js). Post-it note aesthetic with notebook paper backgrounds and Kalam handwriting font. `supportsTablet: true` with `UIRequiresFullScreen: true` for iPad.
 
 ## Architecture
 
@@ -106,6 +106,8 @@ JSON-based dynamics stored in `src/data/dynamics/`. Each dynamic has `id`, `name
 - `SCREEN_WIDTH`, `SCREEN_HEIGHT` - use these instead of `Dimensions.get('window')` anywhere outside responsive.js
 - `RESPONSIVE` - pre-calculated common values (spacing.xs/sm/md/lg, fontSize.small/medium/large, button.height, etc.)
 
+**Tablet detection thresholds:** `aspectRatio < 1.65 && screenHeight >= 700` → tablet. deviceMultiplier ranges from 0.52-0.68 for tablets, meaning `scaleByContent` with `'text'` type applies ~0.78x (deviceMultiplier * 1.15 textMultiplier), making text proportionally LARGER than its `'interactive'` container (which gets raw deviceMultiplier). Fix pattern: reduce base font size for tablet using `isTabletScreen ? reducedValue : originalValue` where reducedValue ≈ originalValue * 0.65-0.7.
+
 **Pattern for conditional sizing:** `isShortHeight ? scaleByContent(200, 'interactive') : isSmallScreen ? scaleByContent(300, 'interactive') : scaleByContent(400, 'interactive')`
 
 ### Folder Structure
@@ -151,6 +153,7 @@ backend/src/
 - iOS needs 20-30% more lineHeight than Android; use `includeFontPadding: false`
 - QR scanner must use absolute positioning (not `flex: 1`) for full-screen display
 - Disable `allowsEditing` for landscape photos; use ImageManipulator center-crop instead
+- **iPad orientation lock** only works in production/development builds, NOT in Expo Go (Expo Go's own Info.plist overrides app orientation settings)
 
 ### Audio Management
 - All audio requires cleanup in `useFocusEffect` return functions

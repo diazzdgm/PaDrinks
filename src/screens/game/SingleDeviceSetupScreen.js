@@ -22,6 +22,7 @@ import {
   scaleText,
   scaleModerate,
   scaleByContent,
+  scaleBorder,
   getDeviceType,
   isSmallDevice,
   isTablet,
@@ -440,9 +441,9 @@ const styles = StyleSheet.create({
   hole: {
     width: scaleByContent(18, 'icon'),
     height: scaleByContent(18, 'icon'),
-    borderRadius: scaleByContent(10, 'spacing'),
+    borderRadius: scaleBorder(10),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
@@ -459,16 +460,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingHorizontal: scaleByContent(20, 'spacing'),
     paddingVertical: scaleByContent(10, 'spacing'),
-    borderRadius: scaleByContent(15, 'spacing'),
-    borderTopLeftRadius: scaleByContent(5, 'spacing'),
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderRadius: scaleBorder(15),
+    borderTopLeftRadius: scaleBorder(5),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     shadowColor: '#000',
     shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
-    transform: [{ rotate: '-1deg' }],
+    transform: [{ rotate: '0deg' }],
     zIndex: 10,
   },
   
@@ -501,7 +502,7 @@ const styles = StyleSheet.create({
     color: '#000000',
     textAlign: 'center',
     marginBottom: scaleByContent(5, 'spacing'),
-    transform: [{ rotate: '0.5deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   subtitle: {
@@ -509,7 +510,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primary,
     color: '#000000',
     textAlign: 'center',
-    transform: [{ rotate: '-0.3deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   // Selector de jugadores
@@ -521,10 +522,10 @@ const styles = StyleSheet.create({
 
   playerCountDisplay: {
     backgroundColor: theme.colors.postItYellow,
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
-    borderRadius: scaleByContent(20, 'spacing'),
-    borderTopLeftRadius: scaleByContent(5, 'spacing'),
+    borderRadius: scaleBorder(20),
+    borderTopLeftRadius: scaleBorder(5),
     paddingVertical: isShortHeight ? scaleByContent(12, 'spacing') : scaleByContent(20, 'spacing'),
     paddingHorizontal: isShortHeight ? scaleByContent(20, 'spacing') : scaleByContent(30, 'spacing'),
     alignItems: 'center',
@@ -534,7 +535,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: scaleByContent(8, 'spacing'),
     elevation: 6,
-    transform: [{ rotate: '-1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   playerCountNumber: {
@@ -563,7 +564,7 @@ const styles = StyleSheet.create({
     width: isShortHeight ? scaleByContent(36, 'interactive') : scaleByContent(42, 'interactive'),
     height: isShortHeight ? scaleByContent(36, 'interactive') : scaleByContent(42, 'interactive'),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     borderRadius: isShortHeight ? scaleByContent(18, 'spacing') : scaleByContent(21, 'spacing'),
     justifyContent: 'center',
@@ -573,13 +574,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 3,
-    transform: [{ rotate: '-1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
 
   selectedNumberButton: {
     backgroundColor: theme.colors.postItGreen,
     transform: [{ rotate: '0deg' }, { scale: 1.1 }],
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderWidth: scaleBorder(3),
   },
   
   numberButtonText: {
@@ -603,8 +604,8 @@ const styles = StyleSheet.create({
     width: scaleByContent(60, 'interactive'),
     height: scaleByContent(60, 'interactive'),
     backgroundColor: theme.colors.postItGreen,
-    borderRadius: scaleByContent(30, 'spacing'),
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderRadius: scaleBorder(30),
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
@@ -629,9 +630,9 @@ const styles = StyleSheet.create({
     right: scaleByContent(30, 'spacing'),
     width: scaleByContent(70, 'interactive'),
     height: scaleByContent(70, 'interactive'),
-    borderRadius: scaleByContent(35, 'spacing'),
+    borderRadius: scaleBorder(35),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(3, 'spacing'),
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
@@ -640,7 +641,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 6,
-    transform: [{ rotate: '2deg' }],
+    transform: [{ rotate: '0deg' }],
     zIndex: 15,
   },
   
@@ -655,7 +656,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-    transform: [{ rotate: '-1.5deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   megaphoneImage: {},
@@ -673,7 +674,7 @@ const styles = StyleSheet.create({
   mutedLine: {
     width: '80%',
     height: scaleByContent(3, 'spacing'),
-    borderRadius: scaleByContent(2, 'spacing'),
+    borderRadius: scaleBorder(2),
     transform: [{ rotate: '45deg' }],
   },
 });

@@ -24,6 +24,7 @@ import {
   scaleText,
   scaleModerate,
   scaleByContent,
+  scaleBorder,
   getDeviceType,
   isSmallDevice,
   isTablet,
@@ -757,9 +758,9 @@ const styles = StyleSheet.create({
   hole: {
     width: scaleByContent(18, 'spacing'),
     height: scaleByContent(18, 'spacing'),
-    borderRadius: scaleByContent(10, 'spacing'),
+    borderRadius: scaleBorder(10),
     backgroundColor: '#FFFFFF',
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#D0D0D0',
     shadowColor: '#000',
     shadowOffset: {
@@ -868,19 +869,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: scale(6),
     elevation: 6,
-    borderWidth: scale(2),
+    borderWidth: scaleBorder(2),
   },
   
   createGameButton: {
     backgroundColor: '#FFE082', // Post-it amarillo
     borderColor: '#000000', // Negro
-    transform: [{ rotate: '-0.8deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   joinGameButton: {
     backgroundColor: '#C8E6C9', // Post-it verde
     borderColor: '#000000', // Negro
-    transform: [{ rotate: '0.6deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   
@@ -915,7 +916,7 @@ const styles = StyleSheet.create({
     left: scaleByContent(-10, 'spacing'),
     right: scaleByContent(-10, 'spacing'),
     bottom: scaleByContent(-10, 'spacing'),
-    borderRadius: scaleByContent(25, 'spacing'),
+    borderRadius: scaleBorder(25),
     zIndex: -1,
   },
   
@@ -942,7 +943,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: scaleByContent(12, 'icon'),
     height: scaleByContent(12, 'icon'),
-    borderRadius: scaleByContent(6, 'spacing'),
+    borderRadius: scaleBorder(6),
     top: '50%',
     left: '50%',
     marginTop: scaleByContent(-6, 'spacing'),
@@ -979,7 +980,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: scaleWidth(12),
     paddingVertical: scaleHeight(6),
     borderRadius: scale(15),
-    borderWidth: scaleByContent(2, 'spacing'),
+    borderWidth: scaleBorder(2),
     borderColor: '#000000',
     zIndex: 1000,
   },
@@ -1006,7 +1007,7 @@ const styles = StyleSheet.create({
     height: scaleModerate(isSmallDevice() ? 55 : isTablet() ? 60 : 70, 0.3),
     borderRadius: scaleModerate(isSmallDevice() ? 27.5 : isTablet() ? 30 : 35, 0.3),
     backgroundColor: '#FFFFFF',
-    borderWidth: scale(3),
+    borderWidth: scaleBorder(3),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1018,7 +1019,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: scale(6),
     elevation: 6,
-    transform: [{ rotate: '1.5deg' }],
+    transform: [{ rotate: '0deg' }],
     zIndex: 10,
   },
   
@@ -1046,7 +1047,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 8,
     borderRadius: 1,
-    transform: [{ rotate: '1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   // Cono del altavoz
@@ -1063,7 +1064,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 10,
     borderTopColor: 'transparent',
     borderBottomColor: 'transparent',
-    transform: [{ rotate: '-1deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   // Contenedor de ondas de sonido
@@ -1104,7 +1105,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 2,
     borderBottomWidth: 0,
     borderLeftWidth: 0,
-    transform: [{ rotate: '3deg' }],
+    transform: [{ rotate: '0deg' }],
   },
   
   // Contenedor de X para muted
@@ -1143,7 +1144,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-    transform: [{ rotate: '-1.5deg' }], // Counter-rotate
+    transform: [{ rotate: '0deg' }], // Counter-rotate
   },
   
   megaphoneImage: {
@@ -1163,7 +1164,7 @@ const styles = StyleSheet.create({
   mutedLine: {
     width: '80%',
     height: scaleByContent(3, 'spacing'),
-    borderRadius: scaleByContent(2, 'spacing'),
+    borderRadius: scaleBorder(2),
     transform: [{ rotate: '45deg' }],
   },
   
