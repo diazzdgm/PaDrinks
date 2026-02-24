@@ -303,6 +303,8 @@ const AnonymousVoteDisplay = ({
     const targetPlayers = anonymousVoteState.targetPlayers;
     const numPlayers = targetPlayers.length;
     const numColumns = numPlayers <= 6 ? 3 : numPlayers <= 12 ? 4 : 5;
+    const isManyPlayers = numPlayers > 10;
+    const isVeryManyPlayers = numPlayers > 13;
 
     return (
       <>
@@ -313,42 +315,99 @@ const AnonymousVoteDisplay = ({
         </View>
 
         <View style={styles.questionContainerVoting}>
-          <Text style={styles.questionTitle}>
-            {playerName}, {question.text}
-          </Text>
+          <ScrollView
+            style={{ flex: 1, width: '100%' }}
+            contentContainerStyle={{
+              alignItems: 'center',
+              flexGrow: 1,
+              justifyContent: isManyPlayers ? 'flex-start' : 'center',
+              paddingBottom: scaleByContent(5, 'spacing'),
+            }}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            overScrollMode="never"
+          >
+            <Text style={[
+              styles.questionTitle,
+              isManyPlayers && {
+                marginBottom: scaleByContent(6, 'spacing'),
+                marginTop: scaleByContent(4, 'spacing'),
+                fontSize: scaleByContent(isTabletScreen ? 11 : 17, 'text'),
+              },
+            ]}>
+              {playerName}, {question.text}
+            </Text>
 
-          <View style={styles.playersGridCompact}>
-            {targetPlayers.map((player, index) => {
-              const isSelected = selectedPlayer?.id === player.id;
-              const displayName = player.name || player.nickname;
+            <View style={[
+              styles.playersGridCompact,
+              isManyPlayers && {
+                marginVertical: scaleByContent(6, 'spacing'),
+                gap: scaleByContent(5, 'spacing'),
+              },
+            ]}>
+              {targetPlayers.map((player, index) => {
+                const isSelected = selectedPlayer?.id === player.id;
+                const displayName = player.name || player.nickname;
 
-              return (
-                <TouchableOpacity
-                  key={player.id}
-                  style={[
-                    styles.playerButtonCompact,
-                    numColumns === 3 && styles.playerButtonThreeColumnCompact,
-                    numColumns === 4 && styles.playerButtonFourColumnCompact,
-                    numColumns === 5 && styles.playerButtonFiveColumnCompact,
-                    isSelected && styles.playerButtonSelectedCompact,
-                    { transform: [{ rotate: `${(index % 3 - 1) * 1}deg` }] },
-                  ]}
-                  onPress={() => handlePlayerSelect(player)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.playerButtonTextCompact}>
-                    {displayName}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+                return (
+                  <TouchableOpacity
+                    key={player.id}
+                    style={[
+                      styles.playerButtonCompact,
+                      numColumns === 3 && styles.playerButtonThreeColumnCompact,
+                      numColumns === 4 && styles.playerButtonFourColumnCompact,
+                      numColumns === 5 && styles.playerButtonFiveColumnCompact,
+                      isSelected && styles.playerButtonSelectedCompact,
+                      isManyPlayers && {
+                        paddingVertical: scaleByContent(6, 'spacing'),
+                        paddingHorizontal: scaleByContent(10, 'spacing'),
+                      },
+                      { transform: [{ rotate: `${(index % 3 - 1) * 1}deg` }] },
+                    ]}
+                    onPress={() => handlePlayerSelect(player)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[
+                      styles.playerButtonTextCompact,
+                      isVeryManyPlayers && {
+                        fontSize: scaleByContent(isTabletScreen ? 9 : 13, 'text'),
+                      },
+                    ]}>
+                      {displayName}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
-          <Text style={styles.questionEmojiCompact}>{question.emoji}</Text>
-          <Text style={styles.instructionActionCompact}>{question.instruction}</Text>
+            {!isVeryManyPlayers && (
+              <Text style={[
+                styles.questionEmojiCompact,
+                isManyPlayers && {
+                  fontSize: scaleByContent(isTabletScreen ? 18 : 26, 'icon'),
+                  marginTop: scaleByContent(6, 'spacing'),
+                  marginBottom: scaleByContent(4, 'spacing'),
+                },
+              ]}>
+                {question.emoji}
+              </Text>
+            )}
+            <Text style={[
+              styles.instructionActionCompact,
+              isVeryManyPlayers && {
+                fontSize: scaleByContent(isTabletScreen ? 9 : 13, 'text'),
+                marginBottom: scaleByContent(4, 'spacing'),
+              },
+            ]}>
+              {question.instruction}
+            </Text>
+          </ScrollView>
         </View>
 
-        <View style={styles.buttonsContainerRight}>
+        <View style={[
+          styles.buttonsContainerRight,
+          isManyPlayers && { marginTop: scaleByContent(10, 'spacing') },
+        ]}>
           <TouchableOpacity
             style={[
               styles.continueButton,
@@ -557,7 +616,7 @@ const styles = StyleSheet.create({
     marginTop: scaleByContent(5, 'spacing'),
     marginBottom: scaleByContent(10, 'spacing'),
     width: '100%',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     paddingHorizontal: scaleByContent(15, 'spacing'),
   },
