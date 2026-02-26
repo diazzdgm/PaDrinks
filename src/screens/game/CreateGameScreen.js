@@ -720,18 +720,14 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: scaleByContent(isSmallScreen ? 25 : isTabletScreen ? 60 : 40, 'spacing'),
-    paddingTop: isTabletScreen ? 120 : scaleByContent(100, 'spacing'),
-    paddingBottom: scaleByContent(isTabletScreen ? 30 : 100, 'spacing'),
-    justifyContent: isTabletScreen ? 'flex-start' : 'center',
+    paddingTop: isTabletScreen ? 120 : scaleByContent(15, 'spacing'),
+    paddingBottom: scaleByContent(isSmallScreen ? 65 : isTabletScreen ? 30 : 75, 'spacing'),
     alignItems: 'center',
   },
 
   titleContainer: {
     alignItems: 'center',
-    marginBottom: scaleByContent(isSmallScreen ? 20 : isTabletScreen ? 10 : 25, 'spacing'),
-    ...(isTabletScreen ? {} : { position: 'absolute', top: scaleByContent(20, 'spacing') }),
-    left: 0,
-    right: 0,
+    marginBottom: scaleByContent(isSmallScreen ? 5 : isTabletScreen ? 10 : 8, 'spacing'),
     zIndex: 5,
   },
 
@@ -740,10 +736,10 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: scaleByContent(8, 'spacing'),
+    marginBottom: scaleByContent(2, 'spacing'),
     transform: [{ rotate: '0deg' }],
   },
-  
+
   subtitle: {
     fontSize: scaleByContent(isSmallScreen ? 15 : 18, 'text'),
     fontFamily: theme.fonts.primary,
@@ -754,6 +750,7 @@ const styles = StyleSheet.create({
   
   // Contenedor del carrusel - Centrado absoluto
   carouselContainer: {
+    flex: 1,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
@@ -761,17 +758,16 @@ const styles = StyleSheet.create({
   
   // Área principal del carrusel - Más grande
   carouselMainArea: {
+    flex: 1,
     width: '100%',
-    height: scaleByContent(isSmallScreen ? 280 : 320, 'interactive'),
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
   },
   
   // Contenedor del modo actual
   currentModeContainer: {
+    flex: 1,
     width: '100%',
-    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -781,9 +777,7 @@ const styles = StyleSheet.create({
     width: isSmallScreen
       ? Math.min(width * 0.75, scaleByContent(320, 'interactive'))
       : Math.min(width * 0.6, scaleByContent(320, 'interactive')),
-    height: isSmallScreen
-      ? Math.min(width * 0.45, scaleByContent(200, 'interactive'))
-      : Math.min(width * 0.35, scaleByContent(200, 'interactive')),
+    height: height * 0.55,
     paddingHorizontal: scaleByContent(isSmallScreen ? 15 : 20, 'spacing'),
     paddingVertical: scaleByContent(isSmallScreen ? 12 : 16, 'spacing'),
     borderRadius: scaleBorder(18),
