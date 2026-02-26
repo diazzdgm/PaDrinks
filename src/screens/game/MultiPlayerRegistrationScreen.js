@@ -205,19 +205,12 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
   };
 
   const playBeerSound = async () => {
-    // audioService gestiona automáticamente la limpieza, no necesitamos guardar referencia
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/beer.can.sound.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('beer');
     console.log('🍺 Reproduciendo sonido de lata de cerveza...');
   };
 
   const playWinePopSound = async () => {
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/wine-pop.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('wine');
     console.log('🍷 Reproduciendo sonido de wine-pop...');
   };
 
@@ -805,11 +798,11 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
               placeholderTextColor="#999999"
               value={nickname}
               onChangeText={setNickname}
-              maxLength={15}
+              maxLength={12}
               autoCapitalize="none"
               autoCorrect={false}
             />
-            <Text style={styles.charCount}>{nickname.length}/15</Text>
+            <Text style={styles.charCount}>{nickname.length}/12</Text>
           </View>
           
           {/* Campo Género */}

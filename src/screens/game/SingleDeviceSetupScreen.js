@@ -150,18 +150,11 @@ const SingleDeviceSetupScreen = ({ navigation, route }) => {
   };
 
   const playBeerSound = async () => {
-    // audioService gestiona automáticamente la limpieza, no necesitamos guardar referencia
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/beer.can.sound.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('beer');
   };
 
   const playWinePopSound = async () => {
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/wine-pop.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('wine');
   };
 
   const handlePlayerCountChange = (newCount) => {

@@ -98,13 +98,7 @@ const SplashScreen = ({ navigation }) => {
   const loadAndPlaySound = async () => {
     try {
       // Usar audioService para manejar el sonido respetando el mute
-      const soundObject = await audioService.playSoundEffect(
-        require('../../../assets/sounds/pouring.shot.mp3'),
-        { 
-          shouldPlay: false, // No reproducir automáticamente
-          volume: 0.8 
-        }
-      );
+      const soundObject = await audioService.createManagedSound('pouring');
       
       if (soundObject) {
         sound.current = soundObject;

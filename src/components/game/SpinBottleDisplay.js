@@ -34,10 +34,7 @@ const SpinBottleDisplay = ({
 
     setShowButton(false);
 
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/bottle.spin.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('bottle');
 
     setIsSpinning(true);
     spinValue.setValue(0);
@@ -51,10 +48,7 @@ const SpinBottleDisplay = ({
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start(async () => {
-      await audioService.playSoundEffect(
-        require('../../../assets/sounds/school.bell.mp3'),
-        { volume: 0.8 }
-      );
+      await audioService.playSoundEffect('bell');
 
       try {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -110,10 +104,7 @@ const SpinBottleDisplay = ({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (error) {}
 
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/beer.can.sound.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('beer');
 
     onComplete();
   };
@@ -123,10 +114,7 @@ const SpinBottleDisplay = ({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {}
 
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/wine-pop.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('wine');
 
     onSkipDynamic();
   };
@@ -177,7 +165,7 @@ const SpinBottleDisplay = ({
           onPress={handleSkip}
           activeOpacity={0.8}
         >
-          <Text style={styles.skipButtonText}>Pasar Dinámica</Text>
+          <Text style={styles.skipButtonText}>Saltar Dinámica</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

@@ -582,19 +582,12 @@ const CreateLobbyScreen = ({ navigation, route }) => {
   };
 
   const playBeerSound = async () => {
-    // audioService gestiona automáticamente la limpieza, no necesitamos guardar referencia
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/beer.can.sound.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('beer');
     console.log('🍺 Reproduciendo sonido de lata de cerveza...');
   };
 
   const playWinePopSound = async () => {
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/wine-pop.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('wine');
   };
 
   const toggleMute = async () => {
@@ -1096,7 +1089,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
           
           <View style={styles.statusContainer}>
             <Text style={styles.statusText}>
-              Esperando Jugadores ({connectedPlayers.length}/15)
+              Esperando Jugadores ({connectedPlayers.length}/16)
             </Text>
           </View>
 

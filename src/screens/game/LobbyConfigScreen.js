@@ -144,26 +144,11 @@ const LobbyConfigScreen = ({ navigation, route }) => {
   };
 
   const playBeerSound = async () => {
-    const soundObject = await audioService.playSoundEffect(
-      require('../../../assets/sounds/beer.can.sound.mp3'),
-      { volume: 0.8 }
-    );
-
-    if (soundObject) {
-      beerSound.current = soundObject;
-      console.log('🍺 Reproduciendo sonido de lata de cerveza...');
-    }
+    await audioService.playSoundEffect('beer');
   };
 
   const playWinePopSound = async () => {
-    const soundObject = await audioService.playSoundEffect(
-      require('../../../assets/sounds/wine-pop.mp3'),
-      { volume: 0.8 }
-    );
-
-    if (soundObject) {
-      console.log('🍷 Reproduciendo sonido de wine-pop...');
-    }
+    await audioService.playSoundEffect('wine');
   };
 
   const handlePlayMethodSelect = (method) => {

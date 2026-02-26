@@ -65,17 +65,11 @@ const AnonymousVoteDisplay = ({
   }, [question]);
 
   const playBeerSound = async () => {
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/beer.can.sound.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('beer');
   };
 
   const playWinePopSound = async () => {
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/wine-pop.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('wine');
   };
 
   const handleContinueFromPassing = async () => {
@@ -271,7 +265,7 @@ const AnonymousVoteDisplay = ({
             onPress={onSkipDynamic}
             activeOpacity={0.8}
           >
-            <Text style={styles.skipButtonText}>Pasar Dinámica</Text>
+            <Text style={styles.skipButtonText}>Saltar Dinámica</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

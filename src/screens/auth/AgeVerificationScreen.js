@@ -79,10 +79,7 @@ const AgeVerificationScreen = ({ navigation }) => {
   };
   
   const playBeerSound = async () => {
-    const soundObject = await audioService.playSoundEffect(
-      require('../../../assets/sounds/beer.can.sound.mp3'),
-      { volume: 0.7 }
-    );
+    const soundObject = await audioService.playSoundEffect('beer');
     
     if (soundObject) {
       beerSound.current = soundObject;

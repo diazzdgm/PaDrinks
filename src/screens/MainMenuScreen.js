@@ -148,6 +148,7 @@ const MainMenuScreen = ({ navigation }) => {
       
       startEntranceAnimations();
       // Inicializar y reproducir música solo desde MainMenu
+      audioService.preloadSoundEffects();
       audioService.initializeBackgroundMusic();
       
       // Sincronizar estado de mute cuando regresamos a la pantalla
@@ -196,18 +197,11 @@ const MainMenuScreen = ({ navigation }) => {
 
   const playBeerSound = async () => {
     // audioService gestiona automáticamente la limpieza, no necesitamos guardar referencia
-    await audioService.playSoundEffect(
-      require('../../assets/sounds/beer.can.sound.mp3'),
-      { volume: 0.8 }
-    );
-    console.log('🍺 Reproduciendo sonido de lata de cerveza...');
+    await audioService.playSoundEffect('beer');
   };
 
   const playWinePopSound = async () => {
-    await audioService.playSoundEffect(
-      require('../../assets/sounds/wine-pop.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('wine');
   };
 
   const startEntranceAnimations = () => {

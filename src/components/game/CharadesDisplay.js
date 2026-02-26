@@ -50,10 +50,7 @@ const CharadesDisplay = ({
     }
     setTimerStarted(false);
 
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/school.bell.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('bell');
 
     setShowTimeUpModal(true);
     animateModalIn();
@@ -66,10 +63,7 @@ const CharadesDisplay = ({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (error) {}
 
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/beer.can.sound.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('beer');
 
     setTimerStarted(true);
     setTimerDisabled(true);
@@ -90,10 +84,7 @@ const CharadesDisplay = ({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (error) {}
 
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/wine-pop.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('wine');
 
     const phrases = question.phrases || [];
     const randomIndex = Math.floor(Math.random() * phrases.length);
@@ -154,10 +145,7 @@ const CharadesDisplay = ({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (error) {}
 
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/beer.can.sound.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('beer');
 
     if (timerInterval.current) {
       clearInterval(timerInterval.current);
@@ -171,10 +159,7 @@ const CharadesDisplay = ({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {}
 
-    await audioService.playSoundEffect(
-      require('../../../assets/sounds/wine-pop.mp3'),
-      { volume: 0.8 }
-    );
+    await audioService.playSoundEffect('wine');
 
     if (timerInterval.current) {
       clearInterval(timerInterval.current);
@@ -237,7 +222,7 @@ const CharadesDisplay = ({
           onPress={handleSkip}
           activeOpacity={0.8}
         >
-          <Text style={styles.skipButtonText}>Pasar Dinámica</Text>
+          <Text style={styles.skipButtonText}>Saltar Dinámica</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
