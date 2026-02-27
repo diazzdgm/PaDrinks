@@ -30,20 +30,18 @@ const SERVER_CONFIGS = {
  * Detectar la configuración correcta del servidor
  */
 export const getServerUrl = () => {
+  if (Platform.OS === 'web') {
+    return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
+  }
+
   if (__DEV__) {
     if (Platform.OS === 'android') {
-      // Detectar si es emulador o dispositivo real
-      // Por ahora, asumimos emulador. Para dispositivo real, usar real_device
       return SERVER_CONFIGS.android_emulator;
     } else if (Platform.OS === 'ios') {
-      // Para iOS Simulator
       return SERVER_CONFIGS.ios_simulator;
     }
   }
-  
-  // Para dispositivos reales, usar esta línea:
-  // return SERVER_CONFIGS.real_device;
-  
+
   return SERVER_CONFIGS.android_emulator;
 };
 

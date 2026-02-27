@@ -9,12 +9,11 @@ import {
   Image,
   TextInput,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
-import { CameraView, Camera } from 'expo-camera';
 import { useFocusEffect } from '@react-navigation/native';
-import { Audio } from 'expo-av';
 import audioService from '../../services/AudioService';
-import * as Haptics from 'expo-haptics';
+import { Haptics } from '../../utils/platform';
 import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../../styles/theme';
 import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
@@ -39,6 +38,13 @@ import {
   RESPONSIVE,
   getDeviceInfo
 } from '../../utils/responsive';
+
+let CameraView, Camera;
+if (Platform.OS !== 'web') {
+  const ExpoCamera = require('expo-camera');
+  CameraView = ExpoCamera.CameraView;
+  Camera = ExpoCamera.Camera;
+}
 
 // Obtener información del dispositivo para estilos dinámicos
 const width = SCREEN_WIDTH;

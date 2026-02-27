@@ -12,9 +12,8 @@ import {
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useFocusEffect } from '@react-navigation/native';
-import { Audio } from 'expo-av';
 import audioService from '../../services/AudioService';
-import * as Haptics from 'expo-haptics';
+import { Haptics } from '../../utils/platform';
 import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../../styles/theme';
 import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';

@@ -9,25 +9,27 @@ import {
   Image,
   TextInput,
   Alert,
+  Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Audio } from 'expo-av';
 import audioService from '../../services/AudioService';
-import * as Haptics from 'expo-haptics';
+import { Haptics } from '../../utils/platform';
 import { useDispatch } from 'react-redux';
 import { setGameSettings } from '../../store/gameSlice';
 import { theme } from '../../styles/theme';
 import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
 import SocketService from '../../services/SocketService';
-import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
-import { Camera } from 'expo-camera';
-import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
-import { 
-  scale, 
-  scaleWidth, 
-  scaleHeight, 
-  scaleText, 
+
+let FileSystem;
+if (Platform.OS !== 'web') {
+  FileSystem = require('expo-file-system');
+}
+import {
+  scale,
+  scaleWidth,
+  scaleHeight,
+  scaleText,
   scaleModerate,
   scaleByContent,
   scaleBorder,
@@ -40,6 +42,14 @@ import {
   SCREEN_WIDTH,
   SCREEN_HEIGHT
 } from '../../utils/responsive';
+
+let Camera, manipulateAsync, SaveFormat;
+if (Platform.OS !== 'web') {
+  Camera = require('expo-camera').Camera;
+  const ImageManipulator = require('expo-image-manipulator');
+  manipulateAsync = ImageManipulator.manipulateAsync;
+  SaveFormat = ImageManipulator.SaveFormat;
+}
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
 const CustomMuteIcon = ({ size, isMuted = false }) => {

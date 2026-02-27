@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,10 @@ import {
   Animated,
   Dimensions,
   Image,
+  TouchableOpacity,
+  Platform,
 } from 'react-native';
-import { Audio } from 'expo-av';
-import * as Haptics from 'expo-haptics';
+import { Haptics } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import CircularText from '../../components/common/CircularText';
 import audioService from '../../services/AudioService';
@@ -36,18 +37,22 @@ const isTabletScreen = isTablet();
 const notebookLineSpacing = isTabletScreen ? 15 : scaleByContent(25, 'spacing');
 const notebookLineCount = Math.ceil(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / notebookLineSpacing) + 2;
 
+const isWeb = Platform.OS === 'web';
+
 const SplashScreen = ({ navigation }) => {
-  // Animaciones
-  const logoTranslateY = useRef(new Animated.Value(-200)).current; // Empieza menos arriba
-  const logoScale = useRef(new Animated.Value(0.1)).current; // Empieza con tamaño mínimo visible
+  const [audioUnlocked, setAudioUnlocked] = useState(!isWeb);
+
+  const logoTranslateY = useRef(new Animated.Value(-200)).current;
+  const logoScale = useRef(new Animated.Value(0.1)).current;
   const logoRotate = useRef(new Animated.Value(0)).current;
   const paperLinesOpacity = useRef(new Animated.Value(0)).current;
   const paperParallax = useRef(new Animated.Value(0)).current;
-  
-  // Referencias para el sonido
+
   const sound = useRef(null);
 
   useEffect(() => {
+    if (!audioUnlocked) return;
+
     startSplashSequence();
     
     // Empezar fade out del audio a los 5 segundos
@@ -82,7 +87,7 @@ const SplashScreen = ({ navigation }) => {
       clearTimeout(fadeOutTimer);
       cleanup();
     };
-  }, []);
+  }, [audioUnlocked]);
 
   const cleanup = async () => {
     // Limpiar el sonido
@@ -200,9 +205,22 @@ const SplashScreen = ({ navigation }) => {
   };
 
 
+  if (isWeb && !audioUnlocked) {
+    return (
+      <TouchableOpacity
+        style={styles.tapToStartOverlay}
+        activeOpacity={0.8}
+        onPress={() => setAudioUnlocked(true)}
+      >
+        <Text style={styles.tapToStartEmoji}>🍻</Text>
+        <Text style={styles.tapToStartText}>PaDrinks</Text>
+        <Text style={styles.tapToStartSubtext}>Toca para empezar</Text>
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {/* Fondo de papel con líneas y efecto parallax */}
       <Animated.View 
         style={[
           styles.paperBackground,
@@ -304,9 +322,34 @@ const SplashScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  tapToStartOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.primary,
+  },
+
+  tapToStartEmoji: {
+    fontSize: scaleByContent(80, 'hero'),
+    marginBottom: scaleByContent(20, 'spacing'),
+  },
+
+  tapToStartText: {
+    fontSize: scaleByContent(42, 'text'),
+    color: 'white',
+    fontFamily: 'Kalam-Bold',
+    marginBottom: scaleByContent(10, 'spacing'),
+  },
+
+  tapToStartSubtext: {
+    fontSize: scaleByContent(18, 'text'),
+    color: 'rgba(255,255,255,0.8)',
+    fontFamily: 'Kalam-Regular',
+  },
+
   container: {
     flex: 1,
-    backgroundColor: '#F8F6F0', // Color papel crema
+    backgroundColor: '#F8F6F0',
   },
   
   // Fondo de papel

@@ -7,11 +7,11 @@ import {
   Animated,
   Image,
   Alert,
+  Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Audio } from 'expo-av';
 import audioService from '../services/AudioService';
-import * as Haptics from 'expo-haptics';
+import { Haptics } from '../utils/platform';
 import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../styles/theme';
 import { useSocket } from '../hooks/useSocket';
@@ -659,7 +659,7 @@ const MainMenuScreen = ({ navigation }) => {
         </TouchableOpacity>
       </Animated.View>
 
-      {/* Indicador de conexión */}
+      {Platform.OS !== 'web' && (
       <View style={[
         styles.connectionIndicator,
         {
@@ -675,6 +675,7 @@ const MainMenuScreen = ({ navigation }) => {
           {connected ? 'Online' : isConnecting ? 'Conectando...' : 'Offline'}
         </Text>
       </View>
+      )}
 
       {/* Footer */}
       <View style={styles.footer}>

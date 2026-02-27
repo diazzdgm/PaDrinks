@@ -44,7 +44,15 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single",
+      "name": "PaDrinks",
+      "shortName": "PaDrinks",
+      "lang": "es",
+      "description": "Juego de beber para fiestas",
+      "backgroundColor": "#FF7F11",
+      "themeColor": "#FF7F11"
     },
     "plugins": [
       "expo-font",

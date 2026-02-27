@@ -10,9 +10,8 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
-import { Audio } from 'expo-av';
 import audioService from '../../services/AudioService';
-import * as Haptics from 'expo-haptics';
+import { Haptics } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
 import {

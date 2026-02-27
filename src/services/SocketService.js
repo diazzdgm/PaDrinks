@@ -58,6 +58,8 @@ class SocketService {
    * @returns {Promise<boolean>} - True si conectó exitosamente
    */
   async connect(serverUrl = null) {
+    if (Platform.OS === 'web') return false;
+
     if (this.isConnected) {
       console.log('🔌 Ya conectado al servidor');
       return true;

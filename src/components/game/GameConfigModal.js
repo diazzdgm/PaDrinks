@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import audioService from '../../services/AudioService';
-import * as Haptics from 'expo-haptics';
+import { Haptics } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import {
   scale,

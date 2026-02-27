@@ -1,5 +1,11 @@
-import { Audio } from 'expo-av';
+import { Platform } from 'react-native';
 
+let Audio;
+if (Platform.OS !== 'web') {
+  Audio = require('expo-av').Audio;
+}
+
+const isWeb = Platform.OS === 'web';
 const COOLDOWN_MS = 100;
 
 const SFX_REGISTRY = {
@@ -10,6 +16,64 @@ const SFX_REGISTRY = {
   bottle: { source: require('../../assets/sounds/bottle.spin.mp3'), poolSize: 1 },
   pouring: { source: require('../../assets/sounds/pouring.shot.mp3'), poolSize: 1 },
 };
+
+class WebManagedSound {
+  constructor(audioElement) {
+    this._el = audioElement;
+  }
+
+  async playAsync() {
+    try { await this._el.play(); } catch (e) {}
+  }
+
+  async setVolumeAsync(v) {
+    this._el.volume = Math.max(0, Math.min(1, v));
+  }
+
+  async setPositionAsync(ms) {
+    this._el.currentTime = ms / 1000;
+  }
+
+  async pauseAsync() {
+    this._el.pause();
+  }
+
+  async replayAsync() {
+    this._el.currentTime = 0;
+    await this.playAsync();
+  }
+
+  async unloadAsync() {
+    this._el.pause();
+    this._el.src = '';
+  }
+
+  async setStatusAsync(status) {
+    if (status.volume !== undefined) {
+      this._el.volume = Math.max(0, Math.min(1, status.volume));
+    }
+    if (status.shouldPlay) {
+      await this.playAsync();
+    }
+  }
+
+  async getStatusAsync() {
+    return {
+      isLoaded: !!this._el.src,
+      isPlaying: !this._el.paused,
+      positionMillis: this._el.currentTime * 1000,
+      durationMillis: (this._el.duration || 0) * 1000,
+    };
+  }
+}
+
+function resolveWebSource(source) {
+  if (typeof source === 'string') return source;
+  if (typeof source === 'number') return source;
+  if (source && source.uri) return source.uri;
+  if (source && source.default) return source.default;
+  return source;
+}
 
 class AudioService {
   constructor() {
@@ -27,6 +91,10 @@ class AudioService {
 
   async ensureAudioMode() {
     if (this.audioModeSet) return;
+    if (isWeb) {
+      this.audioModeSet = true;
+      return;
+    }
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
       staysActiveInBackground: true,
@@ -44,6 +112,30 @@ class AudioService {
       await this.ensureAudioMode();
 
       const entries = Object.entries(SFX_REGISTRY);
+
+      if (isWeb) {
+        for (const [key, { source, poolSize }] of entries) {
+          const instances = [];
+          const src = resolveWebSource(source);
+          for (let i = 0; i < poolSize; i++) {
+            try {
+              const audio = new window.Audio(src);
+              audio.volume = 0.8;
+              audio.preload = 'auto';
+              instances.push(new WebManagedSound(audio));
+            } catch (error) {
+              console.log(`Error preloading ${key}[${i}]:`, error);
+            }
+          }
+          if (instances.length > 0) {
+            this.sfxPool.set(key, instances);
+            this.sfxIndex.set(key, 0);
+          }
+        }
+        this.sfxReady = true;
+        return;
+      }
+
       await Promise.all(entries.map(async ([key, { source, poolSize }]) => {
         const instances = [];
         for (let i = 0; i < poolSize; i++) {
@@ -64,7 +156,6 @@ class AudioService {
       }));
 
       this.sfxReady = true;
-      console.log(`🔊 SFX pool precargado: ${this.sfxPool.size} sonidos`);
     } catch (error) {
       console.log('Error preloading sound effects:', error);
     }
@@ -75,6 +166,17 @@ class AudioService {
 
     try {
       await this.ensureAudioMode();
+
+      if (isWeb) {
+        const src = resolveWebSource(require('../../assets/sounds/PADRINKS.backround.music.mp3'));
+        const audio = new window.Audio(src);
+        audio.loop = true;
+        audio.volume = 0.15;
+        this.backgroundMusic = new WebManagedSound(audio);
+        try { await audio.play(); } catch (e) {}
+        this.isPlaying = true;
+        return;
+      }
 
       const { sound: musicObject } = await Audio.Sound.createAsync(
         require('../../assets/sounds/PADRINKS.backround.music.mp3'),
@@ -87,7 +189,6 @@ class AudioService {
 
       this.backgroundMusic = musicObject;
       this.isPlaying = true;
-      console.log('🎵 Música de fondo inicializada globalmente...');
     } catch (error) {
       console.log('Error loading background music:', error);
     }
@@ -103,7 +204,6 @@ class AudioService {
       try {
         await this.backgroundMusic.playAsync();
         this.isPlaying = true;
-        console.log('🎵 Reproduciendo música de fondo...');
       } catch (error) {
         console.log('Error playing background music:', error);
       }
@@ -115,7 +215,6 @@ class AudioService {
       try {
         await this.backgroundMusic.pauseAsync();
         this.isPlaying = false;
-        console.log('⏸️ Pausando música de fondo...');
       } catch (error) {
         console.log('Error pausing background music:', error);
       }
@@ -128,10 +227,8 @@ class AudioService {
 
     if (this.isMuted) {
       await this.pauseBackgroundMusic();
-      console.log('🔇 Audio completamente silenciado (música + efectos)');
     } else {
       await this.playBackgroundMusic();
-      console.log('🔊 Audio activado (música + efectos)');
     }
 
     return this.isMuted;
@@ -168,18 +265,21 @@ class AudioService {
       await sound.replayAsync();
       return sound;
     } catch (error) {
-      try {
-        const entry = SFX_REGISTRY[soundKey];
-        const { sound: newSound } = await Audio.Sound.createAsync(
-          entry.source,
-          { shouldPlay: true, volume: options.volume || 0.8 }
-        );
-        pool[index] = newSound;
-        return newSound;
-      } catch (fallbackError) {
-        console.log('Error playing sound effect:', fallbackError);
-        return null;
+      if (!isWeb) {
+        try {
+          const entry = SFX_REGISTRY[soundKey];
+          const { sound: newSound } = await Audio.Sound.createAsync(
+            entry.source,
+            { shouldPlay: true, volume: options.volume || 0.8 }
+          );
+          pool[index] = newSound;
+          return newSound;
+        } catch (fallbackError) {
+          console.log('Error playing sound effect:', fallbackError);
+          return null;
+        }
       }
+      return null;
     }
   }
 
@@ -191,6 +291,15 @@ class AudioService {
 
     try {
       await this.ensureAudioMode();
+
+      if (isWeb) {
+        const src = resolveWebSource(entry.source);
+        const audio = new window.Audio(src);
+        audio.volume = 0.8;
+        audio.preload = 'auto';
+        return new WebManagedSound(audio);
+      }
+
       const { sound } = await Audio.Sound.createAsync(entry.source, {
         shouldPlay: false,
         volume: 0.8,
@@ -214,7 +323,6 @@ class AudioService {
     this.sfxIndex.clear();
     this.sfxCooldowns.clear();
     this.sfxReady = false;
-    console.log('🧹 Pool de sonidos limpiado...');
   }
 
   async cleanup() {
@@ -223,7 +331,6 @@ class AudioService {
         await this.backgroundMusic.unloadAsync();
         this.backgroundMusic = null;
         this.isPlaying = false;
-        console.log('🧹 Música de fondo limpiada...');
       } catch (error) {
         console.log('Error cleaning up background music:', error);
       }
@@ -231,7 +338,6 @@ class AudioService {
 
     await this.cleanupAllSounds();
     this.audioModeSet = false;
-    console.log('🧹 Servicio de audio completamente limpiado...');
   }
 
   get isMusicMuted() {

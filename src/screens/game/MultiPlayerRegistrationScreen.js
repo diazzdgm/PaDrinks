@@ -11,17 +11,20 @@ import {
   Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Audio } from 'expo-av';
 import audioService from '../../services/AudioService';
-import * as Haptics from 'expo-haptics';
+import { Haptics } from '../../utils/platform';
 import { useDispatch } from 'react-redux';
 import { addPlayer } from '../../store/playersSlice';
 import { getGameEngine } from '../../game/GameEngine';
 import { theme } from '../../styles/theme';
 import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
 import * as ImagePicker from 'expo-image-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
-import { Camera } from 'expo-camera';
+
+let ImageManipulator, Camera;
+if (Platform.OS !== 'web') {
+  ImageManipulator = require('expo-image-manipulator');
+  Camera = require('expo-camera').Camera;
+}
 import {
   scale,
   scaleWidth,
@@ -246,70 +249,81 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
     playWinePopSound();
     
     try {
-      // Solicitar permisos de cámara
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      
-      if (status !== 'granted') {
-        showError('📷 Permisos de Cámara\n\nNecesitamos acceso a tu cámara para tomar una foto.');
-        return;
-      }
-      
-      // Opciones para la cámara
-      const options = {
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: false,
-        quality: 1.0,
-        cameraType: ImagePicker.CameraType.front,
-        ...(Platform.OS === 'ios' && {
-          presentationStyle: 'fullScreen',
-        }),
-      };
+      if (Platform.OS === 'web') {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          quality: 0.8,
+          aspect: [1, 1],
+        });
 
-      // Abrir cámara
-      const result = await ImagePicker.launchCameraAsync(options);
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+          setPhotoUri(result.assets[0].uri);
+          setPlayerPhoto('photo');
+          setSelectedEmoji('');
+        }
+      } else {
+        const { status } = await Camera.requestCameraPermissionsAsync();
 
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const originalUri = result.assets[0].uri;
-        const { width: imgWidth, height: imgHeight } = result.assets[0];
+        if (status !== 'granted') {
+          showError('Permisos de Camara\n\nNecesitamos acceso a tu camara para tomar una foto.');
+          return;
+        }
 
-        try {
-          const smallerDimension = Math.min(imgWidth, imgHeight);
-          const cropX = (imgWidth - smallerDimension) / 2;
-          const cropY = (imgHeight - smallerDimension) / 2;
+        const options = {
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: false,
+          quality: 1.0,
+          cameraType: ImagePicker.CameraType.front,
+          ...(Platform.OS === 'ios' && {
+            presentationStyle: 'fullScreen',
+          }),
+        };
 
-          const imageInfo = await ImageManipulator.manipulateAsync(
-            originalUri,
-            [
-              {
-                crop: {
-                  originX: cropX,
-                  originY: cropY,
-                  width: smallerDimension,
-                  height: smallerDimension,
+        const result = await ImagePicker.launchCameraAsync(options);
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+          const originalUri = result.assets[0].uri;
+          const { width: imgWidth, height: imgHeight } = result.assets[0];
+
+          try {
+            const smallerDimension = Math.min(imgWidth, imgHeight);
+            const cropX = (imgWidth - smallerDimension) / 2;
+            const cropY = (imgHeight - smallerDimension) / 2;
+
+            const imageInfo = await ImageManipulator.manipulateAsync(
+              originalUri,
+              [
+                {
+                  crop: {
+                    originX: cropX,
+                    originY: cropY,
+                    width: smallerDimension,
+                    height: smallerDimension,
+                  }
+                },
+                {
+                  resize: {
+                    width: 500,
+                    height: 500,
+                  }
                 }
-              },
+              ],
               {
-                resize: {
-                  width: 500,
-                  height: 500,
-                }
+                compress: 0.8,
+                format: ImageManipulator.SaveFormat.JPEG,
               }
-            ],
-            {
-              compress: 0.8,
-              format: ImageManipulator.SaveFormat.JPEG,
-            }
-          );
+            );
 
-          setPhotoUri(imageInfo.uri);
-          setPlayerPhoto('photo');
-          setSelectedEmoji('');
-          console.log('📸 Foto procesada exitosamente:', imageInfo.uri);
-        } catch (manipError) {
-          console.log('Error procesando imagen, usando original:', manipError);
-          setPhotoUri(originalUri);
-          setPlayerPhoto('photo');
-          setSelectedEmoji('');
+            setPhotoUri(imageInfo.uri);
+            setPlayerPhoto('photo');
+            setSelectedEmoji('');
+          } catch (manipError) {
+            console.log('Error procesando imagen, usando original:', manipError);
+            setPhotoUri(originalUri);
+            setPlayerPhoto('photo');
+            setSelectedEmoji('');
+          }
         }
       }
       

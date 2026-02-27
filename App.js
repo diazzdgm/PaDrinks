@@ -1,42 +1,66 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Platform, BackHandler } from 'react-native';
+import { View, Text, StyleSheet, Platform, BackHandler, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Font from 'expo-font';
-import * as ScreenOrientation from 'expo-screen-orientation';
-import * as NavigationBar from 'expo-navigation-bar';
+import { isWeb } from './src/utils/platform';
 import { store } from './src/store';
 import { theme } from './src/styles/theme';
 import AppNavigator from './src/navigation/AppNavigator';
 import audioService from './src/services/AudioService';
 
+let ScreenOrientation, NavigationBar;
+if (!isWeb) {
+  ScreenOrientation = require('expo-screen-orientation');
+  NavigationBar = require('expo-navigation-bar');
+}
+
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(false);
 
   useEffect(() => {
-    // Forzar orientación horizontal
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+    if (!isWeb && ScreenOrientation) {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+    }
 
-    // Cargar fuentes Kalam
     loadFonts();
 
-    // Ocultar barra de navegación en Android (modo inmersivo sticky)
     let intervalId;
     if (Platform.OS === 'android') {
       configureNavigationBar();
 
-      // Re-aplicar configuración periódicamente para mantener la barra oculta
       intervalId = setInterval(() => {
         NavigationBar.setVisibilityAsync('hidden').catch(() => {});
       }, 500);
     }
 
-    // No inicializar música aquí - se iniciará desde MainMenuScreen
+    if (isWeb) {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(() => {});
+      }
+
+      const style = document.createElement('style');
+      style.textContent = '[role="button"], [data-testid] { cursor: pointer; } body { overflow: hidden; margin: 0; }';
+      document.head.appendChild(style);
+
+      const checkOrientation = () => {
+        setIsPortrait(window.innerHeight > window.innerWidth);
+      };
+      checkOrientation();
+      window.addEventListener('resize', checkOrientation);
+      return () => {
+        window.removeEventListener('resize', checkOrientation);
+        document.head.removeChild(style);
+        audioService.cleanup();
+      };
+    }
 
     return () => {
-      // Limpiar al cerrar app
-      ScreenOrientation.unlockAsync();
+      if (!isWeb && ScreenOrientation) {
+        ScreenOrientation.unlockAsync();
+      }
       if (Platform.OS === 'android') {
         if (intervalId) clearInterval(intervalId);
         restoreNavigationBar();
@@ -129,6 +153,16 @@ export default function App() {
     );
   }
 
+  if (isWeb && isPortrait) {
+    return (
+      <View style={styles.portraitOverlay}>
+        <Text style={styles.portraitEmoji}>📱</Text>
+        <Text style={styles.portraitText}>Gira tu dispositivo</Text>
+        <Text style={styles.portraitSubtext}>PaDrinks funciona en modo horizontal</Text>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <Provider store={store}>
@@ -146,15 +180,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: theme.colors.primary,
   },
-  
+
   loadingText: {
     fontSize: 64,
     marginBottom: 20,
   },
-  
+
   loadingSubtext: {
     fontSize: 18,
     color: 'white',
     fontWeight: 'bold',
+  },
+
+  portraitOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.primary,
+  },
+
+  portraitEmoji: {
+    fontSize: 80,
+    marginBottom: 20,
+  },
+
+  portraitText: {
+    fontSize: 28,
+    color: 'white',
+    fontWeight: 'bold',
+    fontFamily: 'Kalam-Bold',
+    marginBottom: 10,
+  },
+
+  portraitSubtext: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
+    fontFamily: 'Kalam-Regular',
   },
 });

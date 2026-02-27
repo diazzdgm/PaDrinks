@@ -10,8 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Audio } from 'expo-av';
-import * as Haptics from 'expo-haptics';
+import { Haptics } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import audioService from '../../services/AudioService';
 import { 

@@ -8,7 +8,7 @@ import {
   Easing,
 } from 'react-native';
 import Svg, { Path, Circle, G, Text as SvgText } from 'react-native-svg';
-import * as Haptics from 'expo-haptics';
+import { Haptics } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import { scaleByContent, scaleBorder, isSmallDevice, isShortHeightDevice, isTablet } from '../../utils/responsive';
 import audioService from '../../services/AudioService';

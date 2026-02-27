@@ -5,13 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  // Dimensions removed - using SCREEN_WIDTH/SCREEN_HEIGHT from responsive
   Image,
+  Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Audio } from 'expo-av';
 import audioService from '../../services/AudioService';
-import * as Haptics from 'expo-haptics';
+import { Haptics } from '../../utils/platform';
 import { useDispatch } from 'react-redux';
 import { theme } from '../../styles/theme';
 import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
@@ -95,12 +94,15 @@ const LobbyConfigScreen = ({ navigation, route }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      // Sincronizar estado de mute cuando regresamos a la pantalla
+      if (Platform.OS === 'web') {
+        navigation.replace('SingleDeviceSetup', { gameMode });
+        return;
+      }
+
       setIsMuted(audioService.isMusicMuted);
-      
-      // Animaciones de entrada
+
       startEntranceAnimations();
-      
+
       return () => {
         cleanupSound();
       };

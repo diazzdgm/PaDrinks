@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Platform } from 'react-native';
 import { useDispatch } from 'react-redux';
 import SocketService from '../services/SocketService';
 import RoomService from '../services/RoomService';
+
+const isWeb = Platform.OS === 'web';
 
 /**
  * Hook personalizado para gestión de Socket.IO
@@ -15,14 +18,15 @@ export const useSocket = () => {
   const dispatch = useDispatch();
   const mountedRef = useRef(true);
 
-  // Estado de conexión
   useEffect(() => {
+    if (isWeb) return;
+
     const handleConnection = (data) => {
       if (!mountedRef.current) return;
-      
+
       setConnected(data.connected);
       setSocketId(data.socketId || null);
-      
+
       if (data.connected) {
         setConnecting(false);
         setError(null);
@@ -31,20 +35,17 @@ export const useSocket = () => {
 
     const handleError = (errorData) => {
       if (!mountedRef.current) return;
-      
+
       setError(errorData.error);
       setConnecting(false);
     };
 
-    // Registrar listeners
     SocketService.on('connection', handleConnection);
     SocketService.on('error', handleError);
 
-    // Estado inicial
     setConnected(SocketService.connected);
     setSocketId(SocketService.socketId);
 
-    // Cleanup
     return () => {
       mountedRef.current = false;
       SocketService.off('connection', handleConnection);
@@ -56,12 +57,13 @@ export const useSocket = () => {
    * Conectar al servidor
    */
   const connect = useCallback(async (serverUrl = null) => {
+    if (isWeb) return;
     try {
       setConnecting(true);
       setError(null);
-      
+
       await SocketService.connect(serverUrl);
-      
+
     } catch (error) {
       if (mountedRef.current) {
         setError(error.message);
@@ -129,8 +131,9 @@ export const useRoom = () => {
     }
   }, []);
 
-  // Event listeners para actualizaciones de sala
   useEffect(() => {
+    if (isWeb) return;
+
     const handleRoomCreated = (data) => {
       if (!mountedRef.current) return;
       updateRoomState();
