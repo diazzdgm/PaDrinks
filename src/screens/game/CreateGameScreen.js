@@ -722,7 +722,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: scaleByContent(isSmallScreen ? 25 : isTabletScreen ? 60 : 40, 'spacing'),
     paddingTop: isTabletScreen ? 120 : scaleByContent(15, 'spacing'),
-    paddingBottom: scaleByContent(isSmallScreen ? 65 : isTabletScreen ? 30 : 75, 'spacing'),
+    paddingBottom: scaleByContent(isSmallScreen ? 5 : isTabletScreen ? 5 : 10, 'spacing'),
     alignItems: 'center',
   },
 
@@ -778,7 +778,7 @@ const styles = StyleSheet.create({
     width: isSmallScreen
       ? Math.min(width * 0.75, scaleByContent(320, 'interactive'))
       : Math.min(width * 0.6, scaleByContent(320, 'interactive')),
-    height: height * 0.55,
+    height: Math.min(height * 0.55, 350),
     paddingHorizontal: scaleByContent(isSmallScreen ? 15 : 20, 'spacing'),
     paddingVertical: scaleByContent(isSmallScreen ? 12 : 16, 'spacing'),
     borderRadius: scaleBorder(18),
@@ -847,15 +847,12 @@ const styles = StyleSheet.create({
   
   // Indicadores del carrusel - Más abajo
   carouselIndicators: {
-    position: 'absolute',
-    bottom: scaleByContent(isSmallScreen ? 10 : 12, 'spacing'),
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: scaleByContent(isSmallScreen ? 15 : 20, 'spacing'),
     paddingHorizontal: scaleByContent(20, 'spacing'),
+    paddingBottom: scaleByContent(isSmallScreen ? 10 : 12, 'spacing'),
   },
   
   // Indicador individual
