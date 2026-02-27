@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Platform, BackHandler, Dimensions, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, StyleSheet, Platform, BackHandler, Dimensions, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -28,6 +28,7 @@ const requestFullscreen = () => {
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const fullscreenRequested = useRef(false);
 
   useEffect(() => {
@@ -60,8 +61,17 @@ export default function App() {
       };
       checkOrientation();
       window.addEventListener('resize', checkOrientation);
+
+      const onFullscreenChange = () => {
+        setIsFullscreen(!!document.fullscreenElement);
+      };
+      document.addEventListener('fullscreenchange', onFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
       return () => {
         window.removeEventListener('resize', checkOrientation);
+        document.removeEventListener('fullscreenchange', onFullscreenChange);
+        document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
         document.head.removeChild(style);
         audioService.cleanup();
       };
@@ -189,6 +199,15 @@ export default function App() {
             <AppNavigator />
           </Provider>
         </SafeAreaProvider>
+        {isWeb && !isFullscreen && (
+          <TouchableOpacity
+            style={styles.fullscreenButton}
+            onPress={requestFullscreen}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.fullscreenIcon}>⛶</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -237,5 +256,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'rgba(255,255,255,0.8)',
     fontFamily: 'Kalam-Regular',
+  },
+
+  fullscreenButton: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 99999,
+  },
+
+  fullscreenIcon: {
+    fontSize: 22,
+    color: 'white',
   },
 });
