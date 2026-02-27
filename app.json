@@ -52,7 +52,9 @@
       "lang": "es",
       "description": "Juego de beber para fiestas",
       "backgroundColor": "#FF7F11",
-      "themeColor": "#FF7F11"
+      "themeColor": "#FF7F11",
+      "display": "fullscreen",
+      "orientation": "landscape"
     },
     "plugins": [
       "expo-font",

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Platform, BackHandler, Dimensions } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, Platform, BackHandler, Dimensions, TouchableWithoutFeedback } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -16,9 +16,19 @@ if (!isWeb) {
   NavigationBar = require('expo-navigation-bar');
 }
 
+const requestFullscreen = () => {
+  if (!isWeb) return;
+  const el = document.documentElement;
+  const requestFn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  if (requestFn) {
+    requestFn.call(el).catch(() => {});
+  }
+};
+
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
+  const fullscreenRequested = useRef(false);
 
   useEffect(() => {
     if (!isWeb && ScreenOrientation) {
@@ -163,13 +173,24 @@ export default function App() {
     );
   }
 
+  const handleFirstTouch = () => {
+    if (isWeb && !fullscreenRequested.current) {
+      fullscreenRequested.current = true;
+      requestFullscreen();
+    }
+  };
+
   return (
-    <SafeAreaProvider>
-      <Provider store={store}>
-        <StatusBar style="light" hidden={true} />
-        <AppNavigator />
-      </Provider>
-    </SafeAreaProvider>
+    <TouchableWithoutFeedback onPress={handleFirstTouch}>
+      <View style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <Provider store={store}>
+            <StatusBar style="light" hidden={true} />
+            <AppNavigator />
+          </Provider>
+        </SafeAreaProvider>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
