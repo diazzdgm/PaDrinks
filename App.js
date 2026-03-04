@@ -16,23 +16,26 @@ if (!isWeb) {
   NavigationBar = require('expo-navigation-bar');
 }
 
-const requestFullscreen = () => {
-  if (!isWeb) return;
+const tryFullscreen = () => {
+  if (!isWeb) return Promise.resolve(false);
   const el = document.documentElement;
   const requestFn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
   if (requestFn) {
-    requestFn.call(el).catch(() => {});
+    const result = requestFn.call(el);
+    if (result && result.then) {
+      return result.then(() => true).catch(() => false);
+    }
+    return Promise.resolve(true);
   }
+  return Promise.resolve(false);
 };
 
 const getWebBrowserInfo = () => {
-  if (!isWeb) return { isIOSSafari: false, isPWA: false, canFullscreen: false };
+  if (!isWeb) return { isIOS: false, isPWA: false };
   const ua = navigator.userAgent || '';
   const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const isSafari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua);
   const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches || window.navigator.standalone === true;
-  const canFullscreen = !isIOS && !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
-  return { isIOSSafari: isIOS && isSafari, isIOS, isPWA, canFullscreen };
+  return { isIOS, isPWA };
 };
 
 export default function App() {
@@ -195,24 +198,18 @@ export default function App() {
     );
   }
 
+  const attemptFullscreen = () => {
+    tryFullscreen().then((success) => {
+      if (!success && browserInfo.current.isIOS && !browserInfo.current.isPWA) {
+        setShowIOSBanner(true);
+      }
+    });
+  };
+
   const handleFirstTouch = () => {
     if (isWeb && !fullscreenRequested.current) {
       fullscreenRequested.current = true;
-      const info = browserInfo.current;
-      if (info.canFullscreen) {
-        requestFullscreen();
-      } else if (info.isIOS && !info.isPWA) {
-        setShowIOSBanner(true);
-      }
-    }
-  };
-
-  const handleFullscreenPress = () => {
-    const info = browserInfo.current;
-    if (info.canFullscreen) {
-      requestFullscreen();
-    } else if (info.isIOS && !info.isPWA) {
-      setShowIOSBanner(true);
+      attemptFullscreen();
     }
   };
 
@@ -228,7 +225,7 @@ export default function App() {
         {isWeb && !isFullscreen && !browserInfo.current.isPWA && (
           <TouchableOpacity
             style={styles.fullscreenButton}
-            onPress={handleFullscreenPress}
+            onPress={attemptFullscreen}
             activeOpacity={0.7}
           >
             <Text style={styles.fullscreenIcon}>⛶</Text>
