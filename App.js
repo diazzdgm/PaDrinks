@@ -25,11 +25,23 @@ const requestFullscreen = () => {
   }
 };
 
+const getWebBrowserInfo = () => {
+  if (!isWeb) return { isIOSSafari: false, isPWA: false, canFullscreen: false };
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSafari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua);
+  const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches || window.navigator.standalone === true;
+  const canFullscreen = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+  return { isIOSSafari: isIOS && isSafari, isIOS, isPWA, canFullscreen };
+};
+
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showIOSBanner, setShowIOSBanner] = useState(false);
   const fullscreenRequested = useRef(false);
+  const browserInfo = useRef(isWeb ? getWebBrowserInfo() : {});
 
   useEffect(() => {
     if (!isWeb && ScreenOrientation) {
@@ -186,7 +198,21 @@ export default function App() {
   const handleFirstTouch = () => {
     if (isWeb && !fullscreenRequested.current) {
       fullscreenRequested.current = true;
+      const info = browserInfo.current;
+      if (info.canFullscreen) {
+        requestFullscreen();
+      } else if (info.isIOS && !info.isPWA) {
+        setShowIOSBanner(true);
+      }
+    }
+  };
+
+  const handleFullscreenPress = () => {
+    const info = browserInfo.current;
+    if (info.canFullscreen) {
       requestFullscreen();
+    } else if (info.isIOS && !info.isPWA) {
+      setShowIOSBanner(true);
     }
   };
 
@@ -199,14 +225,32 @@ export default function App() {
             <AppNavigator />
           </Provider>
         </SafeAreaProvider>
-        {isWeb && !isFullscreen && (
+        {isWeb && !isFullscreen && !browserInfo.current.isPWA && (
           <TouchableOpacity
             style={styles.fullscreenButton}
-            onPress={requestFullscreen}
+            onPress={handleFullscreenPress}
             activeOpacity={0.7}
           >
             <Text style={styles.fullscreenIcon}>⛶</Text>
           </TouchableOpacity>
+        )}
+        {showIOSBanner && (
+          <View style={styles.iosBannerOverlay}>
+            <View style={styles.iosBanner}>
+              <TouchableOpacity style={styles.iosBannerClose} onPress={() => setShowIOSBanner(false)}>
+                <Text style={styles.iosBannerCloseText}>✕</Text>
+              </TouchableOpacity>
+              <Text style={styles.iosBannerTitle}>Pantalla completa</Text>
+              <Text style={styles.iosBannerText}>
+                Para jugar sin la barra de Safari:
+              </Text>
+              <View style={styles.iosBannerSteps}>
+                <Text style={styles.iosBannerStep}>1. Toca el icono compartir  ⬆</Text>
+                <Text style={styles.iosBannerStep}>2. Selecciona "Agregar a inicio"</Text>
+                <Text style={styles.iosBannerStep}>3. Abre PaDrinks desde tu inicio</Text>
+              </View>
+            </View>
+          </View>
         )}
       </View>
     </TouchableWithoutFeedback>
@@ -274,5 +318,67 @@ const styles = StyleSheet.create({
   fullscreenIcon: {
     fontSize: 22,
     color: 'white',
+  },
+
+  iosBannerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999999,
+  },
+
+  iosBanner: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    paddingTop: 32,
+    width: 320,
+    alignItems: 'center',
+  },
+
+  iosBannerClose: {
+    position: 'absolute',
+    top: 8,
+    right: 12,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  iosBannerCloseText: {
+    fontSize: 18,
+    color: '#999',
+    fontWeight: 'bold',
+  },
+
+  iosBannerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+
+  iosBannerText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+
+  iosBannerSteps: {
+    alignSelf: 'stretch',
+    gap: 8,
+  },
+
+  iosBannerStep: {
+    fontSize: 15,
+    color: '#333',
+    paddingLeft: 4,
   },
 });
