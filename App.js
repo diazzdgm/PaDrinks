@@ -31,7 +31,7 @@ const getWebBrowserInfo = () => {
   const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isSafari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua);
   const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches || window.navigator.standalone === true;
-  const canFullscreen = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+  const canFullscreen = !isIOS && !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
   return { isIOSSafari: isIOS && isSafari, isIOS, isPWA, canFullscreen };
 };
 
@@ -242,7 +242,7 @@ export default function App() {
               </TouchableOpacity>
               <Text style={styles.iosBannerTitle}>Pantalla completa</Text>
               <Text style={styles.iosBannerText}>
-                Para jugar sin la barra de Safari:
+                Para jugar sin la barra del navegador:
               </Text>
               <View style={styles.iosBannerSteps}>
                 <Text style={styles.iosBannerStep}>1. Toca el icono compartir  ⬆</Text>
