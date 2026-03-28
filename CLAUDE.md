@@ -8,7 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **File Creation Policy**: ALWAYS prefer editing existing files over creating new ones
 - **Documentation Policy**: NEVER proactively create documentation files unless explicitly requested
 - **No Testing Framework**: Project has no Jest, ESLint, or linting tools configured
-- **Language**: All game content is in Spanish; code identifiers mix English and Spanish
+- **Language**: All game content is in Spanish; code identifiers mix English and Spanish. Git commit messages in Spanish
+- **Commit Messages**: Follow existing style — Spanish, imperative, descriptive subject line. Example: `Corregir overlap del indicador de conexión con botón mute`. NEVER include `Co-Authored-By` or mention Claude in commits
 
 ## Development Commands
 
@@ -45,9 +46,16 @@ eas build -p ios --profile production   # App Store
 - For mobile device testing, update IP in `src/config/server.js` (use `ipconfig` to find local IP)
 - Never commit `package-lock.json` (intentionally excluded; EAS uses `npm install` not `npm ci`)
 
+### Web Build & Deployment
+```bash
+npm run build:web               # Build for web (npx expo export --platform web)
+npm run web                     # Dev server for web
+npx vercel --prod --yes         # Deploy to Vercel (padrinks.com)
+```
+
 ## Project Overview
 
-PaDrinks is a React Native drinking game app built with Expo SDK 54 (React 19.1.0, RN 0.81.5, New Architecture enabled). Landscape-only orientation (`expo-screen-orientation` plugin + `ScreenOrientation.lockAsync` in App.js). Post-it note aesthetic with notebook paper backgrounds and Kalam handwriting font. `supportsTablet: true` with `UIRequiresFullScreen: true` for iPad.
+PaDrinks is a React Native drinking game app built with Expo SDK 54 (React 19.1.0, RN 0.81.5, New Architecture enabled). Runs on Android, iOS, and **web** (via `react-native-web`, deployed at padrinks.com on Vercel). Landscape-only orientation (`expo-screen-orientation` plugin + `ScreenOrientation.lockAsync` in App.js). Post-it note aesthetic with notebook paper backgrounds and Kalam handwriting font. `supportsTablet: true` with `UIRequiresFullScreen: true` for iPad.
 
 ## Architecture
 
@@ -71,7 +79,7 @@ Redux Toolkit with three slices:
 ### Key Singletons
 - **GameEngine** (`src/game/GameEngine.js`): Access via `getGameEngine()`, never instantiate directly. Manages rounds (50 base + 25 extensions), player validation, dynamic appearance counting
 - **DynamicsManager** (`src/game/DynamicsManager.js`): Random dynamic selection, question deduplication, dynamic deactivation when exhausted
-- **AudioService** (`src/services/AudioService.js`): Background music (15% volume, looping), sound effects (80% volume), mute state persists across screens
+- **AudioService** (`src/services/AudioService.js`): Dual native/web implementation. Pre-loaded sound pool with round-robin playback. `SFX_REGISTRY` defines pool sizes (beer/wine: 3 instances, bell: 2, roulette/bottle/pouring: 1). 100ms cooldown between identical sounds. Background music 15% volume looping, effects 80% volume. Key methods: `preloadSoundEffects()` (called once from MainMenuScreen), `playSoundEffect(key)` (string keys: `'beer'`, `'wine'`, `'bell'`, `'roulette'`, `'bottle'`), `createManagedSound(key)` (for sounds needing manual control like SplashScreen's pouring sound). Mute state persists across screens. On web, uses `HTMLAudioElement` via `WebManagedSound` wrapper instead of `expo-av`
 - **SocketService** (`src/services/SocketService.js`): Socket.IO connection management with 30s timeouts, exponential backoff reconnection
 
 ### Game Dynamics System
@@ -95,11 +103,13 @@ JSON-based dynamics stored in `src/data/dynamics/`. Each dynamic has `id`, `name
 **Primary function:** `scaleByContent(size, contentType)` - scales values based on device dimensions and content type:
 - `'text'` - fontSize (respects system fontScale, capped at 1.8x)
 - `'interactive'` - button/input width/height (minimum 44dp touch target)
-- `'spacing'` - padding, margin, borderWidth, borderRadius, shadowOffset (scales at 85%)
+- `'spacing'` - padding, margin, shadowOffset (scales at 85%)
 - `'icon'` - emoji/image sizes (scales at 90%)
 - `'hero'` - large logos/prominent elements (scales at 115%)
 
 **Other key exports:**
+- `scaleBorder(size)` - **ALWAYS use for `borderWidth` and `borderRadius`**. Wraps `scaleByContent(size, 'spacing')` with `Math.round()` to guarantee integer pixel values. Fractional border values cause visible pixelation/stepping on iOS.
+- `scaleHeight(size)` - scales by height ratio (`SCREEN_HEIGHT / BASE_HEIGHT * size`). Use for vertical positioning that must adapt to screen height (e.g., top offsets for absolute-positioned elements)
 - `scaleModerate(size, factor)` - for elements that shouldn't scale too aggressively (e.g., mute button icons: `scaleModerate(50, 0.3)`)
 - `isShortHeightDevice()` - true for ultra-wide phones with height < 400dp (Samsung S21). Use for 3-tier conditional layouts
 - `isSmallDevice()`, `isTablet()`, `getDeviceType()` - device classification
@@ -125,6 +135,7 @@ src/
 ├── services/                  # AudioService, SocketService, RoomService
 ├── store/                     # Redux slices (gameSlice, playersSlice, connectionSlice)
 ├── styles/theme.js            # Post-it colors, Kalam fonts, responsive values
+├── utils/platform.js          # isWeb, isNative, web-safe Haptics wrapper
 └── utils/responsive.js        # Cross-device scaling system
 ```
 
@@ -136,8 +147,33 @@ backend/src/
 ├── socket/gameEvents.js       # Game-specific events
 ├── models/Room.js, Player.js  # In-memory models (NodeCache)
 ├── utils/roomManager.js       # Room storage
-└── routes/api.js              # REST endpoints (validateRoom, getRoomInfo)
+└── routes/api.js              # REST endpoints
 ```
+
+**Backend REST endpoints:** `GET /health`, `GET /api/stats`, `GET /api/rooms`, `GET /api/rooms/:code`, `POST /api/rooms/validate`, `DELETE /api/rooms/:code`, `POST /api/qr/generate`, `POST /api/test/connection`
+
+### Web Platform Support
+
+The web version is a free, single-device-only (no multiplayer) deployment at padrinks.com via Vercel.
+
+**Platform utility** (`src/utils/platform.js`): Exports `isWeb`, `isNative`, and a web-safe `Haptics` wrapper (no-op on web, real `expo-haptics` on native). All 17+ files that use haptics import from here, not directly from `expo-haptics`.
+
+**Conditional native imports pattern**: Native-only modules (`expo-screen-orientation`, `expo-navigation-bar`, `expo-camera`, `expo-image-manipulator`, `expo-file-system`) must use `require()` inside `if (Platform.OS !== 'web')` guards — top-level `import` will crash the web build.
+
+**AudioService dual implementation**: `src/services/AudioService.js` uses `expo-av` on native and `HTMLAudioElement` (wrapped in `WebManagedSound` class) on web. The `WebManagedSound` class mirrors the expo-av Sound API (`playAsync`, `pauseAsync`, `replayAsync`, `setVolumeAsync`, `unloadAsync`). Browsers require a user gesture before audio plays — SplashScreen has a tap-to-start overlay for web.
+
+**Socket.IO disabled on web**: `SocketService.connect()` returns early on web. `useSocket` hook guards all effects with `if (isWeb) return`. Multiplayer UI (connection indicator, lobby modes) hidden on web via `Platform.OS !== 'web'` checks.
+
+**Fullscreen handling in App.js**: Uses Fullscreen API (`requestFullscreen`) with iOS fallback. On iOS, all browsers use WebKit and historically lack Fullscreen API support (iOS 26+ may support it). Logic: attempt `requestFullscreen()` first → if it fails on iOS, show "Add to Home Screen" instructional banner. PWA mode (`display: fullscreen` in app.json) provides fullscreen when launched from home screen.
+
+**Web deployment** (`vercel.json`): Build command exports via Metro, copies `public/privacy-policy.html` to dist. SPA rewrites with `/privacy-policy` exception. Privacy policy accessible at padrinks.com/privacy-policy.
+
+**Image picker on web**: `expo-image-picker` works on web but camera doesn't — web always uses `launchImageLibraryAsync()`. `expo-image-manipulator` doesn't work on web — skip manipulation, use picker URI directly.
+
+### EAS Build Profiles
+- `development`: Dev client, internal distribution, iOS simulator only
+- `preview`: Internal distribution, APK for Android, Node 20.18.1
+- `production`: App bundle for Android, App Store for iOS, Node 20.18.1
 
 ## Critical Patterns and Gotchas
 
@@ -154,10 +190,13 @@ backend/src/
 - QR scanner must use absolute positioning (not `flex: 1`) for full-screen display
 - Disable `allowsEditing` for landscape photos; use ImageManipulator center-crop instead
 - **iPad orientation lock** only works in production/development builds, NOT in Expo Go (Expo Go's own Info.plist overrides app orientation settings)
+- **Never rotate bordered elements** - `transform: [{ rotate }]` on elements with `borderWidth` + `borderColor: '#000000'` causes visible pixel stepping on iOS. Even 0.3deg rotation creates a staircase effect on long borders. Use `rotate: '0deg'` for all bordered buttons/containers. Decorative rotations (5deg, 15deg, 45deg for tape/arrows/X-marks) on non-bordered elements are fine.
 
 ### Audio Management
-- All audio requires cleanup in `useFocusEffect` return functions
-- Audio configuration must be set before each playback
+- Sound effects are pre-loaded at app startup via `audioService.preloadSoundEffects()` in MainMenuScreen
+- `playSoundEffect(key)` uses string keys (not `require()`): `'beer'`, `'wine'`, `'bell'`, `'roulette'`, `'bottle'`
+- `createManagedSound(key)` for sounds needing seek/fade control (caller owns cleanup)
+- `Audio.setAudioModeAsync()` called once via `ensureAudioMode()` — never call it per-sound
 - Audio files in `assets/sounds/`
 
 ### Android Immersive Mode
@@ -202,6 +241,9 @@ Use `useSafeAreaOffsets` hook from `src/hooks/useSafeAreaOffsets.js` for all fix
 - Single device mode: Use `playerItemFixedSafe` style with exact height to prevent variable box sizes
 - Kick buttons: absolute positioning to float over player items
 - Dual mode: handles both host creation (`isJoining=false`) and player joining (`isJoining=true`)
+
+### Top-Right Corner Layout (Mute Button + Connection Indicator)
+Multiple screens have a mute button and connection status indicator in the top-right corner. The connection indicator must be positioned **below** the mute button (not beside or overlapping). Calculate `top` as: `topOffset + muteButtonTop + muteButtonSize + gap` using the same `rightOffset` for horizontal alignment. Both use `useSafeAreaOffsets` for safe area insets.
 
 ### Navigation Patterns
 - Always use `navigation.reset()` instead of `goBack()` to prevent "GO_BACK action not handled" errors

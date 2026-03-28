@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native';
-import { Haptics } from '../../utils/platform';
+import { Haptics, sanitizeText } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import { scaleByContent, scaleBorder, isSmallDevice, isShortHeightDevice, isTablet } from '../../utils/responsive';
 import audioService from '../../services/AudioService';
@@ -177,7 +177,7 @@ const CharadesDisplay = ({
       {/* Instrucción de la dinámica con diseño post-it */}
       <View style={styles.instructionContainer}>
         <Text style={styles.instructionText}>
-          {question.dynamicInstruction || 'Si no adivinan la palabra ambos toman shot'}
+          {question.dynamicInstruction || sanitizeText('Si no adivinan la palabra ambos toman shot')}
         </Text>
       </View>
 

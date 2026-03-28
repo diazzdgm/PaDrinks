@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { Haptics } from '../../utils/platform';
+import { Haptics, sanitizeText } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import { scaleByContent, scaleBorder, isSmallDevice, isShortHeightDevice, isTablet } from '../../utils/responsive';
 import {
@@ -521,13 +521,13 @@ const AnonymousVoteDisplay = ({
                   {winners.map(w => w.playerName).join(', ')}
                 </Text>
                 <Text style={styles.penaltyAction}>
-                  {winners.length === 1 ? 'toma' : 'toman'} shot por ser {winners.length === 1 ? 'el más votado' : 'los más votados'}
+                  {sanitizeText(winners.length === 1 ? 'toma shot por ser el más votado' : 'toman shot por ser los más votados')}
                 </Text>
               </>
             ) : (
               <>
                 <Text style={styles.penaltyText}>¡No hubo votos!</Text>
-                <Text style={styles.penaltyAction}>Nadie toma</Text>
+                <Text style={styles.penaltyAction}>{sanitizeText('Nadie toma')}</Text>
               </>
             )}
           </View>

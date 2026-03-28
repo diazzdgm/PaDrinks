@@ -7,7 +7,7 @@ import {
   Animated,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { Haptics } from '../../utils/platform';
+import { Haptics, sanitizeText } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import { scaleByContent, scaleBorder, isSmallDevice, isShortHeightDevice, isTablet } from '../../utils/responsive';
 import {
@@ -460,14 +460,13 @@ const PreferenceVoteDisplay = ({
                 {losers.join(', ')}
               </Text>
               <Text style={styles.penaltyAction}>
-                {losers.length === 1 ? 'toma' : 'toman'} un shot por votar por la
-                opción menos votada
+                {sanitizeText(losers.length === 1 ? 'toma un shot por votar por la opción menos votada' : 'toman un shot por votar por la opción menos votada')}
               </Text>
             </View>
           ) : (
             <View style={styles.penaltyContainer}>
               <Text style={styles.penaltyText}>¡Empate!</Text>
-              <Text style={styles.penaltyAction}>Nadie toma</Text>
+              <Text style={styles.penaltyAction}>{sanitizeText('Nadie toma')}</Text>
             </View>
           )}
         </View>

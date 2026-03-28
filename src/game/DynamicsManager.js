@@ -14,6 +14,7 @@ import charadesDynamicData from '../data/dynamics/charadesDynamic.json';
 import anonymousQuestionsData from '../data/dynamics/anonymousQuestions.json';
 import prizeRouletteData from '../data/dynamics/prizeRoulette.json';
 import spinBottleData from '../data/dynamics/spin.Bottle.json';
+import { sanitizeText } from '../utils/platform';
 
 class DynamicsManager {
   constructor() {
@@ -93,9 +94,12 @@ class DynamicsManager {
 
     return {
       ...selectedQuestion,
+      text: sanitizeText(selectedQuestion.text),
+      instruction: sanitizeText(selectedQuestion.instruction),
+      prizes: selectedQuestion.prizes ? selectedQuestion.prizes.map(sanitizeText) : undefined,
       dynamicId: dynamic.id,
       dynamicName: dynamic.name,
-      dynamicInstruction: dynamic.instruction,
+      dynamicInstruction: sanitizeText(dynamic.instruction),
       dynamicType: dynamic.type
     };
   }

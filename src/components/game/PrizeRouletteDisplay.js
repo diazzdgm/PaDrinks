@@ -8,7 +8,7 @@ import {
   Easing,
 } from 'react-native';
 import Svg, { Path, Circle, G, Text as SvgText } from 'react-native-svg';
-import { Haptics } from '../../utils/platform';
+import { Haptics, sanitizeText } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import { scaleByContent, scaleBorder, isSmallDevice, isShortHeightDevice, isTablet } from '../../utils/responsive';
 import audioService from '../../services/AudioService';
@@ -29,14 +29,14 @@ const PrizeRouletteDisplay = ({
   const modalOpacityAnim = useRef(new Animated.Value(0)).current;
   const confettiAnimValues = useRef([]).current;
 
-  const prizes = question.prizes || [
+  const prizes = (question.prizes || [
     'Reparte shot a todos',
     'Negar 3 shots',
     'Desviar shot',
     'Reparte shot a un jugador',
     'Multiplica el shot de alguien',
     'Negar 1 shot',
-  ];
+  ]).map(sanitizeText);
 
   const colors = [
     theme.colors.postItYellow,

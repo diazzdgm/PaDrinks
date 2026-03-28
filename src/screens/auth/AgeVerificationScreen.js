@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Haptics } from '../../utils/platform';
+import { Haptics, isNative } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import audioService from '../../services/AudioService';
 import { 
@@ -372,7 +372,7 @@ const AgeVerificationScreen = ({ navigation }) => {
       {/* Footer con advertencia */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          🚨 Bebe responsablemente • No conduzcas bajo la influencia del alcohol
+          {isNative ? '🎳 PaDrinks • Juego Social Definitivo' : '🚨 Bebe responsablemente • No conduzcas bajo la influencia del alcohol'}
         </Text>
       </View>
 

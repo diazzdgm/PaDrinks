@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import audioService from '../services/AudioService';
-import { Haptics } from '../utils/platform';
+import { Haptics, isNative } from '../utils/platform';
 import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../styles/theme';
 import { useSocket } from '../hooks/useSocket';
@@ -680,7 +680,7 @@ const MainMenuScreen = ({ navigation }) => {
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          PaDrinks • Bebe responsablemente • No conduzcas
+          {isNative ? 'PaDrinks • Juego Social Definitivo' : 'PaDrinks • Bebe responsablemente • No conduzcas'}
         </Text>
         
       </View>
