@@ -2,7 +2,7 @@
   "expo": {
     "name": "PaDrinks",
     "slug": "PaDrinks",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "landscape",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.padrinks.app",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "infoPlist": {
         "NSCameraUsageDescription": "PaDrinks necesita acceso a la camara para tomar fotos de perfil y escanear codigos QR para unirse a partidas.",
         "NSPhotoLibraryUsageDescription": "PaDrinks necesita acceso a tu galeria de fotos para seleccionar una foto de perfil.",
@@ -30,7 +30,7 @@
     },
     "android": {
       "package": "com.padrinks.app",
-      "versionCode": 3,
+      "versionCode": 4,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Platform, BackHandler, Dimensions, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Platform, BackHandler, Dimensions, TouchableWithoutFeedback, TouchableOpacity, AppState } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -104,7 +104,23 @@ export default function App() {
     };
   }, []);
 
-  // Bloquear botón de atrás en Android - Con máxima prioridad
+  useEffect(() => {
+    if (isWeb) return;
+
+    const wasPlayingRef = { current: false };
+
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'background' || nextAppState === 'inactive') {
+        wasPlayingRef.current = audioService.isPlaying;
+        audioService.pauseBackgroundMusic();
+      } else if (nextAppState === 'active' && wasPlayingRef.current && !audioService.isMuted) {
+        audioService.playBackgroundMusic();
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
+
   useEffect(() => {
     if (Platform.OS !== 'android') {
       return;

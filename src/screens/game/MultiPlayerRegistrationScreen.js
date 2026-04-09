@@ -806,17 +806,19 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
           {/* Campo Apodo */}
           <View style={styles.fieldContainer}>
             <Text style={styles.fieldLabel}>Apodo:</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Escribe tu apodo..."
-              placeholderTextColor="#999999"
-              value={nickname}
-              onChangeText={setNickname}
-              maxLength={12}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            <Text style={styles.charCount}>{nickname.length}/12</Text>
+            <View>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Escribe tu apodo..."
+                placeholderTextColor="#999999"
+                value={nickname}
+                onChangeText={setNickname}
+                maxLength={12}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <Text style={styles.charCount}>{nickname.length}/12</Text>
+            </View>
           </View>
           
           {/* Campo Género */}
@@ -1008,6 +1010,7 @@ const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
 const isShortHeight = isShortHeightDevice();
 const screenHeight = getScreenHeight();
+const isMediumHeight = !isShortHeight && screenHeight < 500 && (SCREEN_WIDTH / SCREEN_HEIGHT) > 2.0;
 const notebookLineSpacing = isTabletScreen ? 15 : scaleByContent(25, 'spacing');
 const notebookLineCount = Math.ceil(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / notebookLineSpacing) + 2;
 
@@ -1108,8 +1111,8 @@ const styles = StyleSheet.create({
   // Título
   titleContainer: {
     alignItems: 'center',
-    paddingTop: isTabletScreen ? 80 : scaleByContent(isSmallScreen ? 20 : 5, 'spacing'),
-    marginBottom: scaleByContent(isTabletScreen ? 5 : 15, 'spacing'),
+    paddingTop: isTabletScreen ? 80 : scaleByContent(isSmallScreen ? 20 : isMediumHeight ? 0 : 5, 'spacing'),
+    marginBottom: scaleByContent(isTabletScreen ? 5 : isMediumHeight ? 0 : 15, 'spacing'),
   },
   
   title: {
@@ -1117,10 +1120,10 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: scaleByContent(3, 'spacing'),
+    marginBottom: scaleByContent(isMediumHeight ? 0 : 3, 'spacing'),
     transform: [{ rotate: '0deg' }],
   },
-  
+
   subtitle: {
     fontSize: scaleByContent(isSmallScreen ? 12 : isTabletScreen ? 18 : 14, 'text'),
     fontFamily: theme.fonts.primary,
@@ -1133,7 +1136,7 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
     flexDirection: 'row',
-    paddingHorizontal: scaleByContent(isSmallScreen ? 90 : isTabletScreen ? 150 : 120, 'spacing'),
+    paddingHorizontal: scaleByContent(isSmallScreen ? 90 : isTabletScreen ? 150 : isMediumHeight ? 100 : 120, 'spacing'),
     paddingBottom: scaleByContent(isShortHeight ? 35 : isTabletScreen ? 25 : 55, 'spacing'),
     marginTop: scaleByContent(isTabletScreen ? -5 : -20, 'spacing'),
   },
@@ -1152,7 +1155,8 @@ const styles = StyleSheet.create({
     borderLeftWidth: scaleBorder(2),
     borderLeftColor: '#A8C8EC',
     borderLeftStyle: 'dashed',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: scaleByContent(5, 'spacing'),
   },
   
   sectionTitle: {
@@ -1167,7 +1171,7 @@ const styles = StyleSheet.create({
   // Contenedor de foto
   photoContainer: {
     width: '100%',
-    height: isShortHeight ? scaleByContent(100, 'interactive') : isTabletScreen ? scaleByContent(110, 'interactive') : scaleByContent(150, 'interactive'),
+    height: isShortHeight ? scaleByContent(100, 'interactive') : isTabletScreen ? scaleByContent(110, 'interactive') : isMediumHeight ? scaleByContent(120, 'interactive') : scaleByContent(150, 'interactive'),
     backgroundColor: '#FFFFFF',
     borderRadius: scaleBorder(15),
     borderTopLeftRadius: scaleBorder(5),
@@ -1211,12 +1215,12 @@ const styles = StyleSheet.create({
   
   // Botones de foto
   photoButtonsContainer: {
-    gap: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
+    gap: (isShortHeight || isMediumHeight) ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
   },
 
   photoButton: {
     backgroundColor: '#FFE082',
-    paddingVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(12, 'spacing'),
+    paddingVertical: (isShortHeight || isMediumHeight) ? scaleByContent(8, 'spacing') : scaleByContent(12, 'spacing'),
     paddingHorizontal: scaleByContent(20, 'spacing'),
     borderRadius: scaleBorder(12),
     borderTopLeftRadius: scaleBorder(3),
@@ -1270,7 +1274,7 @@ const styles = StyleSheet.create({
     borderColor: '#CCCCCC',
     borderRadius: scaleBorder(12),
     borderTopLeftRadius: scaleBorder(3),
-    paddingVertical: scaleByContent(12, 'spacing'),
+    paddingVertical: scaleByContent(isMediumHeight ? 8 : 12, 'spacing'),
     paddingHorizontal: scaleByContent(16, 'spacing'),
     fontSize: scaleByContent(16, 'text'),
     fontFamily: theme.fonts.primary,
@@ -1279,11 +1283,12 @@ const styles = StyleSheet.create({
   },
   
   charCount: {
-    fontSize: scaleByContent(12, 'text'),
+    position: 'absolute',
+    right: scaleByContent(8, 'spacing'),
+    bottom: scaleByContent(2, 'spacing'),
+    fontSize: scaleByContent(10, 'text'),
     fontFamily: theme.fonts.primary,
     color: '#999999',
-    textAlign: 'right',
-    marginTop: scaleByContent(5, 'spacing'),
   },
   
   // Botones en fila

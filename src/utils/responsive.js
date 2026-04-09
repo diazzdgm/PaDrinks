@@ -165,7 +165,7 @@ export const scaleByContent = (size, contentType = 'default') => {
   }
   // Phones ultra-wide con altura normal (Samsung S22+, OnePlus, etc.)
   else if (screenSize >= 1000 && aspectRatio > 2.0) {
-    deviceMultiplier = 1.35;
+    deviceMultiplier = screenHeight >= 500 ? 1.35 : 1.0;
   }
   // Pixel 8 Pro y phones similares con altura adecuada
   else if (screenSize >= 850 && screenSize < 1000 && screenHeight >= 400) {
