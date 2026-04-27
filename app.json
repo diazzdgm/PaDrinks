@@ -30,7 +30,7 @@
     },
     "android": {
       "package": "com.padrinks.app",
-      "versionCode": 4,
+      "versionCode": 6,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -38,13 +38,17 @@
       "edgeToEdgeEnabled": false,
       "softwareKeyboardLayoutMode": "pan",
       "permissions": [
-        "CAMERA",
-        "WRITE_EXTERNAL_STORAGE",
-        "READ_EXTERNAL_STORAGE"
+        "CAMERA"
+      ],
+      "blockedPermissions": [
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png",
+      "favicon": "./assets/icon.png",
       "bundler": "metro",
       "output": "single",
       "name": "PaDrinks",
@@ -58,7 +62,15 @@
     },
     "plugins": [
       "expo-font",
-      ["expo-screen-orientation", { "initialOrientation": "LANDSCAPE" }]
+      ["expo-screen-orientation", { "initialOrientation": "LANDSCAPE" }],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "PaDrinks necesita acceso a tu galeria de fotos para seleccionar una foto de perfil.",
+          "cameraPermission": "PaDrinks necesita acceso a la camara para tomar fotos de perfil y escanear codigos QR para unirse a partidas.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "extra": {
       "eas": {
