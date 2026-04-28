@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Platform, BackHandler, Dimensions, TouchableWithoutFeedback, TouchableOpacity, AppState } from 'react-native';
+import { View, Text, StyleSheet, Platform, BackHandler, Dimensions, TouchableWithoutFeedback, TouchableOpacity, AppState, Animated } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -45,6 +45,7 @@ export default function App() {
   const [showIOSBanner, setShowIOSBanner] = useState(false);
   const fullscreenRequested = useRef(false);
   const browserInfo = useRef(isWeb ? getWebBrowserInfo() : {});
+  const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!isWeb && ScreenOrientation) {
@@ -78,7 +79,11 @@ export default function App() {
       window.addEventListener('resize', checkOrientation);
 
       const onFullscreenChange = () => {
-        setIsFullscreen(!!document.fullscreenElement);
+        const isFs = !!document.fullscreenElement;
+        setIsFullscreen(isFs);
+        if (isFs && screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
       };
       document.addEventListener('fullscreenchange', onFullscreenChange);
       document.addEventListener('webkitfullscreenchange', onFullscreenChange);
@@ -103,6 +108,22 @@ export default function App() {
       audioService.cleanup();
     };
   }, []);
+
+  useEffect(() => {
+    if (!isWeb || !isPortrait) return;
+
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(rotateAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
+        Animated.delay(500),
+        Animated.timing(rotateAnim, { toValue: 0, duration: 500, useNativeDriver: true }),
+        Animated.delay(500),
+      ])
+    );
+    loop.start();
+
+    return () => loop.stop();
+  }, [isPortrait, rotateAnim]);
 
   useEffect(() => {
     if (isWeb) return;
@@ -204,19 +225,18 @@ export default function App() {
     );
   }
 
-  if (isWeb && isPortrait) {
-    return (
-      <View style={styles.portraitOverlay}>
-        <Text style={styles.portraitEmoji}>📱</Text>
-        <Text style={styles.portraitText}>Gira tu dispositivo</Text>
-        <Text style={styles.portraitSubtext}>PaDrinks funciona en modo horizontal</Text>
-      </View>
-    );
-  }
+  const phoneRotation = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '-90deg'],
+  });
 
   const attemptFullscreen = () => {
     tryFullscreen().then((success) => {
-      if (!success && browserInfo.current.isIOS && !browserInfo.current.isPWA) {
+      if (success) {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+      } else if (browserInfo.current.isIOS && !browserInfo.current.isPWA) {
         setShowIOSBanner(true);
       }
     });
@@ -246,6 +266,15 @@ export default function App() {
           >
             <Text style={styles.fullscreenIcon}>⛶</Text>
           </TouchableOpacity>
+        )}
+        {isWeb && isPortrait && (
+          <View style={styles.portraitOverlay} pointerEvents="auto">
+            <Animated.Text style={[styles.portraitEmoji, { transform: [{ rotate: phoneRotation }] }]}>
+              📱
+            </Animated.Text>
+            <Text style={styles.portraitText}>GIRA TU TELÉFONO</Text>
+            <Text style={styles.portraitSubtext}>PaDrinks se juega{'\n'}en modo horizontal</Text>
+          </View>
         )}
         {showIOSBanner && (
           <View style={styles.iosBannerOverlay}>
@@ -290,29 +319,39 @@ const styles = StyleSheet.create({
   },
 
   portraitOverlay: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: theme.colors.primary,
+    padding: 40,
+    zIndex: 999998,
   },
 
   portraitEmoji: {
-    fontSize: 80,
-    marginBottom: 20,
+    fontSize: 100,
+    marginBottom: 30,
   },
 
   portraitText: {
-    fontSize: 28,
+    fontSize: 36,
     color: 'white',
     fontWeight: 'bold',
     fontFamily: 'Kalam-Bold',
-    marginBottom: 10,
+    marginBottom: 16,
+    letterSpacing: 1,
+    textAlign: 'center',
   },
 
   portraitSubtext: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
+    fontSize: 18,
+    color: 'rgba(255,255,255,0.9)',
     fontFamily: 'Kalam-Regular',
+    textAlign: 'center',
+    lineHeight: 26,
   },
 
   fullscreenButton: {

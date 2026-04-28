@@ -18,7 +18,7 @@
     "clean:cache": "node node_modules/@expo/cli/build/bin/cli start -c",
     "prebuild": "node node_modules/@expo/cli/build/bin/cli prebuild",
     "build:android": "node node_modules/eas-cli/bin/run build -p android --profile preview",
-    "build:web": "npx expo export --platform web"
+    "build:web": "node node_modules/@expo/cli/build/bin/cli export --platform web"
   },
   "dependencies": {
     "@expo/cli": "^0.25.0",
@@ -38,7 +38,6 @@
     "expo-haptics": "~15.0.7",
     "expo-image-manipulator": "~14.0.7",
     "expo-image-picker": "~17.0.8",
-    "expo-media-library": "~18.2.0",
     "expo-navigation-bar": "^5.0.10",
     "expo-screen-orientation": "~9.0.7",
     "expo-status-bar": "~3.0.8",

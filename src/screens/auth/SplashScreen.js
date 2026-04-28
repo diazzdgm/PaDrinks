@@ -6,7 +6,6 @@ import {
   Animated,
   Dimensions,
   Image,
-  TouchableOpacity,
   Platform,
 } from 'react-native';
 import { Haptics } from '../../utils/platform';
@@ -40,7 +39,7 @@ const notebookLineCount = Math.ceil(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / note
 const isWeb = Platform.OS === 'web';
 
 const SplashScreen = ({ navigation }) => {
-  const [audioUnlocked, setAudioUnlocked] = useState(!isWeb);
+  const [audioUnlocked, setAudioUnlocked] = useState(true);
 
   const logoTranslateY = useRef(new Animated.Value(-200)).current;
   const logoScale = useRef(new Animated.Value(0.1)).current;
@@ -205,20 +204,6 @@ const SplashScreen = ({ navigation }) => {
   };
 
 
-  if (isWeb && !audioUnlocked) {
-    return (
-      <TouchableOpacity
-        style={styles.tapToStartOverlay}
-        activeOpacity={0.8}
-        onPress={() => setAudioUnlocked(true)}
-      >
-        <Text style={styles.tapToStartEmoji}>🍻</Text>
-        <Text style={styles.tapToStartText}>PaDrinks</Text>
-        <Text style={styles.tapToStartSubtext}>Toca para empezar</Text>
-      </TouchableOpacity>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <Animated.View 
@@ -322,30 +307,6 @@ const SplashScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  tapToStartOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-  },
-
-  tapToStartEmoji: {
-    fontSize: scaleByContent(80, 'hero'),
-    marginBottom: scaleByContent(20, 'spacing'),
-  },
-
-  tapToStartText: {
-    fontSize: scaleByContent(42, 'text'),
-    color: 'white',
-    fontFamily: 'Kalam-Bold',
-    marginBottom: scaleByContent(10, 'spacing'),
-  },
-
-  tapToStartSubtext: {
-    fontSize: scaleByContent(18, 'text'),
-    color: 'rgba(255,255,255,0.8)',
-    fontFamily: 'Kalam-Regular',
-  },
 
   container: {
     flex: 1,
