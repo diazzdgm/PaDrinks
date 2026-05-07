@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: scaleByContent(120, 'spacing'),
+    paddingHorizontal: isShortHeight ? scaleByContent(40, 'spacing') : scaleByContent(120, 'spacing'),
     paddingVertical: isShortHeight ? scaleByContent(10, 'spacing') : scaleByContent(20, 'spacing'),
     paddingTop: isShortHeight ? scaleByContent(20, 'spacing') : (Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 1280 ? scaleByContent(20, 'spacing') : scaleByContent(80, 'spacing')),
   },
@@ -549,7 +549,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: isShortHeight ? scaleByContent(6, 'spacing') : scaleByContent(10, 'spacing'),
-    maxWidth: scaleByContent(400, 'interactive'),
+    maxWidth: isShortHeight ? scaleByContent(440, 'interactive') : scaleByContent(400, 'interactive'),
   },
 
   numberButton: {

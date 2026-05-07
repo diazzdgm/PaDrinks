@@ -405,13 +405,13 @@ const isTabletScreen = isTablet();
 const styles = StyleSheet.create({
   instructionContainer: {
     alignItems: 'center',
-    marginBottom: scaleByContent(30, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(12, 'spacing') : scaleByContent(20, 'spacing'),
     backgroundColor: theme.colors.postItPink,
     borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 20,
     borderTopLeftRadius: 5,
-    paddingVertical: scaleByContent(15, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(12, 'spacing'),
     paddingHorizontal: scaleByContent(20, 'spacing'),
     shadowColor: '#000',
     shadowOffset: { width: 4, height: 4 },

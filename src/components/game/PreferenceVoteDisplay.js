@@ -400,7 +400,7 @@ const PreferenceVoteDisplay = ({
         </View>
 
         {/* Contenido principal centrado */}
-        <View style={styles.questionContainer}>
+        <View style={[styles.questionContainer, styles.questionContainerResults]}>
           <View style={styles.resultsContentContainer}>
             <Text style={styles.resultsTitle}>Resultados</Text>
 
@@ -495,13 +495,13 @@ const isTabletScreen = isTablet();
 const styles = StyleSheet.create({
   instructionContainer: {
     alignItems: 'center',
-    marginBottom: scaleByContent(30, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(12, 'spacing') : scaleByContent(20, 'spacing'),
     backgroundColor: theme.colors.postItPink,
     borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 20,
     borderTopLeftRadius: 5,
-    paddingVertical: scaleByContent(15, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(12, 'spacing'),
     paddingHorizontal: scaleByContent(20, 'spacing'),
     shadowColor: '#000',
     shadowOffset: { width: 4, height: 4 },
@@ -513,13 +513,13 @@ const styles = StyleSheet.create({
 
   instructionContainerVoting: {
     alignItems: 'center',
-    marginBottom: scaleByContent(25, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(12, 'spacing') : scaleByContent(20, 'spacing'),
     backgroundColor: theme.colors.postItPink,
     borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 20,
     borderTopLeftRadius: 5,
-    paddingVertical: scaleByContent(15, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(12, 'spacing'),
     paddingHorizontal: scaleByContent(20, 'spacing'),
     shadowColor: '#000',
     shadowOffset: { width: 4, height: 4 },
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   },
 
   instructionText: {
-    fontSize: scaleByContent(isTabletScreen ? 12 : 18, 'text'),
+    fontSize: scaleByContent(isShortHeight ? 14 : isTabletScreen ? 12 : 18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -546,9 +546,9 @@ const styles = StyleSheet.create({
 
   questionContainerVoting: {
     flex: 1,
-    marginTop: scaleByContent(10, 'spacing'),
-    marginBottom: scaleByContent(20, 'spacing'),
-    maxHeight: isShortHeight ? scaleByContent(200, 'interactive') : isSmallScreen ? scaleByContent(300, 'interactive') : scaleByContent(400, 'interactive'),
+    marginTop: isShortHeight ? 0 : scaleByContent(10, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(4, 'spacing') : scaleByContent(20, 'spacing'),
+    maxHeight: isShortHeight ? scaleByContent(220, 'interactive') : isSmallScreen ? scaleByContent(300, 'interactive') : scaleByContent(400, 'interactive'),
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
@@ -583,20 +583,20 @@ const styles = StyleSheet.create({
   },
 
   questionTitle: {
-    fontSize: scaleByContent(isTabletScreen ? 14 : 22, 'text'),
+    fontSize: scaleByContent(isShortHeight ? 17 : isTabletScreen ? 14 : 22, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
     textAlign: 'center',
-    marginBottom: scaleByContent(15, 'spacing'),
-    marginTop: scaleByContent(10, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(5, 'spacing') : scaleByContent(15, 'spacing'),
+    marginTop: isShortHeight ? scaleByContent(2, 'spacing') : scaleByContent(10, 'spacing'),
   },
 
   optionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginBottom: scaleByContent(10, 'spacing'),
-    gap: scaleByContent(15, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(4, 'spacing') : scaleByContent(10, 'spacing'),
+    gap: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
   },
 
   optionButton: {
@@ -605,14 +605,14 @@ const styles = StyleSheet.create({
     borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 15,
-    paddingVertical: scaleByContent(20, 'interactive'),
-    paddingHorizontal: scaleByContent(15, 'interactive'),
+    paddingVertical: isShortHeight ? scaleByContent(10, 'interactive') : scaleByContent(20, 'interactive'),
+    paddingHorizontal: isShortHeight ? scaleByContent(10, 'interactive') : scaleByContent(15, 'interactive'),
     shadowColor: '#000',
     shadowOffset: { width: 3, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 4,
-    minHeight: scaleByContent(80, 'interactive'),
+    minHeight: isShortHeight ? scaleByContent(60, 'interactive') : scaleByContent(80, 'interactive'),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -634,24 +634,24 @@ const styles = StyleSheet.create({
   },
 
   optionButtonText: {
-    fontSize: scaleByContent(isTabletScreen ? 12 : 18, 'text'),
+    fontSize: scaleByContent(isShortHeight ? 14 : isTabletScreen ? 12 : 18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
   },
 
   questionEmoji: {
-    fontSize: scaleByContent(isTabletScreen ? 24 : 35, 'icon'),
+    fontSize: scaleByContent(isShortHeight ? 22 : isTabletScreen ? 24 : 35, 'icon'),
     textAlign: 'center',
-    marginBottom: scaleByContent(8, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(2, 'spacing') : scaleByContent(8, 'spacing'),
   },
 
   instructionAction: {
-    fontSize: scaleByContent(isTabletScreen ? 11 : 16, 'text'),
+    fontSize: scaleByContent(isShortHeight ? 13 : isTabletScreen ? 11 : 16, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#2E2E2E',
     textAlign: 'center',
-    marginBottom: scaleByContent(10, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(4, 'spacing') : scaleByContent(10, 'spacing'),
   },
 
   returningPhoneContainer: {
@@ -667,19 +667,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  resultsContentContainer: {
-    alignItems: 'center',
+  questionContainerResults: {
+    alignItems: 'stretch',
+    width: '100%',
+    maxHeight: isShortHeight ? scaleByContent(260, 'interactive') : isSmallScreen ? scaleByContent(320, 'interactive') : scaleByContent(420, 'interactive'),
     justifyContent: 'center',
-    paddingHorizontal: scaleByContent(25, 'spacing'),
+  },
+
+  resultsContentContainer: {
+    alignItems: 'stretch',
+    justifyContent: 'center',
+    paddingHorizontal: isShortHeight ? scaleByContent(50, 'spacing') : scaleByContent(80, 'spacing'),
     width: '100%',
   },
 
   resultsTitle: {
-    fontSize: scaleByContent(isTabletScreen ? 18 : 28, 'text'),
+    fontSize: scaleByContent(isShortHeight ? 20 : isTabletScreen ? 18 : 28, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
-    marginBottom: scaleByContent(30, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(30, 'spacing'),
   },
 
   resultsContainer: {
@@ -690,20 +697,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: scaleByContent(25, 'spacing'),
-    paddingHorizontal: scaleByContent(15, 'spacing'),
+    marginBottom: isShortHeight ? scaleByContent(6, 'spacing') : scaleByContent(25, 'spacing'),
+    paddingHorizontal: isShortHeight ? scaleByContent(4, 'spacing') : scaleByContent(15, 'spacing'),
     width: '100%',
   },
 
   resultOptionContainer: {
     flex: 2,
-    marginRight: scaleByContent(15, 'spacing'),
+    marginRight: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
     backgroundColor: theme.colors.postItYellow,
     borderWidth: scaleBorder(2),
     borderColor: '#000000',
     borderRadius: 12,
-    paddingVertical: scaleByContent(12, 'spacing'),
-    paddingHorizontal: scaleByContent(15, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(6, 'spacing') : scaleByContent(12, 'spacing'),
+    paddingHorizontal: isShortHeight ? scaleByContent(10, 'spacing') : scaleByContent(15, 'spacing'),
     transform: [{ rotate: '0deg' }],
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 2 },
@@ -713,7 +720,7 @@ const styles = StyleSheet.create({
   },
 
   resultOptionText: {
-    fontSize: scaleByContent(isTabletScreen ? 13 : 20, 'text'),
+    fontSize: scaleByContent(isShortHeight ? 14 : isTabletScreen ? 13 : 20, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -725,8 +732,8 @@ const styles = StyleSheet.create({
     borderWidth: scaleBorder(3),
     borderColor: '#000000',
     borderRadius: 12,
-    paddingVertical: scaleByContent(12, 'spacing'),
-    paddingHorizontal: scaleByContent(15, 'spacing'),
+    paddingVertical: isShortHeight ? scaleByContent(6, 'spacing') : scaleByContent(12, 'spacing'),
+    paddingHorizontal: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
     alignItems: 'center',
     justifyContent: 'center',
     transform: [{ rotate: '0deg' }],
@@ -738,7 +745,7 @@ const styles = StyleSheet.create({
   },
 
   resultVotesText: {
-    fontSize: scaleByContent(isTabletScreen ? 12 : 18, 'text'),
+    fontSize: scaleByContent(isShortHeight ? 13 : isTabletScreen ? 12 : 18, 'text'),
     fontFamily: theme.fonts.primaryBold,
     color: '#000000',
     textAlign: 'center',
@@ -777,8 +784,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     width: '100%',
-    marginTop: scaleByContent(20, 'spacing'),
-    paddingHorizontal: scaleByContent(20, 'spacing'),
+    marginTop: isShortHeight ? scaleByContent(6, 'spacing') : scaleByContent(20, 'spacing'),
+    paddingHorizontal: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(20, 'spacing'),
   },
 
   skipButton: {

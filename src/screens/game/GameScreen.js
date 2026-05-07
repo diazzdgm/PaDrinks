@@ -1415,11 +1415,11 @@ const styles = StyleSheet.create({
   // Contenido principal
   content: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: scaleByContent(120, 'spacing'),
-    paddingTop: isShortHeight ? scaleByContent(25, 'spacing') : isTabletScreen ? 120 : scaleByContent(40, 'spacing'),
-    paddingBottom: isShortHeight ? scaleByContent(8, 'spacing') : scaleByContent(15, 'spacing'),
+    paddingHorizontal: isShortHeight ? scaleByContent(70, 'spacing') : scaleByContent(120, 'spacing'),
+    paddingTop: isShortHeight ? scaleByContent(35, 'spacing') : isTabletScreen ? 120 : scaleByContent(40, 'spacing'),
+    paddingBottom: isShortHeight ? scaleByContent(15, 'spacing') : scaleByContent(20, 'spacing'),
   },
 
   // Instrucción

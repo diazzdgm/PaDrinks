@@ -1,8 +1,25 @@
 import { Dimensions, PixelRatio } from 'react-native';
 
-const { width: _rawWidth, height: _rawHeight } = Dimensions.get('window');
-export const SCREEN_WIDTH = Math.max(_rawWidth, _rawHeight);
-export const SCREEN_HEIGHT = Math.min(_rawWidth, _rawHeight);
+const _readDimensions = () => {
+  const { width, height } = Dimensions.get('window');
+  return {
+    width: Math.max(width, height),
+    height: Math.min(width, height),
+  };
+};
+
+export let SCREEN_WIDTH = _readDimensions().width;
+export let SCREEN_HEIGHT = _readDimensions().height;
+
+const _recomputeDimensions = () => {
+  const { width, height } = _readDimensions();
+  SCREEN_WIDTH = width;
+  SCREEN_HEIGHT = height;
+};
+
+try {
+  Dimensions.addEventListener('change', _recomputeDimensions);
+} catch (e) {}
 
 // Matriz de dispositivos de referencia con pesos por prioridad
 const REFERENCE_DEVICES = {
@@ -71,7 +88,8 @@ const BASE_HEIGHT = baseDimensions.height; // ~458 (promedio ponderado)
  * @returns {number} - Tamaño escalado
  */
 export const scaleWidth = (size) => {
-  return (SCREEN_WIDTH / BASE_WIDTH) * size;
+  const { width } = _readDimensions();
+  return (width / BASE_WIDTH) * size;
 };
 
 /**
@@ -80,7 +98,8 @@ export const scaleWidth = (size) => {
  * @returns {number} - Tamaño escalado
  */
 export const scaleHeight = (size) => {
-  return (SCREEN_HEIGHT / BASE_HEIGHT) * size;
+  const { height } = _readDimensions();
+  return (height / BASE_HEIGHT) * size;
 };
 
 /**
@@ -88,8 +107,9 @@ export const scaleHeight = (size) => {
  * @returns {object} - Dispositivo de referencia más cercano
  */
 const getClosestReferenceDevice = () => {
-  const currentAspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
-  const currentSize = Math.max(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const { width: w, height: h } = _readDimensions();
+  const currentAspectRatio = w / h;
+  const currentSize = Math.max(w, h);
   
   let closestDevice = REFERENCE_DEVICES['pixel-8-pro']; // fallback
   let smallestDiff = Infinity;
@@ -114,14 +134,15 @@ const getClosestReferenceDevice = () => {
  * @returns {number} - Tamaño escalado
  */
 export const scale = (size) => {
-  const shortDimension = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const { width: w, height: h } = _readDimensions();
+  const shortDimension = Math.min(w, h);
   const baseShortDimension = Math.min(BASE_WIDTH, BASE_HEIGHT);
-  
+
   // Escalado base
   let scaledSize = (shortDimension / baseShortDimension) * size;
-  
+
   // Ajuste por relación de aspecto
-  const currentAspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
+  const currentAspectRatio = w / h;
   const baseAspectRatio = BASE_WIDTH / BASE_HEIGHT;
   
   if (currentAspectRatio > 2.2) {
@@ -145,9 +166,10 @@ export const scaleByContent = (size, contentType = 'default') => {
   const baseScale = scale(size);
   const fontScale = PixelRatio.getFontScale();
 
-  const screenSize = Math.max(SCREEN_WIDTH, SCREEN_HEIGHT);
-  const screenHeight = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT);
-  const aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
+  const { width: w, height: h } = _readDimensions();
+  const screenSize = Math.max(w, h);
+  const screenHeight = Math.min(w, h);
+  const aspectRatio = w / h;
   let deviceMultiplier = 1.0;
 
   if (aspectRatio < 1.65 && screenHeight >= 700) {
@@ -161,6 +183,10 @@ export const scaleByContent = (size, contentType = 'default') => {
   }
   // Samsung S21 y phones ultra-wide con ALTURA REDUCIDA (< 400dp height)
   else if (screenHeight < 400 && aspectRatio > 2.0) {
+    deviceMultiplier = 1.1;
+  }
+  // iPhone Pro Max y phones ultra-wide con altura intermedia (400-450dp)
+  else if (screenHeight < 450 && aspectRatio > 2.0) {
     deviceMultiplier = 1.1;
   }
   // Phones ultra-wide con altura normal (Samsung S22+, OnePlus, etc.)
@@ -232,9 +258,10 @@ export const scaleBorder = (size) => {
  * @returns {string} - 'phone-small' | 'phone-large' | 'phone-ultrawide' | 'tablet-square' | 'tablet-wide'
  */
 export const getDeviceType = () => {
-  const screenSize = Math.max(SCREEN_WIDTH, SCREEN_HEIGHT);
-  const screenHeight = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT);
-  const aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
+  const { width: w, height: h } = _readDimensions();
+  const screenSize = Math.max(w, h);
+  const screenHeight = Math.min(w, h);
+  const aspectRatio = w / h;
 
   if (aspectRatio < 1.65 && screenHeight >= 700) {
     return 'tablet-square';
@@ -270,9 +297,10 @@ export const isTablet = () => {
  * @returns {boolean}
  */
 export const isShortHeightDevice = () => {
-  const screenHeight = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT);
-  const aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
-  return screenHeight < 400 && aspectRatio > 2.0;
+  const { width: w, height: h } = _readDimensions();
+  const screenHeight = Math.min(w, h);
+  const aspectRatio = w / h;
+  return screenHeight < 400 || (screenHeight < 450 && aspectRatio > 2.0);
 };
 
 /**
@@ -280,7 +308,8 @@ export const isShortHeightDevice = () => {
  * @returns {number}
  */
 export const getScreenHeight = () => {
-  return Math.min(SCREEN_WIDTH, SCREEN_HEIGHT);
+  const { width: w, height: h } = _readDimensions();
+  return Math.min(w, h);
 };
 
 /**
@@ -311,11 +340,12 @@ export const getResponsiveSpacing = (sizes) => {
  */
 export const getDeviceInfo = () => {
   const closestDevice = getClosestReferenceDevice();
-  const currentAspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
-  
+  const { width: w, height: h } = _readDimensions();
+  const currentAspectRatio = w / h;
+
   return {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
+    width: w,
+    height: h,
     type: getDeviceType(),
     aspectRatio: currentAspectRatio,
     pixelRatio: PixelRatio.get(),
@@ -323,9 +353,9 @@ export const getDeviceInfo = () => {
     isSmall: isSmallDevice(),
     isTablet: isTablet(),
     closestReference: closestDevice,
-    scaleFactorWidth: SCREEN_WIDTH / BASE_WIDTH,
-    scaleFactorHeight: SCREEN_HEIGHT / BASE_HEIGHT,
-    scaleFactorMin: Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / Math.min(BASE_WIDTH, BASE_HEIGHT),
+    scaleFactorWidth: w / BASE_WIDTH,
+    scaleFactorHeight: h / BASE_HEIGHT,
+    scaleFactorMin: Math.min(w, h) / Math.min(BASE_WIDTH, BASE_HEIGHT),
     baseDimensions: { width: BASE_WIDTH, height: BASE_HEIGHT },
   };
 };

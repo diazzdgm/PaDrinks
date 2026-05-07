@@ -48,10 +48,12 @@ eas build -p ios --profile production   # App Store
 
 ### Web Build & Deployment
 ```bash
-npm run build:web               # Build for web (npx expo export --platform web)
+npm run build:web               # Build for web (uses node + local @expo/cli binary, NOT npx expo)
 npm run web                     # Dev server for web
 npx vercel --prod --yes         # Deploy to Vercel (padrinks.com)
 ```
+- The `build:web` script invokes `node node_modules/@expo/cli/build/bin/cli export --platform web` directly because `npx expo` fails in Git Bash/MINGW. The same applies to all other expo scripts in `package.json` — they bypass `npx` for Windows compatibility.
+- `vercel.json` uses `npx expo` directly because Vercel's build environment is Linux where npx works correctly.
 
 ## Project Overview
 
@@ -111,7 +113,7 @@ JSON-based dynamics stored in `src/data/dynamics/`. Each dynamic has `id`, `name
 - `scaleBorder(size)` - **ALWAYS use for `borderWidth` and `borderRadius`**. Wraps `scaleByContent(size, 'spacing')` with `Math.round()` to guarantee integer pixel values. Fractional border values cause visible pixelation/stepping on iOS.
 - `scaleHeight(size)` - scales by height ratio (`SCREEN_HEIGHT / BASE_HEIGHT * size`). Use for vertical positioning that must adapt to screen height (e.g., top offsets for absolute-positioned elements)
 - `scaleModerate(size, factor)` - for elements that shouldn't scale too aggressively (e.g., mute button icons: `scaleModerate(50, 0.3)`)
-- `isShortHeightDevice()` - true for ultra-wide phones with height < 400dp (Samsung S21). Use for 3-tier conditional layouts
+- `isShortHeightDevice()` - returns `true` for `screenHeight < 400 || (screenHeight < 450 && aspectRatio > 2.0)`. Covers Samsung S21 (384px), iPhone Pro Max landscape (430px, aspect 2.17), iPhone SE landscape (375px), iPhone 13/14 (390px). Excludes iPad. Use for 3-tier conditional layouts. Most game screens already wire `isShortHeight` ramas — when adding a new screen, define `const isShortHeight = isShortHeightDevice();` at module level and gate paddings/margins/fontSizes accordingly
 - `isSmallDevice()`, `isTablet()`, `getDeviceType()` - device classification
 - `SCREEN_WIDTH`, `SCREEN_HEIGHT` - use these instead of `Dimensions.get('window')` anywhere outside responsive.js
 - `RESPONSIVE` - pre-calculated common values (spacing.xs/sm/md/lg, fontSize.small/medium/large, button.height, etc.)
@@ -119,6 +121,22 @@ JSON-based dynamics stored in `src/data/dynamics/`. Each dynamic has `id`, `name
 **Tablet detection thresholds:** `aspectRatio < 1.65 && screenHeight >= 700` → tablet. deviceMultiplier ranges from 0.52-0.68 for tablets, meaning `scaleByContent` with `'text'` type applies ~0.78x (deviceMultiplier * 1.15 textMultiplier), making text proportionally LARGER than its `'interactive'` container (which gets raw deviceMultiplier). Fix pattern: reduce base font size for tablet using `isTabletScreen ? reducedValue : originalValue` where reducedValue ≈ originalValue * 0.65-0.7.
 
 **Pattern for conditional sizing:** `isShortHeight ? scaleByContent(200, 'interactive') : isSmallScreen ? scaleByContent(300, 'interactive') : scaleByContent(400, 'interactive')`
+
+**Game dynamic layout contract (GameScreen + dynamic display components):**
+- `GameScreen.styles.content` uses `justifyContent: 'space-between'` (not `'center'` or `'flex-start'`). This anchors the pink instruction banner to the top, action buttons to the bottom, and lets `questionContainer` (with `flex:1` + internal `justifyContent: 'center'`) fill the middle and center its content vertically. This produces consistent banner Y position and consistent button Y position across ALL dynamics (mention_challenge, vote_selection, preference_vote, anonymous_vote, charades, prize_roulette, spin_bottle).
+- Banner styles MUST be unified across `GameScreen.styles.instructionContainer` AND every dynamic component (`PreferenceVoteDisplay`, `AnonymousVoteDisplay`, `CharadesDisplay`, `PrizeRouletteDisplay`, `SpinBottleDisplay`). Canonical values: `marginBottom: isShortHeight ? 12 : 20`, `paddingVertical: isShortHeight ? 8 : 12`, `paddingHorizontal: 20` (no `isShortHeight` gate on horizontal). Mismatches cause the banner to appear at different vertical positions per dynamic.
+- `content.paddingHorizontal: isShortHeight ? 70 : 120` — the 120px horizontal padding chokes ultra-wide phones. Always gate with `isShortHeight`.
+
+**Results phase pattern (PreferenceVoteDisplay / AnonymousVoteDisplay):**
+- Filter empty entries: `results.filter(r => r.votes > 0)` — never show "Player 0 votos" rows. Show "Nadie recibió votos" fallback when filtered list is empty.
+- Use `[styles.questionContainer, styles.questionContainerResults]` style composition. `questionContainerResults` overrides with `alignItems: 'stretch'`, `justifyContent: 'center'`, `width: '100%'` so result rows can use the full available width, vertically centered.
+- `resultsContentContainer.alignItems: 'stretch'` (NOT `'center'`) and `paddingHorizontal: isShortHeight ? 50 : 80` to control the horizontal extent of result cards while keeping them anchored stretch-wise (otherwise they collapse to intrinsic content width).
+
+**`alignItems: 'center'` traps children to intrinsic width:**
+A flex parent with `alignItems: 'center'` causes children without an explicit width to render at their content-intrinsic width and center horizontally. Even children with `width: '100%'` may not stretch reliably under `alignItems: 'center'` in `react-native-web`. To make a child fill the parent, set `alignItems: 'stretch'` on the parent OR `alignSelf: 'stretch'` on the child. This is THE common cause of "results / cards look narrow / not using all the horizontal space" bugs.
+
+**Tablet/iPad two-column layouts (`MultiPlayerRegistrationScreen`, `PlayerRegistrationScreen`):**
+- The `rightSide` column uses `justifyContent: isTabletScreen ? 'flex-start' : 'center' | 'space-between'`. On phones the small viewport requires vertical centering; on iPad the extra height makes centering create big empty space above the first field, misaligning with the `leftSide` (which is anchored top). Always gate with `isTabletScreen` and add a `paddingTop: isTabletScreen ? scaleByContent(45, 'spacing') : 0` so the right column's first label aligns with the left column's `sectionTitle`.
 
 ### Folder Structure
 ```
@@ -160,11 +178,15 @@ The web version is a free, single-device-only (no multiplayer) deployment at pad
 
 **Conditional native imports pattern**: Native-only modules (`expo-screen-orientation`, `expo-navigation-bar`, `expo-camera`, `expo-image-manipulator`, `expo-file-system`) must use `require()` inside `if (Platform.OS !== 'web')` guards — top-level `import` will crash the web build.
 
-**AudioService dual implementation**: `src/services/AudioService.js` uses `expo-av` on native and `HTMLAudioElement` (wrapped in `WebManagedSound` class) on web. The `WebManagedSound` class mirrors the expo-av Sound API (`playAsync`, `pauseAsync`, `replayAsync`, `setVolumeAsync`, `unloadAsync`). Browsers require a user gesture before audio plays — SplashScreen has a tap-to-start overlay for web.
+**AudioService dual implementation**: `src/services/AudioService.js` uses `expo-av` on native and `HTMLAudioElement` (wrapped in `WebManagedSound` class) on web. The `WebManagedSound` class mirrors the expo-av Sound API (`playAsync`, `pauseAsync`, `replayAsync`, `setVolumeAsync`, `unloadAsync`). Browsers require a user gesture before audio plays — on web, the splash audio (`pouring.shot.mp3`) fails silently because `audioUnlocked` defaults to `true` (no tap-to-start gate). Background music starts when user taps any button in MainMenuScreen, which counts as the gesture.
 
 **Socket.IO disabled on web**: `SocketService.connect()` returns early on web. `useSocket` hook guards all effects with `if (isWeb) return`. Multiplayer UI (connection indicator, lobby modes) hidden on web via `Platform.OS !== 'web'` checks.
 
 **Fullscreen handling in App.js**: Uses Fullscreen API (`requestFullscreen`) with iOS fallback. On iOS, all browsers use WebKit and historically lack Fullscreen API support (iOS 26+ may support it). Logic: attempt `requestFullscreen()` first → if it fails on iOS, show "Add to Home Screen" instructional banner. PWA mode (`display: fullscreen` in app.json) provides fullscreen when launched from home screen.
+
+**Web orientation lock (CRITICAL limitations)**: `screen.orientation.lock('landscape')` requires BOTH (a) fullscreen mode active and (b) a user gesture. Cannot be triggered by `orientationchange` events alone. iOS Safari has **zero support** for orientation lock — even in PWA/fullscreen it fails. Implementation in App.js: lock attempted from three places — initial mount (line ~67, only succeeds if already in PWA fullscreen), inside `attemptFullscreen()` after success (fires on first tap anywhere), and inside `onFullscreenChange` handler when entering fullscreen (covers F11/browser-initiated fullscreen). Until user's first tap, rotation cannot be programmatically locked.
+
+**Portrait overlay pattern (preserves navigation state)**: When `isPortrait` is true on web, the "GIRA TU TELÉFONO" overlay renders as an **absolute-positioned layer** (zIndex 999998) on top of `AppNavigator`, NOT as an early return. Early returning would unmount the navigator and reset all game state when the user rotates back to landscape. Always use this pattern for any conditional full-screen overlay that should be transient — keep the underlying tree mounted to preserve Redux state, GameEngine singleton, and navigation stack.
 
 **Web deployment** (`vercel.json`): Build command exports via Metro, copies `public/privacy-policy.html` to dist. SPA rewrites with `/privacy-policy` exception. Privacy policy accessible at padrinks.com/privacy-policy.
 
@@ -222,8 +244,45 @@ Always use `String(p.id) !== String(playerId)` due to mixed number/string ID typ
 - Store sync timeout refs with `useRef` for cancellation during cleanup
 - Cancel automatic room sync timeouts after player kicks to prevent "Player not found" errors
 
-### Touch Gesture System
-Use `onTouchStart`/`onTouchMove`/`onTouchEnd` (not PanResponder) for React Navigation compatibility. Track `isSwipeInProgress` to prevent button clicks during swipes. 50px threshold for valid swipes.
+### Touch / Swipe Gesture System (cross-platform: native + web mobile + web desktop)
+DO NOT use PanResponder (breaks React Navigation). DO NOT rely solely on `onTouchStart/Move/End` either — when a swipe View wraps a `TouchableOpacity` (e.g. CreateGameScreen carousel), the child grabs the responder on Android and the parent never receives the moves, so swipe silently fails on real devices. Use the **Responder system** with capture variants instead:
+
+```jsx
+<View
+  onStartShouldSetResponderCapture={(e) => {
+    // Capture initial X without claiming the responder — TouchableOpacity stays clickable for taps
+    const x = getPointerX(e);
+    if (x !== null) {
+      touchStartRef.current = x;
+      touchEndRef.current = null;
+      isPointerDownRef.current = true;
+    }
+    return false;
+  }}
+  onMoveShouldSetResponderCapture={(e) => {
+    // Steal the responder when finger has moved >10px horizontally
+    if (touchStartRef.current === null) return false;
+    const x = getPointerX(e);
+    return x !== null && Math.abs(x - touchStartRef.current) > 10;
+  }}
+  onResponderMove={onTouchMove}
+  onResponderRelease={onTouchEnd}
+  onResponderTerminate={onTouchEnd}
+  onResponderTerminationRequest={() => false}
+  {...(Platform.OS === 'web' && {
+    onMouseDown: onTouchStart, onMouseMove: onTouchMove,
+    onMouseUp: onTouchEnd, onMouseLeave: onTouchEnd,
+  })}
+>
+```
+
+**Critical implementation details:**
+- **Refs, not `useState`, for `touchStartRef` / `touchEndRef` / `isPointerDownRef`**. State setters are async and handlers close over stale values — `useState` causes "swipe not detected" bugs because `onTouchMove` reads `isPointerDown=false` from the previous render even after `onTouchStart` set it true.
+- Use a `useEffect` to mirror any state value used inside handlers into a ref (e.g. `selectedModeIndexRef.current = selectedModeIndex`).
+- `getPointerX(e)` helper handles both touch and mouse: tries `e.nativeEvent.pageX`, then `e.nativeEvent.clientX`, then `e.pageX`, then `e.clientX`. Mouse events on `react-native-web` may pass through DOM events directly (no `nativeEvent` wrapper), so check both.
+- Desktop web mouse drag requires the `onMouseDown/Move/Up/Leave` spread — touch handlers do NOT fire for mouse. Use `onMouseLeave` to cancel a swipe when the cursor exits the area mid-drag.
+- Add `userSelect: 'none'` and `cursor: 'grab'` to the swipe area style (web-only via `Platform.OS === 'web'` spread) to prevent text selection during drag.
+- Track `isSwipeInProgress` (this one IS state, drives re-render) to suppress the inner `TouchableOpacity` `onPress` during/right-after a swipe. 50px is the swipe-distance threshold; 10px is the responder-capture threshold (must be smaller so capture happens before the user notices).
 
 ### Image Processing
 Always compress photos via expo-image-manipulator before Socket.IO transmission (large base64 causes disconnections). Standard: 150x150px, 30% quality for Socket.IO; 500x500, 80% for local display.

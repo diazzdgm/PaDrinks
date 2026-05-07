@@ -29,6 +29,7 @@ import {
   getDeviceType,
   isSmallDevice,
   isTablet,
+  isShortHeightDevice,
   RESPONSIVE,
   getDeviceInfo,
   SCREEN_WIDTH,
@@ -99,73 +100,87 @@ const CreateGameScreen = ({ navigation }) => {
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
   const muteButtonScale = useRef(new Animated.Value(1)).current;
 
-  // SWIPE SYSTEM - Con prevención de clicks accidentales
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
+  // SWIPE SYSTEM - Refs para evitar stale closure en los handlers
+  const touchStartRef = useRef(null);
+  const touchEndRef = useRef(null);
+  const isPointerDownRef = useRef(false);
+  const selectedModeIndexRef = useRef(0);
   const [isSwipeInProgress, setIsSwipeInProgress] = useState(false);
   const minSwipeDistance = 50;
-  
-  const onTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart(e.nativeEvent.pageX);
-    setIsSwipeInProgress(false);
-    console.log('Touch started at:', e.nativeEvent.pageX);
+
+  const getPointerX = (e) => {
+    const native = e?.nativeEvent || {};
+    if (typeof native.pageX === 'number') return native.pageX;
+    if (typeof native.clientX === 'number') return native.clientX;
+    if (typeof e?.pageX === 'number') return e.pageX;
+    if (typeof e?.clientX === 'number') return e.clientX;
+    return null;
   };
-  
+
+  const onTouchStart = (e) => {
+    const x = getPointerX(e);
+    if (x === null) return;
+    touchEndRef.current = null;
+    touchStartRef.current = x;
+    isPointerDownRef.current = true;
+    setIsSwipeInProgress(false);
+  };
+
   const onTouchMove = (e) => {
-    setTouchEnd(e.nativeEvent.pageX);
-    
-    // Detectar si estamos en un swipe para prevenir clicks
-    if (touchStart && Math.abs(e.nativeEvent.pageX - touchStart) > 20) {
+    if (!isPointerDownRef.current) return;
+    const x = getPointerX(e);
+    if (x === null) return;
+    touchEndRef.current = x;
+    if (touchStartRef.current !== null && Math.abs(x - touchStartRef.current) > 20) {
       setIsSwipeInProgress(true);
     }
   };
-  
+
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) {
+    const wasDown = isPointerDownRef.current;
+    isPointerDownRef.current = false;
+    const start = touchStartRef.current;
+    const end = touchEndRef.current;
+    touchStartRef.current = null;
+    touchEndRef.current = null;
+
+    if (!wasDown || start === null || end === null) {
       setTimeout(() => setIsSwipeInProgress(false), 100);
       return;
     }
-    
-    const distance = touchStart - touchEnd;
+
+    const distance = start - end;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
-    
-    console.log('Touch ended - distance:', distance);
-    
+
     if (isLeftSwipe || isRightSwipe) {
-      setIsSwipeInProgress(true); // Marcar como swipe para prevenir click
-      
+      setIsSwipeInProgress(true);
+
       try {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      } catch (error) {
-        console.log('Haptics not available:', error);
-      }
-      
+      } catch (error) {}
+
+      const currentIndex = selectedModeIndexRef.current;
       if (isLeftSwipe) {
-        // Swipe izquierda - siguiente modo
-        const newIndex = selectedModeIndex === gameModes.length - 1 ? 0 : selectedModeIndex + 1;
-        console.log('← SWIPE LEFT: Siguiente modo -', gameModes[newIndex].title);
+        const newIndex = currentIndex === gameModes.length - 1 ? 0 : currentIndex + 1;
+        setSelectedModeIndex(newIndex);
+      } else {
+        const newIndex = currentIndex === 0 ? gameModes.length - 1 : currentIndex - 1;
         setSelectedModeIndex(newIndex);
       }
-      
-      if (isRightSwipe) {
-        // Swipe derecha - modo anterior
-        const newIndex = selectedModeIndex === 0 ? gameModes.length - 1 : selectedModeIndex - 1;
-        console.log('→ SWIPE RIGHT: Modo anterior -', gameModes[newIndex].title);
-        setSelectedModeIndex(newIndex);
-      }
-      
-      // Reset después de un breve delay
+
       setTimeout(() => setIsSwipeInProgress(false), 300);
     } else {
-      // No fue un swipe, permitir clicks después de un delay corto
       setTimeout(() => setIsSwipeInProgress(false), 100);
     }
   };
   
   // Estado del carrusel simple
   const [selectedModeIndex, setSelectedModeIndex] = useState(0);
+
+  useEffect(() => {
+    selectedModeIndexRef.current = selectedModeIndex;
+  }, [selectedModeIndex]);
   
   const gameModes = [
     {
@@ -496,16 +511,38 @@ const CreateGameScreen = ({ navigation }) => {
         {/* CARRUSEL SIMPLE */}
         <View style={styles.carouselContainer}>
           {/* Área principal del carrusel con gestos touch */}
-          <View 
+          <View
             style={styles.carouselMainArea}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
+            onStartShouldSetResponderCapture={(e) => {
+              const x = getPointerX(e);
+              if (x !== null) {
+                touchStartRef.current = x;
+                touchEndRef.current = null;
+                isPointerDownRef.current = true;
+                setIsSwipeInProgress(false);
+              }
+              return false;
+            }}
+            onMoveShouldSetResponderCapture={(e) => {
+              if (touchStartRef.current === null) return false;
+              const x = getPointerX(e);
+              return x !== null && Math.abs(x - touchStartRef.current) > 10;
+            }}
+            onResponderMove={onTouchMove}
+            onResponderRelease={onTouchEnd}
+            onResponderTerminate={onTouchEnd}
+            onResponderTerminationRequest={() => false}
+            {...(Platform.OS === 'web' && {
+              onMouseDown: onTouchStart,
+              onMouseMove: onTouchMove,
+              onMouseUp: onTouchEnd,
+              onMouseLeave: onTouchEnd,
+            })}
           >
             {/* Botón del modo actual - SIN ANIMACIONES COMPLEJAS */}
             {(() => {
               const currentMode = gameModes[selectedModeIndex];
-              
+
               return (
                 <View style={styles.currentModeContainer}>
                   <TouchableOpacity
@@ -524,7 +561,7 @@ const CreateGameScreen = ({ navigation }) => {
                     <Text style={[styles.modeDescription, { color: currentMode.textColor }]}>
                       {currentMode.description}
                     </Text>
-                    
+
                     {/* Badge de "Próximamente" */}
                     {!currentMode.available && (
                       <View style={styles.comingSoonBadge}>
@@ -537,27 +574,27 @@ const CreateGameScreen = ({ navigation }) => {
             })()}
           </View>
         </View>
-      </View>
-      
-      {/* Indicadores en la parte inferior */}
-      <View style={styles.carouselIndicators}>
-        {gameModes.map((mode, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.indicator,
-              selectedModeIndex === index && styles.activeIndicator,
-            ]}
-            onPress={() => setSelectedModeIndex(index)}
-          >
-            <Text style={[
-              styles.indicatorEmoji,
-              selectedModeIndex === index && styles.activeIndicatorEmoji
-            ]}>
-              {mode.icon}
-            </Text>
-          </TouchableOpacity>
-        ))}
+
+        {/* Indicadores en la parte inferior */}
+        <View style={styles.carouselIndicators}>
+          {gameModes.map((mode, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.indicator,
+                selectedModeIndex === index && styles.activeIndicator,
+              ]}
+              onPress={() => setSelectedModeIndex(index)}
+            >
+              <Text style={[
+                styles.indicatorEmoji,
+                selectedModeIndex === index && styles.activeIndicatorEmoji
+              ]}>
+                {mode.icon}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
       
       {/* Overlay absoluto en lugar de Modal para iOS */}
@@ -593,6 +630,7 @@ const height = SCREEN_HEIGHT;
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
+const isShortHeight = isShortHeightDevice();
 const notebookLineSpacing = isTabletScreen ? 15 : scaleByContent(25, 'spacing');
 const notebookLineCount = Math.ceil(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / notebookLineSpacing) + 2;
 
@@ -763,6 +801,7 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    ...(Platform.OS === 'web' && { userSelect: 'none', cursor: 'grab' }),
   },
   
   // Contenedor del modo actual
@@ -778,7 +817,9 @@ const styles = StyleSheet.create({
     width: isSmallScreen
       ? Math.min(width * 0.75, scaleByContent(320, 'interactive'))
       : Math.min(width * 0.6, scaleByContent(320, 'interactive')),
-    height: Math.min(height * 0.55, 350),
+    height: isShortHeight
+      ? Math.min(height * 0.55, 200)
+      : Math.min(height * 0.55, 350),
     paddingHorizontal: scaleByContent(isSmallScreen ? 15 : 20, 'spacing'),
     paddingVertical: scaleByContent(isSmallScreen ? 12 : 16, 'spacing'),
     borderRadius: scaleBorder(18),
@@ -852,7 +893,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: scaleByContent(isSmallScreen ? 15 : 20, 'spacing'),
     paddingHorizontal: scaleByContent(20, 'spacing'),
-    paddingBottom: scaleByContent(isSmallScreen ? 10 : 12, 'spacing'),
+    paddingTop: scaleByContent(isShortHeight ? 6 : 12, 'spacing'),
+    paddingBottom: scaleByContent(isSmallScreen ? 8 : 10, 'spacing'),
   },
   
   // Indicador individual

@@ -1155,8 +1155,9 @@ const styles = StyleSheet.create({
     borderLeftWidth: scaleBorder(2),
     borderLeftColor: '#A8C8EC',
     borderLeftStyle: 'dashed',
-    justifyContent: 'center',
-    gap: scaleByContent(5, 'spacing'),
+    justifyContent: isTabletScreen ? 'flex-start' : 'center',
+    paddingTop: isTabletScreen ? scaleByContent(45, 'spacing') : 0,
+    gap: isTabletScreen ? scaleByContent(20, 'spacing') : scaleByContent(5, 'spacing'),
   },
   
   sectionTitle: {
