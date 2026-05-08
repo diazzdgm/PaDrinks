@@ -1984,19 +1984,23 @@ const styles = StyleSheet.create({
   connectionStatus: {
     justifyContent: 'center',
     alignItems: 'center',
+    alignSelf: 'center',
     marginLeft: scaleByContent(5, 'spacing'),
+    marginRight: scaleByContent(36, 'spacing'),
   },
-  
+
   connectionDot: {
     fontSize: scaleByContent(isTabletScreen ? 6 : 8, 'icon'),
   },
-  
+
   kickButton: {
-    padding: scaleByContent(8, 'interactive'),
     position: 'absolute',
     right: scaleByContent(8, 'spacing'),
-    top: '50%',
-    transform: [{ translateY: -scaleByContent(12, 'interactive') }],
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: scaleByContent(8, 'spacing'),
   },
   
   kickButtonText: {
@@ -2413,8 +2417,8 @@ const styles = StyleSheet.create({
   
   leaveModalButton: {
     flex: 1,
-    paddingVertical: scaleByContent(12, 'interactive'),
-    paddingHorizontal: scaleByContent(20, 'interactive'),
+    paddingVertical: scaleByContent(12, 'spacing'),
+    paddingHorizontal: scaleByContent(20, 'spacing'),
     borderRadius: scaleBorder(12),
     borderTopLeftRadius: scaleBorder(3),
     borderWidth: scaleBorder(2),
