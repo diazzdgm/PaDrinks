@@ -4,9 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
   Animated,
-  Dimensions,
   ScrollView,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -231,10 +229,6 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
     setShowKickMode(false);
     onClose();
   };
-
-  const { width: _rw, height: _rh } = Dimensions.get('window');
-  const SCREEN_WIDTH = Math.max(_rw, _rh);
-  const isSmallScreen = isSmallDevice();
 
   if (!visible) return null;
 
@@ -476,9 +470,6 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
   );
 };
 
-const { width: _rawW, height: _rawH } = Dimensions.get('window');
-const SCREEN_WIDTH = Math.max(_rawW, _rawH);
-const SCREEN_HEIGHT = Math.min(_rawW, _rawH);
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
 const isShortHeight = isShortHeightDevice();
@@ -503,17 +494,17 @@ const styles = StyleSheet.create({
 
   modalContainer: {
     width: isSmallScreen ? '90%' : '80%',
-    maxWidth: 450,
+    maxWidth: scaleByContent(450, 'interactive'),
     maxHeight: isShortHeight ? screenHeight * 0.85 : undefined,
     backgroundColor: '#F8F6F0',
-    borderRadius: 20,
-    borderTopLeftRadius: 5,
+    borderRadius: scaleBorder(20),
+    borderTopLeftRadius: scaleBorder(5),
     borderWidth: scaleBorder(3),
     borderColor: '#000000',
     shadowColor: '#000',
-    shadowOffset: { width: 6, height: 6 },
+    shadowOffset: { width: scaleByContent(6, 'spacing'), height: scaleByContent(6, 'spacing') },
     shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowRadius: scaleByContent(10, 'spacing'),
     elevation: 10,
     transform: [{ rotate: '0deg' }],
   },
@@ -526,8 +517,8 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: '#F8F6F0',
-    borderRadius: 17,
-    borderTopLeftRadius: 2,
+    borderRadius: scaleBorder(17),
+    borderTopLeftRadius: scaleBorder(2),
   },
 
   modalNotebookLines: {
@@ -576,18 +567,18 @@ const styles = StyleSheet.create({
   },
 
   closeButton: {
-    width: 35,
-    height: 35,
+    width: scaleByContent(40, 'interactive'),
+    height: scaleByContent(40, 'interactive'),
     backgroundColor: '#FF6B6B',
-    borderRadius: 17.5,
+    borderRadius: scaleBorder(100),
     borderWidth: scaleBorder(2),
     borderColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
     transform: [{ rotate: '0deg' }],
   },
@@ -618,14 +609,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.postItGreen,
     borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: 12,
-    borderTopLeftRadius: 3,
-    paddingVertical: scaleByContent(8, 'interactive'),
-    paddingHorizontal: scaleByContent(12, 'interactive'),
+    borderRadius: scaleBorder(12),
+    borderTopLeftRadius: scaleBorder(3),
+    paddingVertical: scaleByContent(8, 'spacing'),
+    paddingHorizontal: scaleByContent(12, 'spacing'),
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 3,
+    shadowRadius: scaleByContent(3, 'spacing'),
     elevation: 3,
     transform: [{ rotate: '0deg' }],
   },
@@ -670,9 +661,9 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.postItYellow,
     borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: 8,
-    paddingVertical: scaleByContent(4, 'interactive'),
-    paddingHorizontal: scaleByContent(8, 'interactive'),
+    borderRadius: scaleBorder(8),
+    paddingVertical: scaleByContent(4, 'spacing'),
+    paddingHorizontal: scaleByContent(8, 'spacing'),
   },
 
   backButtonText: {
@@ -750,13 +741,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6B6B',
     borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: 8,
-    paddingVertical: scaleByContent(6, 'interactive'),
-    paddingHorizontal: scaleByContent(12, 'interactive'),
+    borderRadius: scaleBorder(8),
+    paddingVertical: scaleByContent(6, 'spacing'),
+    paddingHorizontal: scaleByContent(12, 'spacing'),
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.2,
-    shadowRadius: 3,
+    shadowRadius: scaleByContent(3, 'spacing'),
     elevation: 3,
   },
 
@@ -826,15 +817,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6B6B',
     borderWidth: scaleBorder(2),
     borderColor: '#000000',
-    borderRadius: 12,
-    borderTopLeftRadius: 3,
-    paddingVertical: scaleByContent(8, 'interactive'),
-    paddingHorizontal: scaleByContent(15, 'interactive'),
+    borderRadius: scaleBorder(12),
+    borderTopLeftRadius: scaleBorder(3),
+    paddingVertical: scaleByContent(8, 'spacing'),
+    paddingHorizontal: scaleByContent(15, 'spacing'),
     marginTop: scaleByContent(5, 'spacing'),
     shadowColor: '#000',
-    shadowOffset: { width: 2, height: 2 },
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 3,
+    shadowRadius: scaleByContent(3, 'spacing'),
     elevation: 3,
     transform: [{ rotate: '0deg' }],
   },
@@ -880,14 +871,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.postItYellow,
     borderWidth: scaleBorder(3),
     borderColor: '#000000',
-    borderRadius: 15,
-    borderTopLeftRadius: 3,
-    paddingVertical: scaleByContent(12, 'interactive'),
-    paddingHorizontal: scaleByContent(25, 'interactive'),
+    borderRadius: scaleBorder(15),
+    borderTopLeftRadius: scaleBorder(3),
+    paddingVertical: scaleByContent(12, 'spacing'),
+    paddingHorizontal: scaleByContent(25, 'spacing'),
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
     transform: [{ rotate: '0deg' }],
   },
@@ -903,14 +894,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6B6B',
     borderWidth: scaleBorder(3),
     borderColor: '#000000',
-    borderRadius: 15,
-    borderTopLeftRadius: 3,
-    paddingVertical: scaleByContent(12, 'interactive'),
-    paddingHorizontal: scaleByContent(25, 'interactive'),
+    borderRadius: scaleBorder(15),
+    borderTopLeftRadius: scaleBorder(3),
+    paddingVertical: scaleByContent(12, 'spacing'),
+    paddingHorizontal: scaleByContent(25, 'spacing'),
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
+    shadowOffset: { width: scaleByContent(3, 'spacing'), height: scaleByContent(3, 'spacing') },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 4,
     transform: [{ rotate: '0deg' }],
   },

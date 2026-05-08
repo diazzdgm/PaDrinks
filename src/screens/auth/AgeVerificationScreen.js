@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Animated,
   BackHandler,
-  Dimensions,
   Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -460,9 +459,6 @@ const AgeVerificationScreen = ({ navigation }) => {
 };
 
 // Obtener información del dispositivo para estilos dinámicos
-const { width: _rw, height: _rh } = Dimensions.get('window');
-const width = Math.max(_rw, _rh);
-const height = Math.min(_rw, _rh);
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();

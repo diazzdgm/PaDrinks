@@ -12,27 +12,35 @@ import { Haptics } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import CircularText from '../../components/common/CircularText';
 import audioService from '../../services/AudioService';
-import { 
-  scale, 
-  scaleWidth, 
-  scaleHeight, 
-  scaleText, 
+import {
+  scale,
+  scaleWidth,
+  scaleHeight,
+  scaleText,
   scaleModerate,
   scaleByContent,
   scaleBorder,
   getDeviceType,
   isSmallDevice,
   isTablet,
+  isShortHeightDevice,
   RESPONSIVE,
   getDeviceInfo,
   SCREEN_WIDTH,
-  SCREEN_HEIGHT 
+  SCREEN_HEIGHT
 } from '../../utils/responsive';
 
 // Obtener información del dispositivo para estilos dinámicos
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
+const isShortHeight = isShortHeightDevice();
+
+const splashLogoSize = isShortHeight ? 220 : isTabletScreen ? 380 : 350;
+const splashShotWidth = isShortHeight ? 180 : isTabletScreen ? 300 : 280;
+const splashShotHeight = isShortHeight ? 220 : isTabletScreen ? 380 : 350;
+const splashCircularRadius = isShortHeight ? 105 : isTabletScreen ? 165 : 150;
+const splashCircularFontSize = isShortHeight ? 15 : isTabletScreen ? 24 : 22;
 const notebookLineSpacing = isTabletScreen ? 15 : scaleByContent(25, 'spacing');
 const notebookLineCount = Math.ceil(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / notebookLineSpacing) + 2;
 
@@ -292,8 +300,8 @@ const SplashScreen = ({ navigation }) => {
             <CircularText
               text="PADRINKS*PADRINKS*PADRINKS*"
               spinDuration={20000}
-              radius={150}
-              fontSize={22}
+              radius={splashCircularRadius}
+              fontSize={splashCircularFontSize}
               style={styles.circularTextContainer}
               enableDancing={true}
             />
@@ -390,9 +398,9 @@ const styles = StyleSheet.create({
   centerContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: 350,
-    height: 350,
-    marginTop: 20,
+    width: splashLogoSize,
+    height: splashLogoSize,
+    marginTop: isShortHeight ? 0 : 20,
   },
 
   // Logo container
@@ -407,8 +415,8 @@ const styles = StyleSheet.create({
 
   // Shot container - Valores más conservadores y visibles
   shotContainer: {
-    width: 280,
-    height: 350,
+    width: splashShotWidth,
+    height: splashShotHeight,
     alignItems: 'center',
     justifyContent: 'center',
   },

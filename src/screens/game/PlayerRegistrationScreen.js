@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Animated,
-  Dimensions,
   Image,
   TextInput,
   Alert,
@@ -962,9 +961,6 @@ const PlayerRegistrationScreen = ({ navigation, route }) => {
 };
 
 // Obtener información del dispositivo para estilos dinámicos
-const { width: _rw, height: _rh } = Dimensions.get('window');
-const width = Math.max(_rw, _rh);
-const height = Math.min(_rw, _rh);
 const deviceType = getDeviceType();
 const isSmallScreen = isSmallDevice();
 const isTabletScreen = isTablet();
@@ -1631,7 +1627,7 @@ const styles = StyleSheet.create({
   },
 
   modalContainer: {
-    width: width * 0.8,
+    width: SCREEN_WIDTH * 0.8,
     maxWidth: scaleByContent(400, 'interactive'),
     backgroundColor: '#F8F6F0',
     borderRadius: scaleBorder(20),

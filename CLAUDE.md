@@ -105,9 +105,11 @@ JSON-based dynamics stored in `src/data/dynamics/`. Each dynamic has `id`, `name
 **Primary function:** `scaleByContent(size, contentType)` - scales values based on device dimensions and content type:
 - `'text'` - fontSize (respects system fontScale, capped at 1.8x)
 - `'interactive'` - button/input width/height (minimum 44dp touch target)
-- `'spacing'` - padding, margin, shadowOffset (scales at 85%)
+- `'spacing'` - padding, margin, shadowOffset, shadowRadius (scales at 85%)
 - `'icon'` - emoji/image sizes (scales at 90%)
 - `'hero'` - large logos/prominent elements (scales at 115%)
+
+**CRITICAL footgun — `'interactive'` has a 44dp floor.** It returns `Math.max(44, N * deviceMultiplier)` to guarantee accessible touch targets. Use it ONLY for `width`/`height`/`min/maxWidth/Height` of touch targets. NEVER for `padding*`, `margin*`, `shadowOffset`, `shadowRadius`, or `gap` — the floor adds 44dp per side, inflating buttons (e.g. `paddingVertical: scaleByContent(8, 'interactive')` produces 44dp top + 44dp bottom + content = ~110dp tall button instead of ~30dp). For ALL spacing values use `'spacing'`. Audit pattern: `grep "padding.*'interactive'"` should always return zero.
 
 **Other key exports:**
 - `scaleBorder(size)` - **ALWAYS use for `borderWidth` and `borderRadius`**. Wraps `scaleByContent(size, 'spacing')` with `Math.round()` to guarantee integer pixel values. Fractional border values cause visible pixelation/stepping on iOS.
@@ -137,6 +139,12 @@ A flex parent with `alignItems: 'center'` causes children without an explicit wi
 
 **Tablet/iPad two-column layouts (`MultiPlayerRegistrationScreen`, `PlayerRegistrationScreen`):**
 - The `rightSide` column uses `justifyContent: isTabletScreen ? 'flex-start' : 'center' | 'space-between'`. On phones the small viewport requires vertical centering; on iPad the extra height makes centering create big empty space above the first field, misaligning with the `leftSide` (which is anchored top). Always gate with `isTabletScreen` and add a `paddingTop: isTabletScreen ? scaleByContent(45, 'spacing') : 0` so the right column's first label aligns with the left column's `sectionTitle`.
+
+**SplashScreen adaptive sizing (visual hero elements):**
+Hardcoded sizes for hero visuals (logo, circular text) clip on short-height devices because they don't scale with viewport height. Pattern in `src/screens/auth/SplashScreen.js`: extract module-level adaptive constants gated by `isShortHeight`/`isTabletScreen` and reference them from styles AND component props. Example: `splashLogoSize` (220 short / 350 phone / 380 tablet), `splashShotWidth/Height`, `splashCircularRadius` (105/150/165), `splashCircularFontSize` (15/22/24). The `<CircularText radius={N} fontSize={N}/>` props accept these directly. On Galaxy S21 landscape (h=360dp) a hardcoded 350×350 container clips ~97% of viewport height — the adaptive 220×220 leaves comfortable margin.
+
+**Android validation workflow (no Chrome DevTools MCP needed):**
+After applying responsive fixes, deploy with `npx vercel --prod --yes` and the user manually validates by opening padrinks.com in Chrome → DevTools → toggle device toolbar → select custom Android device → rotate to landscape. Recommended custom devices to add (Width × Height portrait, DPR): Galaxy S21 360×800@3, Pixel 7 412×915@2.625, Pixel 8 Pro 448×992@3, Galaxy A54 412×915@2.625, Galaxy Tab A8 800×1340@2. Pixel 7/A54 with DPR 2.625 are key for catching pixel stepping in rounded borders — always wrap `borderRadius` in `scaleBorder()`. The audit-fix-deploy-validate cycle is the established workflow; do NOT attempt automated Chrome DevTools MCP audits unless explicitly requested.
 
 ### Folder Structure
 ```
