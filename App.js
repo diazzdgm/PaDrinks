@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Platform, BackHandler, Dimensions, TouchableWithoutFeedback, TouchableOpacity, AppState, Animated } from 'react-native';
+import { View, Text, StyleSheet, Platform, BackHandler, Dimensions, TouchableOpacity, AppState, Animated } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import { store } from './src/store';
 import { theme } from './src/styles/theme';
 import AppNavigator from './src/navigation/AppNavigator';
 import audioService from './src/services/AudioService';
+import FullscreenOnboardingScreen from './src/screens/web/FullscreenOnboardingScreen';
 
 let ScreenOrientation, NavigationBar;
 if (!isWeb) {
@@ -42,8 +43,16 @@ export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showIOSBanner, setShowIOSBanner] = useState(false);
-  const fullscreenRequested = useRef(false);
+  const [showFullscreenOnboarding, setShowFullscreenOnboarding] = useState(() => {
+    if (Platform.OS !== 'web') return false;
+    if (typeof window === 'undefined') return false;
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches
+                || window.matchMedia('(display-mode: fullscreen)').matches
+                || window.navigator.standalone === true;
+    if (isPWA) return false;
+    if (window.localStorage?.getItem('padrinks_skip_fullscreen_onboarding') === 'true') return false;
+    return true;
+  });
   const browserInfo = useRef(isWeb ? getWebBrowserInfo() : {});
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -143,6 +152,72 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!isWeb) return;
+
+    const wasPlayingRef = { current: false };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        wasPlayingRef.current = audioService.isPlaying;
+        audioService.pauseBackgroundMusic();
+      } else if (document.visibilityState === 'visible' && wasPlayingRef.current && !audioService.isMuted) {
+        audioService.playBackgroundMusic();
+      }
+    };
+
+    const onPageHide = () => {
+      audioService.pauseBackgroundMusic();
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('pagehide', onPageHide);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('pagehide', onPageHide);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isWeb) return;
+
+    const initial = Dimensions.get('window');
+    const initialLong = Math.max(initial.width, initial.height);
+    const initialShort = Math.min(initial.width, initial.height);
+    const mountTime = Date.now();
+    let reloadTimer = null;
+    let lastFullscreenChange = 0;
+
+    const onFsChange = () => { lastFullscreenChange = Date.now(); };
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+
+    const subscription = Dimensions.addEventListener('change', ({ window: win }) => {
+      if (Date.now() - lastFullscreenChange < 1500) return;
+
+      const newLong = Math.max(win.width, win.height);
+      const newShort = Math.min(win.width, win.height);
+      const timeSinceMount = Date.now() - mountTime;
+      const longChanged = Math.abs(newLong - initialLong) > 100;
+      const shortChanged = Math.abs(newShort - initialShort) > 30;
+
+      if (longChanged || (shortChanged && timeSinceMount < 2000)) {
+        if (reloadTimer) clearTimeout(reloadTimer);
+        reloadTimer = setTimeout(() => {
+          window.location.reload();
+        }, 600);
+      }
+    });
+
+    return () => {
+      if (reloadTimer) clearTimeout(reloadTimer);
+      document.removeEventListener('fullscreenchange', onFsChange);
+      document.removeEventListener('webkitfullscreenchange', onFsChange);
+      if (subscription && subscription.remove) subscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     if (Platform.OS !== 'android') {
       return;
     }
@@ -230,72 +305,37 @@ export default function App() {
     outputRange: ['0deg', '-90deg'],
   });
 
-  const attemptFullscreen = () => {
-    tryFullscreen().then((success) => {
-      if (success) {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape').catch(() => {});
-        }
-      } else if (browserInfo.current.isIOS && !browserInfo.current.isPWA) {
-        setShowIOSBanner(true);
-      }
-    });
-  };
-
-  const handleFirstTouch = () => {
-    if (isWeb && !fullscreenRequested.current) {
-      fullscreenRequested.current = true;
-      attemptFullscreen();
-    }
-  };
-
   return (
-    <TouchableWithoutFeedback onPress={handleFirstTouch}>
-      <View style={{ flex: 1 }}>
-        <SafeAreaProvider>
-          <Provider store={store}>
-            <StatusBar style="light" hidden={true} />
-            <AppNavigator />
-          </Provider>
-        </SafeAreaProvider>
-        {isWeb && !isFullscreen && !browserInfo.current.isPWA && (
-          <TouchableOpacity
-            style={styles.fullscreenButton}
-            onPress={attemptFullscreen}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.fullscreenIcon}>⛶</Text>
-          </TouchableOpacity>
-        )}
-        {isWeb && isPortrait && (
-          <View style={styles.portraitOverlay} pointerEvents="auto">
-            <Animated.Text style={[styles.portraitEmoji, { transform: [{ rotate: phoneRotation }] }]}>
-              📱
-            </Animated.Text>
-            <Text style={styles.portraitText}>GIRA TU TELÉFONO</Text>
-            <Text style={styles.portraitSubtext}>PaDrinks se juega{'\n'}en modo horizontal</Text>
-          </View>
-        )}
-        {showIOSBanner && (
-          <View style={styles.iosBannerOverlay}>
-            <View style={styles.iosBanner}>
-              <TouchableOpacity style={styles.iosBannerClose} onPress={() => setShowIOSBanner(false)}>
-                <Text style={styles.iosBannerCloseText}>✕</Text>
-              </TouchableOpacity>
-              <Text style={styles.iosBannerTitle}>Pantalla completa</Text>
-              <Text style={styles.iosBannerText}>
-                Para jugar sin la barra del navegador:
-              </Text>
-              <View style={styles.iosBannerSteps}>
-                <Text style={styles.iosBannerStep}>1. Toca el icono compartir  ⬆</Text>
-                <Text style={styles.iosBannerStep}>2. Selecciona "Agregar a inicio"</Text>
-                <Text style={styles.iosBannerStep}>3. Abre PaDrinks desde tu inicio</Text>
-              </View>
-            </View>
-          </View>
-        )}
-      </View>
-    </TouchableWithoutFeedback>
+    <View style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <Provider store={store}>
+          <StatusBar style="light" hidden={true} />
+          <AppNavigator />
+        </Provider>
+      </SafeAreaProvider>
+      {showFullscreenOnboarding && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 999997,
+          elevation: 999997,
+        }}>
+          <FullscreenOnboardingScreen onDismiss={() => setShowFullscreenOnboarding(false)} />
+        </View>
+      )}
+      {isWeb && isPortrait && (
+        <View style={styles.portraitOverlay} pointerEvents="auto">
+          <Animated.Text style={[styles.portraitEmoji, { transform: [{ rotate: phoneRotation }] }]}>
+            📱
+          </Animated.Text>
+          <Text style={styles.portraitText}>GIRA TU TELÉFONO</Text>
+          <Text style={styles.portraitSubtext}>PaDrinks se juega{'\n'}en modo horizontal</Text>
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -354,83 +394,4 @@ const styles = StyleSheet.create({
     lineHeight: 26,
   },
 
-  fullscreenButton: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 99999,
-  },
-
-  fullscreenIcon: {
-    fontSize: 22,
-    color: 'white',
-  },
-
-  iosBannerOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 999999,
-  },
-
-  iosBanner: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    paddingTop: 32,
-    width: 320,
-    alignItems: 'center',
-  },
-
-  iosBannerClose: {
-    position: 'absolute',
-    top: 8,
-    right: 12,
-    width: 30,
-    height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  iosBannerCloseText: {
-    fontSize: 18,
-    color: '#999',
-    fontWeight: 'bold',
-  },
-
-  iosBannerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-
-  iosBannerText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-
-  iosBannerSteps: {
-    alignSelf: 'stretch',
-    gap: 8,
-  },
-
-  iosBannerStep: {
-    fontSize: 15,
-    color: '#333',
-    paddingLeft: 4,
-  },
 });

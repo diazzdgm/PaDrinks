@@ -200,6 +200,17 @@ The web version is a free, single-device-only (no multiplayer) deployment at pad
 
 **Image picker on web**: `expo-image-picker` works on web but camera doesn't — web always uses `launchImageLibraryAsync()`. `expo-image-manipulator` doesn't work on web — skip manipulation, use picker URI directly.
 
+**Fullscreen onboarding overlay** (`src/screens/web/FullscreenOnboardingScreen.js`): Web-only educational overlay that teaches users to "Add to Home Screen" so the game can run truly fullscreen (the only path on iOS Safari, where `requestFullscreen()` and `screen.orientation.lock()` are blocked). Rendered as an absolute layer in `App.js` (zIndex `999997`, below the portrait overlay at `999998`) — NOT an early return, follows the "Portrait overlay pattern" to preserve `AppNavigator` + Redux state. Mount condition is evaluated synchronously in `useState(() => ...)` initializer:
+- `Platform.OS === 'web'` AND
+- NOT PWA standalone (`display-mode: standalone | fullscreen` or `navigator.standalone === true`) AND
+- `localStorage.padrinks_skip_fullscreen_onboarding !== 'true'`
+
+If the user chooses "Jugar con barra de navegación", the localStorage flag is set and the overlay never appears again. If they install to home and open from the icon, PWA standalone detection skips it automatically. Vista A (OS selection): two compact square cards (iPhone yellow, Android green) with Apple/Android SVG logos via `react-native-svg`. Vista B (tutorial): video frame (white, ready for `.mp4` files in `assets/videos/tutorial-ios.mp4` / `tutorial-android.mp4`, falls back to empty white box if files missing) + numbered text steps to the right. Step 1 of iOS renders the iOS share icon (`ShareIcon` SVG) inline at text-emoji size after "Toca el botón de compartir del navegador".
+
+**Coupling: SplashScreen audio gated by overlay state**: `src/screens/auth/SplashScreen.js` `loadAndPlaySound()` early-returns when the onboarding overlay would be visible (re-evaluates the same PWA + localStorage check). This is because SplashScreen is mounted underneath the overlay and would otherwise play the pouring-shot sound while the user reads the onboarding. If you change the localStorage key or the mount condition of `FullscreenOnboardingScreen`, mirror it in SplashScreen.
+
+**Removed legacy fullscreen UX in App.js**: The pre-overlay iOS reactive banner, `handleFirstTouch` global handler, `showIOSBanner` state, and the floating fullscreen button were all removed when the overlay was introduced. `getWebBrowserInfo()` and `tryFullscreen()` remain because they're still useful for Android Chrome when the user opts into "barra de navegación" mode.
+
 ### EAS Build Profiles
 - `development`: Dev client, internal distribution, iOS simulator only
 - `preview`: Internal distribution, APK for Android, Node 20.18.1
