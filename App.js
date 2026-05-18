@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Platform, BackHandler, Dimensions, TouchableOpacity, AppState, Animated } from 'react-native';
+import { View, Text, StyleSheet, Platform, BackHandler, Dimensions, TouchableOpacity, AppState, Animated, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Font from 'expo-font';
 import { isWeb } from './src/utils/platform';
+import { isTablet, SCREEN_WIDTH, SCREEN_HEIGHT } from './src/utils/responsive';
 import { store } from './src/store';
 import { theme } from './src/styles/theme';
 import AppNavigator from './src/navigation/AppNavigator';
@@ -55,6 +56,7 @@ export default function App() {
   });
   const browserInfo = useRef(isWeb ? getWebBrowserInfo() : {});
   const rotateAnim = useRef(new Animated.Value(0)).current;
+  const arrowPulseAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!isWeb && ScreenOrientation) {
@@ -123,16 +125,22 @@ export default function App() {
 
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(rotateAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
+        Animated.parallel([
+          Animated.timing(rotateAnim,     { toValue: 1, duration: 900, useNativeDriver: true }),
+          Animated.timing(arrowPulseAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
+        ]),
         Animated.delay(500),
-        Animated.timing(rotateAnim, { toValue: 0, duration: 500, useNativeDriver: true }),
+        Animated.parallel([
+          Animated.timing(rotateAnim,     { toValue: 0, duration: 500, useNativeDriver: true }),
+          Animated.timing(arrowPulseAnim, { toValue: 0, duration: 500, useNativeDriver: true }),
+        ]),
         Animated.delay(500),
       ])
     );
     loop.start();
 
     return () => loop.stop();
-  }, [isPortrait, rotateAnim]);
+  }, [isPortrait, rotateAnim, arrowPulseAnim]);
 
   useEffect(() => {
     if (isWeb) return;
@@ -305,6 +313,11 @@ export default function App() {
     outputRange: ['0deg', '-90deg'],
   });
 
+  const arrowOpacity = arrowPulseAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.55, 1],
+  });
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -328,16 +341,46 @@ export default function App() {
       )}
       {isWeb && isPortrait && (
         <View style={styles.portraitOverlay} pointerEvents="auto">
-          <Animated.Text style={[styles.portraitEmoji, { transform: [{ rotate: phoneRotation }] }]}>
-            📱
-          </Animated.Text>
-          <Text style={styles.portraitText}>GIRA TU TELÉFONO</Text>
-          <Text style={styles.portraitSubtext}>PaDrinks se juega{'\n'}en modo horizontal</Text>
+          <View style={styles.portraitPaperBackground}>
+            <View style={styles.portraitNotebookLines}>
+              {[...Array(portraitLineCount)].map((_, i) => (
+                <View
+                  key={i}
+                  style={[styles.portraitLine, { top: portraitLineSpacing + i * portraitLineSpacing }]}
+                />
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.portraitContent}>
+            <View style={styles.portraitIconRow}>
+              <Animated.Image
+                source={require('./assets/images/Arrow-Rotation.png')}
+                style={[styles.portraitArrow, styles.portraitArrowLeft, { opacity: arrowOpacity }]}
+                resizeMode="contain"
+              />
+              <Animated.Image
+                source={require('./assets/images/Smartphone.Sketch.png')}
+                style={[styles.portraitPhone, { transform: [{ rotate: phoneRotation }] }]}
+                resizeMode="contain"
+              />
+              <Animated.Image
+                source={require('./assets/images/Arrow-Rotation.png')}
+                style={[styles.portraitArrow, styles.portraitArrowRight, { opacity: arrowOpacity }]}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={styles.portraitText}>GIRA TU CELULAR</Text>
+            <Text style={styles.portraitSubtext}>PaDrinks se juega{'\n'}en modo horizontal</Text>
+          </View>
         </View>
       )}
     </View>
   );
 }
+
+const portraitLineSpacing = isTablet() ? 18 : 28;
+const portraitLineCount = Math.ceil(Math.max(SCREEN_WIDTH, SCREEN_HEIGHT) / portraitLineSpacing) + 4;
 
 const styles = StyleSheet.create({
   loadingContainer: {
@@ -366,32 +409,83 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    padding: 40,
+    backgroundColor: '#F8F6F0',
     zIndex: 999998,
   },
 
-  portraitEmoji: {
-    fontSize: 100,
-    marginBottom: 30,
+  portraitPaperBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#F8F6F0',
+  },
+
+  portraitNotebookLines: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 20,
+    right: 20,
+  },
+
+  portraitLine: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: '#A8C8EC',
+    opacity: 0.6,
+  },
+
+  portraitContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 30,
+  },
+
+  portraitIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 40,
+  },
+
+  portraitPhone: {
+    width: 140,
+    height: 140,
+    marginHorizontal: 16,
+  },
+
+  portraitArrow: {
+    width: 45,
+    height: 45,
+  },
+
+  portraitArrowLeft: {},
+
+  portraitArrowRight: {
+    transform: [{ scaleX: -1 }],
   },
 
   portraitText: {
-    fontSize: 36,
-    color: 'white',
+    fontSize: 32,
+    color: '#000000',
     fontWeight: 'bold',
     fontFamily: 'Kalam-Bold',
-    marginBottom: 16,
+    marginBottom: 14,
     letterSpacing: 1,
     textAlign: 'center',
   },
 
   portraitSubtext: {
-    fontSize: 18,
-    color: 'rgba(255,255,255,0.9)',
+    fontSize: 16,
+    color: '#000000',
     fontFamily: 'Kalam-Regular',
     textAlign: 'center',
-    lineHeight: 26,
+    lineHeight: 24,
+    opacity: 0.85,
   },
 
 });
