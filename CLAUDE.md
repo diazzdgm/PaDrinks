@@ -196,6 +196,15 @@ The web version is a free, single-device-only (no multiplayer) deployment at pad
 
 **Portrait overlay pattern (preserves navigation state)**: When `isPortrait` is true on web, the "GIRA TU TELÉFONO" overlay renders as an **absolute-positioned layer** (zIndex 999998) on top of `AppNavigator`, NOT as an early return. Early returning would unmount the navigator and reset all game state when the user rotates back to landscape. Always use this pattern for any conditional full-screen overlay that should be transient — keep the underlying tree mounted to preserve Redux state, GameEngine singleton, and navigation stack.
 
+**Web portrait→landscape reload-once pattern (CRITICAL)**: All `StyleSheet.create({...})` calls (including those gated by `isShortHeight`/`isTablet`) execute exactly once when the JavaScript bundle is evaluated. If the page loads in portrait, every screen captures portrait-orientation dimensions, and rotating to landscape leaves layouts broken across all ~30 screens. App.js implements a **one-shot page reload** when transitioning portrait→landscape, guarded by `sessionStorage.padrinks_reloaded_for_landscape`:
+- If `window.innerWidth > window.innerHeight` at mount → page loaded in landscape, set the flag and exit (no listener).
+- If the flag is already `'true'` at mount → user previously rotated this session, do NOT reload again (prevents loops + preserves game state if user accidentally rotates to portrait mid-game).
+- Otherwise (loaded in portrait, flag not set) → attach `resize` + `orientationchange` listeners; on first event where `innerWidth > innerHeight`, set the flag and call `window.location.reload()` after 400ms.
+
+Do NOT use dimension-delta thresholds (e.g., `shortChanged > 30`) to trigger the reload — Chrome's URL bar auto-show/hide causes false positives within the first 2 seconds of every load, producing infinite reload loops. The boolean orientation check (`innerWidth > innerHeight`) is robust because it transitions exactly once per actual rotation.
+
+Companion pattern for screens that must look correct BEFORE the reload completes (e.g., `FullscreenOnboardingScreen` is visible during the ~400ms gap between rotation and reload): make the component reactive by calling `useWindowDimensions()` inside the component, recomputing `isShortHeight`/`isTablet` flags on each render, and wrapping `StyleSheet.create({...})` in a `createStyles({...flags})` function memoized with `useMemo`. Pass the resulting `styles` (and flags where needed) as props to child components instead of closing over module-level constants. Reserve this refactor for the very first screens the user sees during rotation — for all other screens, the page reload handles it.
+
 **Web deployment** (`vercel.json`): Build command exports via Metro, copies `public/privacy-policy.html` to dist. SPA rewrites with `/privacy-policy` exception. Privacy policy accessible at padrinks.com/privacy-policy.
 
 **Image picker on web**: `expo-image-picker` works on web but camera doesn't — web always uses `launchImageLibraryAsync()`. `expo-image-manipulator` doesn't work on web — skip manipulation, use picker URI directly.

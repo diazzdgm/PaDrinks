@@ -189,39 +189,40 @@ export default function App() {
   useEffect(() => {
     if (!isWeb) return;
 
-    const initial = Dimensions.get('window');
-    const initialLong = Math.max(initial.width, initial.height);
-    const initialShort = Math.min(initial.width, initial.height);
-    const mountTime = Date.now();
+    const STORAGE_KEY = 'padrinks_reloaded_for_landscape';
+    const loadedInLandscape = window.innerWidth > window.innerHeight;
+
+    if (loadedInLandscape) {
+      try { sessionStorage.setItem(STORAGE_KEY, 'true'); } catch (e) {}
+      return;
+    }
+
+    let alreadyReloaded = false;
+    try { alreadyReloaded = sessionStorage.getItem(STORAGE_KEY) === 'true'; } catch (e) {}
+    if (alreadyReloaded) return;
+
+    let hasTriggered = false;
     let reloadTimer = null;
-    let lastFullscreenChange = 0;
 
-    const onFsChange = () => { lastFullscreenChange = Date.now(); };
-    document.addEventListener('fullscreenchange', onFsChange);
-    document.addEventListener('webkitfullscreenchange', onFsChange);
-
-    const subscription = Dimensions.addEventListener('change', ({ window: win }) => {
-      if (Date.now() - lastFullscreenChange < 1500) return;
-
-      const newLong = Math.max(win.width, win.height);
-      const newShort = Math.min(win.width, win.height);
-      const timeSinceMount = Date.now() - mountTime;
-      const longChanged = Math.abs(newLong - initialLong) > 100;
-      const shortChanged = Math.abs(newShort - initialShort) > 30;
-
-      if (longChanged || (shortChanged && timeSinceMount < 2000)) {
+    const onResize = () => {
+      if (hasTriggered) return;
+      if (window.innerWidth > window.innerHeight) {
+        hasTriggered = true;
+        try { sessionStorage.setItem(STORAGE_KEY, 'true'); } catch (e) {}
         if (reloadTimer) clearTimeout(reloadTimer);
         reloadTimer = setTimeout(() => {
           window.location.reload();
-        }, 600);
+        }, 400);
       }
-    });
+    };
+
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
 
     return () => {
       if (reloadTimer) clearTimeout(reloadTimer);
-      document.removeEventListener('fullscreenchange', onFsChange);
-      document.removeEventListener('webkitfullscreenchange', onFsChange);
-      if (subscription && subscription.remove) subscription.remove();
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
     };
   }, []);
 
