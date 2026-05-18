@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx expo export --platform web && cp public/privacy-policy.html dist/privacy-policy.html",
+  "buildCommand": "npx expo export --platform web && cp public/privacy-policy.html dist/privacy-policy.html && cp public/manifest.json dist/manifest.json",
   "outputDirectory": "dist",
   "cleanUrls": true,
   "rewrites": [

@@ -1,0 +1,21 @@
+{
+  "name": "PaDrinks",
+  "short_name": "PaDrinks",
+  "description": "Juego de beber para fiestas",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen"],
+  "orientation": "landscape",
+  "background_color": "#F8F6F0",
+  "theme_color": "#F8F6F0",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
