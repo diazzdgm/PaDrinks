@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { theme } from '../../styles/theme';
+import PWAInstallBanner from './PWAInstallBanner';
 import {
   scaleByContent,
   scaleBorder,
@@ -252,6 +253,8 @@ export default function FullscreenOnboardingScreen({ onDismiss }) {
             <Text style={styles.bannerTitle}>{bannerTitleB}</Text>
             <Text style={styles.bannerSubtitleBare}>{bannerSubtitleB}</Text>
           </View>
+
+          <PWAInstallBanner visible={selectedOS === 'android'} />
 
           <View style={[styles.tutorialRow, isTabletScreen && styles.tutorialRowTablet]}>
             <View style={styles.videoSide}>
