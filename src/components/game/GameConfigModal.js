@@ -519,6 +519,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F6F0',
     borderRadius: scaleBorder(17),
     borderTopLeftRadius: scaleBorder(2),
+    overflow: 'hidden',
   },
 
   modalNotebookLines: {
