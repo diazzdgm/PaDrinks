@@ -398,6 +398,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingLeft: scaleByContent(20, 'spacing'),
   },
 
   // Container centralizado que agrupa logo y texto circular
@@ -406,7 +407,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: splashLogoSize,
     height: splashLogoSize,
-    marginTop: isShortHeight ? 0 : 20,
   },
 
   // Logo container
@@ -441,7 +441,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
-    marginTop: -10,
   },
 
   // Container para el texto circular - Más cerca del logo
