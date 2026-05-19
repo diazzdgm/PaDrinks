@@ -9,6 +9,7 @@ import {
   Image,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useFocusEffect } from '@react-navigation/native';
@@ -1096,9 +1097,11 @@ const CreateLobbyScreen = ({ navigation, route }) => {
           <View style={styles.playersListContainer}>
             <Text style={styles.playersListTitle}>Jugadores:</Text>
             
-            <ScrollView 
+            <ScrollView
               style={styles.playersScrollView}
-              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.playersScrollContent}
+              showsVerticalScrollIndicator={Platform.OS === 'web'}
+              nestedScrollEnabled={true}
             >
               {/* Jugadores conectados */}
               {connectedPlayers.map((player, index) => (
@@ -1860,6 +1863,9 @@ const styles = StyleSheet.create({
   
   playersListContainer: {
     flex: 1,
+    ...(Platform.OS === 'web' && {
+      minHeight: 0,
+    }),
   },
   
   playersListTitle: {
@@ -1871,7 +1877,18 @@ const styles = StyleSheet.create({
   },
   
   playersScrollView: {
-    maxHeight: SCREEN_HEIGHT * 0.65,
+    maxHeight: Platform.OS === 'web'
+      ? Math.max(120, SCREEN_HEIGHT - (isTabletScreen ? 280 : 220))
+      : SCREEN_HEIGHT * 0.65,
+    ...(Platform.OS === 'web' && {
+      touchAction: 'pan-y',
+      overflowY: 'auto',
+      WebkitOverflowScrolling: 'touch',
+    }),
+  },
+
+  playersScrollContent: {
+    paddingBottom: scaleByContent(30, 'spacing'),
   },
   
   playerItem: {
