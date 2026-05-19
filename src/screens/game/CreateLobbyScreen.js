@@ -843,7 +843,12 @@ const CreateLobbyScreen = ({ navigation, route }) => {
 
   const handleKickPlayer = (playerId) => {
     if (!isHost || playerId === currentUserId) return;
-    
+
+    if (connectedPlayers.length <= 3) {
+      showCustomModal('⚠️ Jugadores Insuficientes', 'Minimo de Jugadores para jugar es 3.', 'info');
+      return;
+    }
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (error) {
@@ -976,8 +981,8 @@ const CreateLobbyScreen = ({ navigation, route }) => {
       return;
     }
 
-    if (connectedPlayers.length < 2) {
-      showCustomModal('⚠️ Jugadores Insuficientes', 'Necesitas al menos 2 jugadores para iniciar el juego.', 'info');
+    if (connectedPlayers.length < 3) {
+      showCustomModal('⚠️ Jugadores Insuficientes', 'Necesitas al menos 3 jugadores para iniciar el juego.', 'info');
       return;
     }
 
@@ -1010,7 +1015,7 @@ const CreateLobbyScreen = ({ navigation, route }) => {
     }
   };
 
-  const canStartGame = isHost && connectedPlayers.length >= 2;
+  const canStartGame = isHost && connectedPlayers.length >= 3;
 
   // Generar slots vacíos si es necesario
   // En modo single no mostrar slots vacíos para evitar problemas de distribución vertical
