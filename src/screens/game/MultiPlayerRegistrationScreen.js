@@ -250,18 +250,213 @@ const MultiPlayerRegistrationScreen = ({ navigation, route }) => {
     
     try {
       if (Platform.OS === 'web') {
-        const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          quality: 0.8,
-          aspect: [1, 1],
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          showError('❌ Tu navegador no soporta acceso a la cámara.\n\nPrueba en Chrome o Safari actualizado.');
+          return;
+        }
+
+        let currentFacingMode = 'user';
+        let currentStream;
+
+        const startStream = async (facingMode) => {
+          try {
+            return await navigator.mediaDevices.getUserMedia({
+              video: { facingMode },
+              audio: false,
+            });
+          } catch (err) {
+            console.log('Error getUserMedia:', err);
+            return null;
+          }
+        };
+
+        currentStream = await startStream(currentFacingMode);
+        if (!currentStream) {
+          showError('❌ No se pudo acceder a la cámara.\n\nVerifica que diste permiso en el navegador.');
+          return;
+        }
+
+        const overlay = document.createElement('div');
+        overlay.style.cssText = [
+          'position:fixed',
+          'top:0',
+          'left:0',
+          'right:0',
+          'bottom:0',
+          'background:rgba(0,0,0,0.95)',
+          'z-index:999996',
+          'display:flex',
+          'align-items:center',
+          'justify-content:center',
+          'padding:16px',
+          'box-sizing:border-box',
+        ].join(';');
+
+        const video = document.createElement('video');
+        video.autoplay = true;
+        video.playsInline = true;
+        video.muted = true;
+        video.srcObject = currentStream;
+        const applyVideoMirror = () => {
+          video.style.transform = currentFacingMode === 'user' ? 'scaleX(-1)' : 'none';
+        };
+        video.style.cssText = [
+          'border-radius:16px',
+          'background:#000',
+          'object-fit:cover',
+        ].join(';');
+        applyVideoMirror();
+
+        const buttonsCol = document.createElement('div');
+        buttonsCol.style.cssText = [
+          'display:flex',
+          'align-items:center',
+          'justify-content:center',
+        ].join(';');
+
+        const captureBtn = document.createElement('button');
+        captureBtn.textContent = '📷 Capturar';
+
+        const flipBtn = document.createElement('button');
+        flipBtn.textContent = '🔄 Girar cámara';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = '✕ Cancelar';
+
+        const allButtons = [captureBtn, flipBtn, cancelBtn];
+        const borderColors = ['#4CAF50', '#2196F3', '#F44336'];
+
+        allButtons.forEach((btn, i) => {
+          btn.style.cssText = [
+            'font-weight:bold',
+            "font-family:'Kalam-Bold', 'Kalam-Regular', cursive",
+            'background:#FFFFFF',
+            'color:#000000',
+            'border-radius:14px',
+            'cursor:pointer',
+            'box-shadow:3px 3px 0 #000',
+            `border:4px solid ${borderColors[i]}`,
+          ].join(';');
         });
 
-        if (!result.canceled && result.assets && result.assets.length > 0) {
-          setPhotoUri(result.assets[0].uri);
-          setPlayerPhoto('photo');
-          setSelectedEmoji('');
-        }
+        const applyLayout = () => {
+          const isPortrait = window.innerHeight > window.innerWidth;
+
+          if (isPortrait) {
+            overlay.style.flexDirection = 'column';
+            overlay.style.gap = '16px';
+
+            video.style.maxWidth = '92vw';
+            video.style.maxHeight = '60vh';
+            video.style.width = '92vw';
+
+            buttonsCol.style.flexDirection = 'row';
+            buttonsCol.style.flexWrap = 'wrap';
+            buttonsCol.style.gap = '10px';
+            buttonsCol.style.width = '100%';
+
+            allButtons.forEach((btn) => {
+              btn.style.padding = '12px 14px';
+              btn.style.fontSize = '15px';
+              btn.style.minWidth = '0';
+              btn.style.flex = '1 1 30%';
+            });
+          } else {
+            overlay.style.flexDirection = 'row';
+            overlay.style.gap = '24px';
+
+            video.style.maxWidth = '70vw';
+            video.style.maxHeight = '90vh';
+            video.style.width = '';
+
+            buttonsCol.style.flexDirection = 'column';
+            buttonsCol.style.flexWrap = 'nowrap';
+            buttonsCol.style.gap = '16px';
+            buttonsCol.style.width = '';
+
+            allButtons.forEach((btn) => {
+              btn.style.padding = '18px 28px';
+              btn.style.fontSize = '20px';
+              btn.style.minWidth = '180px';
+              btn.style.flex = '';
+            });
+          }
+        };
+
+        const stopCurrentStream = () => {
+          if (currentStream) {
+            currentStream.getTracks().forEach((t) => t.stop());
+          }
+        };
+
+        const cleanup = () => {
+          window.removeEventListener('resize', applyLayout);
+          window.removeEventListener('orientationchange', applyLayout);
+          stopCurrentStream();
+          if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        };
+
+        window.addEventListener('resize', applyLayout);
+        window.addEventListener('orientationchange', applyLayout);
+        applyLayout();
+
+        flipBtn.onclick = async () => {
+          flipBtn.disabled = true;
+          const nextMode = currentFacingMode === 'user' ? 'environment' : 'user';
+          const newStream = await startStream(nextMode);
+          if (newStream) {
+            stopCurrentStream();
+            currentStream = newStream;
+            currentFacingMode = nextMode;
+            video.srcObject = currentStream;
+            applyVideoMirror();
+          }
+          flipBtn.disabled = false;
+        };
+
+        captureBtn.onclick = () => {
+          try {
+            const vw = video.videoWidth;
+            const vh = video.videoHeight;
+            if (!vw || !vh) {
+              cleanup();
+              return;
+            }
+            const targetSize = 500;
+            const minDim = Math.min(vw, vh);
+            const sx = (vw - minDim) / 2;
+            const sy = (vh - minDim) / 2;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = targetSize;
+            canvas.height = targetSize;
+            const ctx = canvas.getContext('2d');
+            if (currentFacingMode === 'user') {
+              ctx.translate(targetSize, 0);
+              ctx.scale(-1, 1);
+            }
+            ctx.drawImage(video, sx, sy, minDim, minDim, 0, 0, targetSize, targetSize);
+
+            const resizedUri = canvas.toDataURL('image/jpeg', 0.8);
+            cleanup();
+            setPhotoUri(resizedUri);
+            setPlayerPhoto('photo');
+            setSelectedEmoji('');
+          } catch (captureErr) {
+            console.log('Error capturando foto:', captureErr);
+            cleanup();
+          }
+        };
+
+        cancelBtn.onclick = cleanup;
+
+        buttonsCol.appendChild(captureBtn);
+        buttonsCol.appendChild(flipBtn);
+        buttonsCol.appendChild(cancelBtn);
+        overlay.appendChild(video);
+        overlay.appendChild(buttonsCol);
+        document.body.appendChild(overlay);
+        return;
       } else {
         const { status } = await Camera.requestCameraPermissionsAsync();
 
