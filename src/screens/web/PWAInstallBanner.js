@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -35,6 +35,21 @@ const wasDismissedThisSession = () => {
   }
 };
 
+let moduleDeferredPrompt = null;
+const moduleListeners = new Set();
+
+if (typeof window !== 'undefined' && Platform.OS === 'web') {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    moduleDeferredPrompt = e;
+    moduleListeners.forEach((cb) => cb(e));
+  });
+  window.addEventListener('appinstalled', () => {
+    moduleDeferredPrompt = null;
+    moduleListeners.forEach((cb) => cb(null));
+  });
+}
+
 export default function PWAInstallBanner({ visible = true }) {
   if (Platform.OS !== 'web') return null;
 
@@ -48,41 +63,26 @@ export default function PWAInstallBanner({ visible = true }) {
     [isShortHeight, isTabletScreen]
   );
 
-  const deferredPromptRef = useRef(null);
-  const [promptAvailable, setPromptAvailable] = useState(false);
+  const [promptAvailable, setPromptAvailable] = useState(() => moduleDeferredPrompt !== null);
   const [dismissed, setDismissed] = useState(() => wasDismissedThisSession());
 
   useEffect(() => {
     if (isStandalonePWA()) return;
-
-    const onBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      deferredPromptRef.current = e;
-      setPromptAvailable(true);
-    };
-
-    const onAppInstalled = () => {
-      deferredPromptRef.current = null;
-      setPromptAvailable(false);
-    };
-
-    window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
-    window.addEventListener('appinstalled', onAppInstalled);
-
+    const cb = (prompt) => setPromptAvailable(prompt !== null);
+    moduleListeners.add(cb);
     return () => {
-      window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', onAppInstalled);
+      moduleListeners.delete(cb);
     };
   }, []);
 
   const handleInstall = useCallback(async () => {
-    const prompt = deferredPromptRef.current;
+    const prompt = moduleDeferredPrompt;
     if (!prompt) return;
     try {
       prompt.prompt();
       const choice = await prompt.userChoice;
       if (choice && choice.outcome === 'accepted') {
-        deferredPromptRef.current = null;
+        moduleDeferredPrompt = null;
         setPromptAvailable(false);
       }
     } catch (_) {
@@ -142,14 +142,14 @@ function createStyles({ isShortHeight, isTabletScreen }) {
 
   return StyleSheet.create({
     cardWrapper: {
-      alignItems: 'center',
-      paddingHorizontal: scaleByContent(20, 'spacing'),
-      marginBottom: scaleByContent(isShortHeight ? 8 : 12, 'spacing'),
+      position: 'absolute',
+      top: isShortHeight ? 6 : isTabletScreen ? 14 : 10,
+      right: isShortHeight ? 10 : isTabletScreen ? 20 : 14,
+      zIndex: 9,
     },
     card: {
       height: cardHeight,
-      maxWidth: isTabletScreen ? 520 : 460,
-      width: '100%',
+      width: isShortHeight ? 220 : isTabletScreen ? 300 : 260,
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: '#FFFFFF',

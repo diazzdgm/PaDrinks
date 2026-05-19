@@ -28,7 +28,7 @@ try {
   iosVideoSrc = require('../../../assets/videos/tutorial-ios.mp4');
 } catch (_) {}
 try {
-  androidVideoSrc = require('../../../assets/videos/tutorial-android.mp4');
+  androidVideoSrc = require('../../../assets/videos/Chrome.Android.Tutorial.mp4');
 } catch (_) {}
 
 if (Platform.OS !== 'web') {
@@ -250,8 +250,8 @@ export default function FullscreenOnboardingScreen({ onDismiss }) {
           </TouchableOpacity>
 
           <View style={[styles.bannerContainer, styles.bannerContainerB]}>
-            <Text style={styles.bannerTitle}>{bannerTitleB}</Text>
-            <Text style={styles.bannerSubtitleBare}>{bannerSubtitleB}</Text>
+            <Text style={[styles.bannerTitle, selectedOS === 'android' && { textAlign: 'left' }]}>{bannerTitleB}</Text>
+            <Text style={[styles.bannerSubtitleBare, selectedOS === 'android' && { textAlign: 'left' }]}>{bannerSubtitleB}</Text>
           </View>
 
           <PWAInstallBanner visible={selectedOS === 'android'} />
@@ -308,7 +308,7 @@ function createStyles({ isShortHeight, isTabletScreen, notebookLineSpacing, inli
       bottom: 0,
       paddingHorizontal: scaleByContent(isShortHeight ? 12 : 20, 'spacing'),
       paddingTop: scaleByContent(isShortHeight ? 10 : 16, 'spacing'),
-      paddingBottom: scaleByContent(isShortHeight ? 32 : 44, 'spacing'),
+      paddingBottom: isShortHeight ? 40 : isTabletScreen ? 60 : 50,
     },
 
     paperBackground: {
@@ -384,7 +384,10 @@ function createStyles({ isShortHeight, isTabletScreen, notebookLineSpacing, inli
     },
 
     bannerContainerB: {
-      marginTop: isShortHeight ? 10 : isTabletScreen ? 30 : 20,
+      marginTop: isShortHeight ? 20 : isTabletScreen ? 22 : 14,
+      alignItems: 'flex-start',
+      paddingLeft: isShortHeight ? 105 : 130,
+      paddingRight: isShortHeight ? 235 : isTabletScreen ? 315 : 275,
     },
 
     bannerTitle: {
@@ -565,20 +568,23 @@ function createStyles({ isShortHeight, isTabletScreen, notebookLineSpacing, inli
       elevation: 8,
       transform: [{ rotate: '0deg' }],
       width: '100%',
+      aspectRatio: 1602 / 720,
+      maxHeight: '100%',
       overflow: 'hidden',
     },
 
     videoElement: {
       width: '100%',
-      height: isShortHeight ? 230 : isTabletScreen ? 400 : 320,
+      height: '100%',
       borderRadius: scaleBorder(10),
       backgroundColor: '#FFFFFF',
       display: 'block',
+      ...(Platform.OS === 'web' && { objectFit: 'cover' }),
     },
 
     videoEmpty: {
       width: '100%',
-      height: isShortHeight ? 230 : isTabletScreen ? 400 : 320,
+      height: '100%',
       backgroundColor: '#FFFFFF',
       borderRadius: scaleBorder(10),
     },
