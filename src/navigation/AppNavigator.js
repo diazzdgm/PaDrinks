@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { BackHandler, Platform } from 'react-native';
+
+export const navigationRef = createNavigationContainerRef();
 
 // Importar pantallas
 import SplashScreen from '../screens/auth/SplashScreen';
@@ -39,6 +41,7 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer
+      ref={navigationRef}
       onStateChange={() => {
         // Re-bloquear después de cada cambio de navegación
         if (Platform.OS === 'android') {

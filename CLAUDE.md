@@ -253,6 +253,8 @@ If the user chooses "Jugar con barra de navegación", the localStorage flag is s
 - `Audio.setAudioModeAsync()` called once via `ensureAudioMode()` — never call it per-sound
 - Audio files in `assets/sounds/`
 
+**Audio initialization coupling with MainMenuScreen (CRITICAL):** both `audioService.preloadSoundEffects()` and `audioService.initializeBackgroundMusic()` are called ONLY from `MainMenuScreen.js:151-152`. Both are idempotent (internal guards `if (this.sfxReady) return` / `if (this.backgroundMusic) return`). Any flow that navigates to GameScreen — or any screen that uses audio — while **skipping MainMenu** (deep links, snapshot restore, automated test flows) MUST call both manually in the same handler that triggers the navigation, BEFORE the `navigationRef.reset()` / `navigate()`. The button tap that triggers the navigation counts as the user gesture needed to unlock the browser audio context. Otherwise SFX call sites (`playSoundEffect('bell'|'roulette'|'bottle')`) fail silently and background music never starts (a `toggleMute` round-trip works around it by accidentally calling `playBackgroundMusic` internally — that's a symptom, not a fix).
+
 ### Android Immersive Mode
 - `expo-navigation-bar` hides nav bar with `inset-swipe` behavior, re-applied every 500ms
 - Requires `edgeToEdgeEnabled: false` in app.json
@@ -269,6 +271,36 @@ Cleanup order is critical to prevent state pollution between games:
 
 ### Player ID Comparison
 Always use `String(p.id) !== String(playerId)` due to mixed number/string ID types between original and dynamically-added players.
+
+### Single-device players source of truth (CRITICAL)
+In `single-device` mode, players live in `allGamePlayers` (a useState in `GameScreen.js`, initialized from `route.params.registeredPlayers`). `CreateLobbyScreen` NEVER dispatches `addPlayer` to Redux in single-device mode — it only passes the player array as a route param. Therefore `state.players.playersList` is **empty** during the entire single-device game. The only time Redux receives players in single-device is when the host adds extra players mid-game via `GameConfigModal` → "Agregar Jugador" (which dispatches `addPlayer`); those land in Redux but the original ones do NOT.
+
+**How to apply:** any feature that needs the full player list in single-device (persistence/snapshots, debug overlays, telemetry, mid-game additions) MUST read from `allGamePlayers` (passed as prop from GameScreen) or `route.params.registeredPlayers`, never from `useSelector(state => state.players.playersList)`. `GameConfigModal` already does this correctly: `const allPlayers = allGamePlayers;` (`GameConfigModal.js:44`) — `playersList` from Redux is only used to detect dynamically-added players for the `removePlayer` dispatch path.
+
+### Game state persistence (web/PWA only)
+Feature: when a user closes the browser/tab/PWA mid-game on padrinks.com and returns within 24h, a modal `¿Seguimos bebiendo?` appears 6s after the splash offering to continue exactly where they left off. Implemented in `src/services/GameSnapshotService.js` (singleton, localStorage key `padrinks_game_snapshot_v1`, SCHEMA_VERSION 1, TTL 24h). Web-only — guarded with `Platform.OS === 'web'` (no-op on native).
+
+**Auto-save points** (all check `gamePhase === 'playing' | 'paused'` before writing):
+- `GameScreen.js` useEffect with deps `[currentQuestion?.id, gamePhase, allGamePlayers.length]` — saves on every question change AND when the player list changes (the latter catches mid-game `Agregar Jugador` additions).
+- `App.js` listeners `beforeunload`, `pagehide`, and `visibilitychange === 'hidden'` — calls `saveSnapshot(store.getState(), getGameEngine().saveGameState(), null)` (the `null` signals "preserve previous gameScreen block").
+
+**Snapshot shape:** `{ version, savedAt, redux: { game, players }, engine: GameEngine.saveGameState(), gameScreen: { allGamePlayers, selectedPlayerForQuestion, selectedPairedPlayers, skippedPairedDynamicIds[], lastProcessedQuestionId } }`. **`allGamePlayers` is CRITICAL** — without it the restored game has no player names (see "Single-device players source of truth" above). `skippedPairedDynamicIds` is a `Set` in memory but serialized as Array.
+
+**Cleanup points** (all call `GameSnapshotService.clearSnapshot()` BEFORE Redux reset, so a beforeunload race doesn't re-save a partially-cleared state):
+- `GameScreen.handleEndGame()`.
+- `GameScreen` useEffect that detects `result.gameEnded === true` (paths in `handleContinue` and `handleSkipDynamic`).
+- `GameConfigModal.handleEndGame()` — must stay in sync with the GameScreen one.
+
+**Restore flow** (`App.js handleResumeContinue`): dispatch `hydrateFromSnapshot` on both `gameSlice` and `playersSlice` (the reducer is `(state, action) => action.payload` — full replace), `getGameEngine().loadGameState(snapshot.engine)`, then **`audioService.preloadSoundEffects()` + `audioService.initializeBackgroundMusic()`** (we skip MainMenu — see Audio Management above), then `navigationRef.reset({ ..., routes: [{ name: 'GameScreen', params: { isResume: true, gameScreenState, registeredPlayers: snapshot.gameScreen.allGamePlayers, gameMode } }] })`. `navigationRef` is exported from `src/navigation/AppNavigator.js` (`createNavigationContainerRef`).
+
+**GameScreen `isResume` gate** (in the route-params useEffect): when `route.params.isResume && !hasResumedRef.current`, restore `skippedPairedDynamicIds.current` (Array→Set), `lastProcessedQuestionId.current`, `setAllGamePlayers([...gs.allGamePlayers])` (defensive even though the useState initializer already read from `route.params.registeredPlayers`), `setSelectedPlayerForQuestion`, `setSelectedPairedPlayers`, set `gameInitialized.current = true`, and **return early** to skip the "primera pregunta" initialization logic (Redux + GameEngine already hold the resumed state).
+
+**Modal `ResumeGameModal`** (`src/components/web/ResumeGameModal.js`): post-it style identical to `GameConfigModal`'s confirmation pattern. zIndex `999996` (below portrait/onboarding overlays at 999997/999998). Buttons: left "Nueva partida" (`postItYellow`, calls `onCancel` → clearSnapshot + dismiss), right "¡Continuar!" (`postItGreen`, calls `onContinue`). Animation: opacity only, 200ms in, 100ms out on continue (snappy) / 150ms on cancel.
+
+**Common bugs avoided / fixed in this feature's iteration:**
+- Snapshot guarded `state.players.playersList` (empty in single-device) → restored game showed "Jugador 1/2/3..." fallbacks. Fix: persist `allGamePlayers` in `gameScreen` and use it as `registeredPlayers` on restore.
+- Skipping MainMenu meant SFX never loaded and background music never started. Fix: call `preloadSoundEffects()` + `initializeBackgroundMusic()` in `handleResumeContinue`.
+- Reload-by-rotation (`padrinks_reloaded_for_landscape` sessionStorage) only fires on MainMenu before any game starts, so it does NOT conflict with the snapshot flow — no special handling needed.
 
 ### Socket.IO Event Listeners
 - Register in useEffect with proper cleanup (remove in return function)

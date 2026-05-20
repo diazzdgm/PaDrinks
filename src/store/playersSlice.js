@@ -119,6 +119,8 @@ const playersSlice = createSlice({
     clearAllPlayers: (state) => {
       return { ...initialState };
     },
+
+    hydrateFromSnapshot: (state, action) => action.payload,
   },
 });
 
@@ -133,6 +135,7 @@ export const {
   setPlayerConnection,
   resetPlayerStats,
   clearAllPlayers,
+  hydrateFromSnapshot,
 } = playersSlice.actions;
 
 export default playersSlice.reducer;

@@ -8,9 +8,14 @@ import { isWeb } from './src/utils/platform';
 import { isTablet, SCREEN_WIDTH, SCREEN_HEIGHT } from './src/utils/responsive';
 import { store } from './src/store';
 import { theme } from './src/styles/theme';
-import AppNavigator from './src/navigation/AppNavigator';
+import AppNavigator, { navigationRef } from './src/navigation/AppNavigator';
 import audioService from './src/services/AudioService';
 import FullscreenOnboardingScreen from './src/screens/web/FullscreenOnboardingScreen';
+import GameSnapshotService from './src/services/GameSnapshotService';
+import ResumeGameModal from './src/components/web/ResumeGameModal';
+import { hydrateFromSnapshot as hydrateGameFromSnapshot } from './src/store/gameSlice';
+import { hydrateFromSnapshot as hydratePlayersFromSnapshot } from './src/store/playersSlice';
+import { getGameEngine } from './src/game/GameEngine';
 
 let ScreenOrientation, NavigationBar;
 if (!isWeb) {
@@ -44,6 +49,8 @@ export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [resumeModalVisible, setResumeModalVisible] = useState(false);
+  const [pendingSnapshot, setPendingSnapshot] = useState(null);
   const [showFullscreenOnboarding, setShowFullscreenOnboarding] = useState(() => {
     if (Platform.OS !== 'web') return false;
     if (typeof window === 'undefined') return false;
@@ -168,6 +175,7 @@ export default function App() {
       if (document.visibilityState === 'hidden') {
         wasPlayingRef.current = audioService.isPlaying;
         audioService.pauseBackgroundMusic();
+        GameSnapshotService.saveSnapshot(store.getState(), getGameEngine().saveGameState(), null);
       } else if (document.visibilityState === 'visible' && wasPlayingRef.current && !audioService.isMuted) {
         audioService.playBackgroundMusic();
       }
@@ -175,14 +183,21 @@ export default function App() {
 
     const onPageHide = () => {
       audioService.pauseBackgroundMusic();
+      GameSnapshotService.saveSnapshot(store.getState(), getGameEngine().saveGameState(), null);
+    };
+
+    const onBeforeUnload = () => {
+      GameSnapshotService.saveSnapshot(store.getState(), getGameEngine().saveGameState(), null);
     };
 
     document.addEventListener('visibilitychange', onVisibilityChange);
     window.addEventListener('pagehide', onPageHide);
+    window.addEventListener('beforeunload', onBeforeUnload);
 
     return () => {
       document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('pagehide', onPageHide);
+      window.removeEventListener('beforeunload', onBeforeUnload);
     };
   }, []);
 
@@ -225,6 +240,61 @@ export default function App() {
       window.removeEventListener('orientationchange', onResize);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isWeb || !fontsLoaded) return;
+    if (!GameSnapshotService.hasValidSnapshot()) return;
+
+    const snapshot = GameSnapshotService.loadSnapshot();
+    if (!snapshot) return;
+
+    setPendingSnapshot(snapshot);
+    const timer = setTimeout(() => {
+      setResumeModalVisible(true);
+    }, 6000);
+
+    return () => clearTimeout(timer);
+  }, [fontsLoaded]);
+
+  const handleResumeCancel = () => {
+    GameSnapshotService.clearSnapshot();
+    setResumeModalVisible(false);
+    setPendingSnapshot(null);
+  };
+
+  const handleResumeContinue = () => {
+    if (!pendingSnapshot) {
+      setResumeModalVisible(false);
+      return;
+    }
+
+    store.dispatch(hydrateGameFromSnapshot(pendingSnapshot.redux.game));
+    store.dispatch(hydratePlayersFromSnapshot(pendingSnapshot.redux.players));
+    getGameEngine().loadGameState(pendingSnapshot.engine);
+
+    audioService.preloadSoundEffects();
+    audioService.initializeBackgroundMusic();
+
+    setResumeModalVisible(false);
+    setPendingSnapshot(null);
+
+    if (navigationRef.isReady()) {
+      navigationRef.reset({
+        index: 0,
+        routes: [{
+          name: 'GameScreen',
+          params: {
+            isResume: true,
+            gameScreenState: pendingSnapshot.gameScreen,
+            registeredPlayers: pendingSnapshot.gameScreen?.allGamePlayers?.length
+              ? pendingSnapshot.gameScreen.allGamePlayers
+              : pendingSnapshot.redux.players.playersList,
+            gameMode: pendingSnapshot.redux.game.gameSettings?.playMethod || 'single-device',
+          },
+        }],
+      });
+    }
+  };
 
   useEffect(() => {
     if (Platform.OS !== 'android') {
@@ -327,6 +397,13 @@ export default function App() {
           <AppNavigator />
         </Provider>
       </SafeAreaProvider>
+      {resumeModalVisible && (
+        <ResumeGameModal
+          visible={resumeModalVisible}
+          onContinue={handleResumeContinue}
+          onCancel={handleResumeCancel}
+        />
+      )}
       {showFullscreenOnboarding && (
         <View style={{
           position: 'absolute',

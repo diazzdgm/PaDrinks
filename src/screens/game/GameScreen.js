@@ -33,6 +33,8 @@ import {
   getDeviceInfo
 } from '../../utils/responsive';
 import { getGameEngine } from '../../game/GameEngine';
+import GameSnapshotService from '../../services/GameSnapshotService';
+import { store } from '../../store';
 import {
   startGame,
   nextRound,
@@ -156,6 +158,9 @@ const GameScreen = ({ navigation, route }) => {
   // Ref para rastrear si el juego ya fue inicializado (evita sincronización prematura con Redux)
   const gameInitialized = useRef(false);
 
+  // Ref para prevenir doble restauración cuando viene de snapshot
+  const hasResumedRef = useRef(false);
+
   // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const instructionAnim = useRef(new Animated.Value(-30)).current;
@@ -166,6 +171,26 @@ const GameScreen = ({ navigation, route }) => {
 
   // Resetear allGamePlayers cuando cambian los registeredPlayers de route params (nueva partida)
   useEffect(() => {
+    if (route.params?.isResume && !hasResumedRef.current) {
+      hasResumedRef.current = true;
+      const gs = route.params.gameScreenState;
+      if (gs) {
+        skippedPairedDynamicIds.current = new Set(gs.skippedPairedDynamicIds || []);
+        lastProcessedQuestionId.current = gs.lastProcessedQuestionId || null;
+        if (Array.isArray(gs.allGamePlayers) && gs.allGamePlayers.length > 0) {
+          setAllGamePlayers([...gs.allGamePlayers]);
+        }
+        if (gs.selectedPlayerForQuestion !== undefined) {
+          setSelectedPlayerForQuestion(gs.selectedPlayerForQuestion);
+        }
+        if (gs.selectedPairedPlayers !== undefined) {
+          setSelectedPairedPlayers(gs.selectedPairedPlayers);
+        }
+      }
+      gameInitialized.current = true;
+      return;
+    }
+
     // NO resetear si el juego está en curso (usar Redux en lugar de ref que se resetea al remontar)
     if (gamePhase === 'playing' || gamePhase === 'paused') {
       console.log('🔄 ⏸️ Ignorando reseteo - juego en curso (fase:', gamePhase, ')');
@@ -357,6 +382,7 @@ const GameScreen = ({ navigation, route }) => {
 
     if (result.success) {
       if (result.gameEnded) {
+        GameSnapshotService.clearSnapshot();
         setGameEnded(true);
         setCanExtend(result.canExtend || false);
         if (result.gameStats) {
@@ -384,6 +410,7 @@ const GameScreen = ({ navigation, route }) => {
 
     if (result.success) {
       if (result.gameEnded) {
+        GameSnapshotService.clearSnapshot();
         setGameEnded(true);
         setCanExtend(result.canExtend || false);
         if (result.gameStats) {
@@ -460,6 +487,8 @@ const GameScreen = ({ navigation, route }) => {
 
   const handleEndGame = () => {
     console.log('🧹 === INICIANDO LIMPIEZA COMPLETA DEL JUEGO ===');
+
+    GameSnapshotService.clearSnapshot();
 
     // 1. Limpiar currentQuestion PRIMERO para evitar que useEffect procese datos viejos
     dispatch(setCurrentQuestion(null));
@@ -628,6 +657,22 @@ const GameScreen = ({ navigation, route }) => {
     // Cuando cambia la pregunta, permitir que se procese la nueva
     lastProcessedQuestionId.current = null;
   }, [currentQuestion?.id]);
+
+  // Auto-save snapshot cuando cambia la pregunta activa
+  useEffect(() => {
+    if (gamePhase !== 'playing') return;
+    GameSnapshotService.saveSnapshot(
+      store.getState(),
+      getGameEngine().saveGameState(),
+      {
+        allGamePlayers,
+        selectedPlayerForQuestion,
+        selectedPairedPlayers,
+        skippedPairedDynamicIds: Array.from(skippedPairedDynamicIds.current),
+        lastProcessedQuestionId: lastProcessedQuestionId.current,
+      }
+    );
+  }, [currentQuestion?.id, gamePhase, allGamePlayers.length]);
 
   // Efecto para seleccionar pareja de jugadores para paired_challenge (arm wrestling + rock paper scissors)
   useEffect(() => {

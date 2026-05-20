@@ -359,6 +359,8 @@ const gameSlice = createSlice({
     resetGame: (state) => {
       return { ...initialState };
     },
+
+    hydrateFromSnapshot: (state, action) => action.payload,
   },
 });
 
@@ -399,6 +401,7 @@ export const {
   addRoundToHistory,
   endGame,
   resetGame,
+  hydrateFromSnapshot,
 } = gameSlice.actions;
 
 export default gameSlice.reducer;

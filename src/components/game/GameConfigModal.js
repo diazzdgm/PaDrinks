@@ -30,6 +30,7 @@ import {
 import { removePlayer, clearAllPlayers } from '../../store/playersSlice';
 import { endGame, resetGame, setCurrentQuestion } from '../../store/gameSlice';
 import { getGameEngine } from '../../game/GameEngine';
+import GameSnapshotService from '../../services/GameSnapshotService';
 
 const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], onPlayerRemoved }) => {
   const dispatch = useDispatch();
@@ -174,6 +175,8 @@ const GameConfigModal = ({ visible, onClose, navigation, allGamePlayers = [], on
     }
 
     playBeerSound();
+
+    GameSnapshotService.clearSnapshot();
 
     console.log('🧹 === INICIANDO LIMPIEZA COMPLETA DESDE MODAL DE CONFIG ===');
 
