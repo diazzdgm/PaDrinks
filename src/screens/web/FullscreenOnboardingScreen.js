@@ -20,16 +20,17 @@ import {
   SCREEN_WIDTH,
 } from '../../utils/responsive';
 
-// COLOCA LOS ARCHIVOS DE TUTORIAL EN assets/videos/ ANTES DE LANZAR:
-// assets/videos/tutorial-ios.mp4 y assets/videos/tutorial-android.mp4
 let iosVideoSrc = null;
 let androidVideoSrc = null;
 try {
-  iosVideoSrc = require('../../../assets/videos/tutorial-ios.mp4');
+  iosVideoSrc = require('../../../assets/videos/Safari.IOS.mp4');
 } catch (_) {}
 try {
   androidVideoSrc = require('../../../assets/videos/Chrome.Android.Tutorial.mp4');
 } catch (_) {}
+
+const IOS_VIDEO_ASPECT = 1280 / 594;
+const ANDROID_VIDEO_ASPECT = 1602 / 720;
 
 if (Platform.OS !== 'web') {
   module.exports = () => null;
@@ -47,7 +48,7 @@ const ANDROID_STEPS = [
   { text: '¡Listo! Abre PaDrinks desde tu inicio' },
 ];
 
-const VideoOrEmpty = ({ src, styles }) => {
+const VideoOrEmpty = ({ src, styles, muted = true }) => {
   const [hasError, setHasError] = useState(!src);
 
   if (hasError || !src) {
@@ -59,8 +60,11 @@ const VideoOrEmpty = ({ src, styles }) => {
       src={typeof src === 'string' ? src : src.uri || src}
       autoPlay
       loop
-      muted
+      muted={muted}
       playsInline
+      disableRemotePlayback
+      disablePictureInPicture
+      controlsList="nodownload noremoteplayback noplaybackrate"
       style={styles.videoElement}
       onError={() => setHasError(true)}
     />
@@ -200,6 +204,7 @@ export default function FullscreenOnboardingScreen({ onDismiss }) {
 
   const steps = selectedOS === 'ios' ? IOS_STEPS : ANDROID_STEPS;
   const videoSrc = selectedOS === 'ios' ? iosVideoSrc : androidVideoSrc;
+  const videoAspect = selectedOS === 'ios' ? IOS_VIDEO_ASPECT : ANDROID_VIDEO_ASPECT;
 
   const bannerTitleA = 'Juega PaDrinks en Pantalla Completa';
 
@@ -258,8 +263,8 @@ export default function FullscreenOnboardingScreen({ onDismiss }) {
 
           <View style={[styles.tutorialRow, isTabletScreen && styles.tutorialRowTablet]}>
             <View style={styles.videoSide}>
-              <View style={styles.videoFrame}>
-                <VideoOrEmpty src={videoSrc} styles={styles} />
+              <View style={[styles.videoFrame, { aspectRatio: videoAspect }]}>
+                <VideoOrEmpty src={videoSrc} styles={styles} muted={selectedOS !== 'ios'} />
               </View>
             </View>
 
@@ -568,7 +573,6 @@ function createStyles({ isShortHeight, isTabletScreen, notebookLineSpacing, inli
       elevation: 8,
       transform: [{ rotate: '0deg' }],
       width: '100%',
-      aspectRatio: 1602 / 720,
       maxHeight: '100%',
       overflow: 'hidden',
     },
