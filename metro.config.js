@@ -14,6 +14,7 @@ config.resolver.blockList = [
   /node_modules\/\.bin\/.*/,
   /\.bin$/,
   /\.bin\/.*/,
+  /api\/.*/,
 ];
 
 // Configurar watchFolders para no incluir backend
