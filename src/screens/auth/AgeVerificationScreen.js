@@ -215,7 +215,10 @@ const AgeVerificationScreen = ({ navigation }) => {
         duration: 400,
         useNativeDriver: true,
       }).start(() => {
-        navigation.replace('MainMenu');
+        if (Platform.OS === 'web' && typeof window !== 'undefined') {
+          try { window.localStorage.setItem('padrinks_age_verified', 'true'); } catch (e) {}
+        }
+        navigation.replace(Platform.OS === 'web' ? 'Login' : 'MainMenu');
       });
     }, 600);
   };

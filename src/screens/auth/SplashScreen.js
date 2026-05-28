@@ -83,11 +83,12 @@ const SplashScreen = ({ navigation }) => {
       }
     }, 5000);
     
-    // Navegar después de 6 segundos
+    const ageVerified = Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage?.getItem('padrinks_age_verified') === 'true';
+
     const timer = setTimeout(() => {
       cleanup();
-      navigation.replace('AgeVerification');
-    }, 6000);
+      navigation.replace(ageVerified ? 'Login' : 'AgeVerification');
+    }, ageVerified ? 1500 : 6000);
 
     return () => {
       clearTimeout(timer);

@@ -9,6 +9,7 @@ export const navigationRef = createNavigationContainerRef();
 import SplashScreen from '../screens/auth/SplashScreen';
 import AgeVerificationScreen from '../screens/auth/AgeVerificationScreen';
 import MainMenuScreen from '../screens/MainMenuScreen';
+import LoginScreen from '../screens/web/LoginScreen';
 import CreateGameScreen from '../screens/game/CreateGameScreen';
 import LobbyConfigScreen from '../screens/game/LobbyConfigScreen';
 import PlayerRegistrationScreen from '../screens/game/PlayerRegistrationScreen';
@@ -73,6 +74,15 @@ const AppNavigator = () => {
         <Stack.Screen
           name="AgeVerification"
           component={AgeVerificationScreen}
+          options={{
+            animationTypeForReplace: 'push',
+            gestureEnabled: false,
+            headerLeft: () => null,
+          }}
+        />
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
           options={{
             animationTypeForReplace: 'push',
             gestureEnabled: false,
