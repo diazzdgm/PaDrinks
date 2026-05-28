@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import audioService from '../services/AudioService';
-import { Haptics, isNative } from '../utils/platform';
+import { Haptics, isNative, isWeb } from '../utils/platform';
 import { useDispatch, useSelector } from 'react-redux';
 import { theme } from '../styles/theme';
 import { useSocket } from '../hooks/useSocket';
@@ -33,6 +33,11 @@ import {
   SCREEN_WIDTH,
   SCREEN_HEIGHT
 } from '../utils/responsive';
+import AuthService from '../services/AuthService';
+import SubscriptionService from '../services/SubscriptionService';
+import PaywallModal from '../components/web/PaywallModal';
+import ProfileModal from '../components/web/ProfileModal';
+import LoadingOverlay from '../components/web/LoadingOverlay';
 
 // 🔊 ICONO PERSONALIZADO USANDO PNG - RESPONSIVE
 const CustomMuteIcon = ({ size, isMuted = false }) => {
@@ -117,6 +122,55 @@ const MainMenuScreen = ({ navigation }) => {
   
   // Animación para el botón de mute
   const muteButtonScale = useRef(new Animated.Value(1)).current;
+
+  const [showProfile, setShowProfile] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [entitled, setEntitled] = useState(false);
+  const [accountEmail, setAccountEmail] = useState('');
+  const [paywallLoading, setPaywallLoading] = useState(false);
+
+  const refreshAccount = async () => {
+    if (!isWeb) return;
+    const user = await AuthService.getUser();
+    setAccountEmail(user?.email || '');
+    const active = await SubscriptionService.hasActiveSubscription();
+    setEntitled(active);
+  };
+
+  useEffect(() => {
+    refreshAccount();
+  }, []);
+
+  const openProfile = () => {
+    audioService.playSoundEffect('wine');
+    refreshAccount();
+    setShowProfile(true);
+  };
+
+  const handleCancelSubscription = async () => {
+    await SubscriptionService.openPortal();
+  };
+
+  const handleUpgrade = () => {
+    setShowProfile(false);
+    setShowPaywall(true);
+  };
+
+  const handlePaywallSelectPlan = async (plan) => {
+    setShowPaywall(false);
+    setPaywallLoading(true);
+    const ok = await SubscriptionService.startCheckout(plan);
+    if (!ok) {
+      setPaywallLoading(false);
+      setShowPaywall(true);
+    }
+  };
+
+  const handleLogout = async () => {
+    setShowProfile(false);
+    await AuthService.signOut();
+    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+  };
   
   // Función para conectar al backend - usando useCallback para evitar re-creación
   const initializeBackendConnection = React.useCallback(async () => {
@@ -659,6 +713,30 @@ const MainMenuScreen = ({ navigation }) => {
         </TouchableOpacity>
       </Animated.View>
 
+      {Platform.OS === 'web' && (
+        <View
+          style={[
+            styles.profileButton,
+            {
+              top: topOffset + scaleHeight(isSmallDevice() ? 10 : isTablet() ? 15 : 12),
+              right: rightOffset + scaleModerate(isSmallDevice() ? 55 : isTablet() ? 60 : 70, 0.3) + scaleByContent(12, 'spacing'),
+            },
+          ]}
+        >
+          <TouchableOpacity
+            onPress={openProfile}
+            style={styles.profileButtonTouchable}
+            activeOpacity={0.8}
+          >
+            <Image
+              source={require('../../assets/images/Smiley.face.profile.icon.png')}
+              style={styles.profileButtonIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
+      )}
+
       {Platform.OS !== 'web' && (
       <View style={[
         styles.connectionIndicator,
@@ -682,8 +760,31 @@ const MainMenuScreen = ({ navigation }) => {
         <Text style={styles.footerText}>
           {isNative ? 'PaDrinks • Juego Social Definitivo' : 'PaDrinks • Bebe responsablemente • No conduzcas'}
         </Text>
-        
+
       </View>
+
+      {Platform.OS === 'web' && (
+        <>
+          <ProfileModal
+            visible={showProfile}
+            email={accountEmail}
+            isPremium={entitled}
+            loading={false}
+            onCancelSubscription={handleCancelSubscription}
+            onUpgrade={handleUpgrade}
+            onLogout={handleLogout}
+            onClose={() => setShowProfile(false)}
+          />
+          <PaywallModal
+            visible={showPaywall}
+            loading={paywallLoading}
+            onSelectPlan={handlePaywallSelectPlan}
+            onClose={() => setShowPaywall(false)}
+            subtitle="Suscríbete para desbloquear todo el contenido de PaDrinks."
+          />
+          <LoadingOverlay visible={paywallLoading} />
+        </>
+      )}
 
     </View>
   );
@@ -1028,6 +1129,38 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  profileButton: {
+    position: 'absolute',
+    width: scaleModerate(isSmallDevice() ? 55 : isTablet() ? 60 : 70, 0.3),
+    height: scaleModerate(isSmallDevice() ? 55 : isTablet() ? 60 : 70, 0.3),
+    borderRadius: scaleModerate(isSmallDevice() ? 27.5 : isTablet() ? 30 : 35, 0.3),
+    backgroundColor: '#FFFFFF',
+    borderWidth: scaleBorder(3),
+    borderColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: scale(3), height: scale(3) },
+    shadowOpacity: 0.25,
+    shadowRadius: scale(6),
+    elevation: 6,
+    transform: [{ rotate: '0deg' }],
+    zIndex: 10,
+    overflow: 'hidden',
+  },
+
+  profileButtonTouchable: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  profileButtonIcon: {
+    width: scaleModerate(72, 0.3),
+    height: scaleModerate(72, 0.3),
   },
   
   
