@@ -273,7 +273,7 @@ const AnonymousVoteDisplay = ({
             onPress={handleSkipPlayer}
             activeOpacity={0.8}
           >
-            <Text style={styles.skipPlayerButtonText}>Pasar Jugador</Text>
+            <Text style={styles.skipPlayerButtonText}>Saltar Jugador</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
