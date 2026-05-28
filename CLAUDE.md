@@ -372,3 +372,54 @@ Multiple screens have a mute button and connection status indicator in the top-r
 - Always use `navigation.reset()` instead of `goBack()` to prevent "GO_BACK action not handled" errors
 - Always provide default values for route parameters
 - Always pass `registeredPlayers` in navigation params to prevent state loss
+
+### Premium Subscription / Auth / Paywall (Web Only — LIVE since 2026-05-27)
+
+Web-only monetization at padrinks.com. **Apps nativas NO llevan paywall/auth** (Apple/Google prohíben Stripe para suscripciones digitales). Todo el código nuevo va detrás de `Platform.OS === 'web'` / `isWeb`.
+
+**Flow:** `Splash → AgeVerification → LoginScreen → MainMenu → … → GameScreen` (paywall en ronda 30).
+
+**File map del feature:**
+- `src/config/supabase.js`: URL + publishable key (públicos, safe to commit).
+- `src/lib/supabase.js`: cliente web-only (lazy `require` dentro de guard de Platform), persistSession + detectSessionInUrl + PKCE.
+- `src/services/AuthService.js`: `signInWithGoogle/Apple`, `getSession`, `getUser`, `getAccessToken`, `signOut`, `onAuthStateChange`.
+- `src/services/SubscriptionService.js`: `getEntitlement`, `hasActiveSubscription`, `startCheckout(plan, { onBeforeRedirect })`, `openPortal`.
+- `src/screens/web/LoginScreen.js`: botones oficiales Google/Apple (fuente **sans-serif de sistema**, NO Kalam), SVG inline; detecta sesión y auto-forwardea a MainMenu si ya logueado.
+- `src/components/web/PaywallModal.js`: 2 planes lado-a-lado (`flexDirection: 'row'` siempre, app landscape-only), prop opcional `subtitle` para reusar fuera de ronda 30, `maxHeight: SCREEN_HEIGHT * 0.9` + ScrollView interno.
+- `src/components/web/ProfileModal.js`: cuenta (correo en badge), Suscripción + botón Cancelar/Premium en la MISMA fila (`marginLeft: 'auto'` para el botón). `paddingLeft: 38` en `infoSection` para respetar el margen rojo del cuaderno.
+- `src/components/web/LoadingOverlay.js`: overlay full-screen con fondo de libreta + "Cargando..." con dots animados (interval 400ms, cleared on unmount).
+- `api/_lib/clients.js`: clients compartidos. **`PRICE_BY_PLAN` es env-aware**: `PRICES_LIVE` si `process.env.STRIPE_SECRET_KEY` empieza con `sk_live`, si no `PRICES_TEST`.
+- `api/create-checkout-session.js`, `api/stripe-webhook.js`, `api/create-portal-session.js`: serverless Node CommonJS (`module.exports = async (req, res) => …`).
+- `scripts/generate-apple-secret.js`: regenerar el JWT de Sign In with Apple cada ~6 meses (next: **~2026-11-24**). Uso: `node scripts/generate-apple-secret.js /ruta/al/AuthKey_<KEY_ID>.p8`.
+- `scripts/test-supabase.js`: diagnóstico local del service_role.
+- `.mcp.json`: Stripe MCP project-scoped (OAuth a `https://mcp.stripe.com`). El MCP **solo opera en TEST mode**.
+
+**Supabase project:** `https://moyvfmaftjyapbnozemp.supabase.co`. Tabla `public.subscriptions(user_id uuid PK references auth.users, stripe_customer_id, stripe_subscription_id, status, plan, current_period_end, updated_at)`. RLS (own-row SELECT) + **GRANTs explícitos** (porque desactivamos "Automatically expose new tables" al crear el proyecto): `grant select,insert,update,delete on public.subscriptions to service_role; grant select on public.subscriptions to authenticated;`. Sin estos GRANTs incluso `service_role` recibe `permission denied`.
+
+**Stripe IDs (cuenta `acct_1Tb9dcJe8NaSnHv6`, activada 2026-05-27):**
+- TEST: product `prod_UaLPsbUhHySWtC`, mensual `price_1TbAjOJe8NaSnHv6OqVpS0T5`, anual `price_1TbAjSJe8NaSnHv6zTZaCb2k`.
+- LIVE: mensual `price_1TbrFwJOr3M3dXYuzc4MeAzi`, anual `price_1TbrFuJOr3M3dXYuEj2jDhXf`.
+
+**Vercel env vars (per-environment, MISMO NOMBRE distinto scope — NUNCA sufijos como `_PRODUCTION`):**
+- `STRIPE_SECRET_KEY`: `sk_test_...` (Preview) | `sk_live_...` (Production).
+- `STRIPE_WEBHOOK_SECRET`: test whsec (Preview) | live whsec (Production).
+- `SUPABASE_SERVICE_ROLE_KEY`: misma secret (Production + Preview).
+- El código lee `process.env.STRIPE_SECRET_KEY` exacto — nombrarla `STRIPE_SECRET_KEY_PRODUCTION` la deja inerte.
+
+**Webhook URLs (eventos: `checkout.session.completed`, `customer.subscription.{created,updated,deleted}`):**
+- Test: registrado en la URL de preview actual; re-apuntar tras cada deploy nuevo si se va a probar pago. **Vercel Deployment Protection ("Vercel Authentication") debe estar DISABLED** en el proyecto, o Stripe recibe 401 (el navegador del owner pasa por SSO, Stripe no).
+- Live: `https://www.padrinks.com/api/stripe-webhook` (estable).
+
+**Gate del paywall en `src/screens/game/GameScreen.js`:** `FREE_ROUND_LIMIT = 30`. **Tanto `handleContinue` como `handleSkipDynamic`** están gateados con `if (isWeb && !entitled && currentRound >= FREE_ROUND_LIMIT) { setShowPaywall(true); return; }`. `entitled` se carga al montar via `SubscriptionService.hasActiveSubscription()` + se refresca en `onAuthStateChange`.
+
+**Round-trip del checkout (no perder partida):** Stripe Checkout redirige fuera de la SPA. `SubscriptionService.startCheckout(plan, { onBeforeRedirect: () => GameSnapshotService.saveSnapshot(state, engineState, gameScreenState) })` guarda snapshot antes del redirect. `success_url`/`cancel_url` = `${origin}/?checkout=success|cancel`. En `App.js`, el efecto detecta `?checkout=` + snapshot válido y llama `autoResumeAfterRedirect(snapshot, checkoutResult)` que hidrata Redux+GameEngine + reinicia audio + navega a `GameScreen` con `isResume: true, resumePaywall: true, checkoutResult`. En `GameScreen` el efecto `resumePaywall` polea `hasActiveSubscription` 6× cada 1.5s para tolerar lag del webhook (en cancel reabre paywall).
+
+**LoadingOverlay durante el checkout:** al elegir plan, `setShowPaywall(false)` + `setPaywallLoading(true)` (el overlay aparece de inmediato sin gap). En fallo, overlay cierra y paywall reabre.
+
+**Login obligatorio + persistencia de edad:** `AgeVerificationScreen.handleYesPress` persiste `localStorage.padrinks_age_verified = 'true'`. `SplashScreen` detecta el flag y en cargas posteriores acorta el splash a **1500ms** (vs 6000ms primera vez) y navega directo a `Login` saltando el age screen — evita re-confirmar edad tras cada OAuth redirect.
+
+**Webhook silent-fail prevention:** en `api/stripe-webhook.js`, capturar `{ error }` del `supabase.upsert(...)` y `throw` para que el catch externo devuelva **500** → Stripe reintenta. Devolver 200 con error ignorado hace que Stripe crea entrega exitosa y NO reintente, perdiendo pagos en silencio.
+
+**Stripe MCP solo opera en TEST mode** (la sesión OAuth del `.mcp.json` está scope test). Para precios LIVE, crear en dashboard live o copiar vía wizard "Copia desde test" al activar la cuenta (copia Productos + Billing/Customer Portal config; NO copia webhooks).
+
+**Stripe MX minimum charge = $10 MXN.** No precios bajo eso. IVA: precios actuales son inclusive ($39 / $299); Stripe Tax no está activado (declarar con contador).
