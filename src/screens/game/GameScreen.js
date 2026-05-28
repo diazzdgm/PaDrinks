@@ -11,7 +11,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import audioService from '../../services/AudioService';
-import { Haptics } from '../../utils/platform';
+import { Haptics, isWeb } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
 import {
@@ -54,6 +54,10 @@ import {
 } from '../../store/gameSlice';
 import { clearAllPlayers } from '../../store/playersSlice';
 import GameConfigModal from '../../components/game/GameConfigModal';
+import PaywallModal from '../../components/web/PaywallModal';
+import LoadingOverlay from '../../components/web/LoadingOverlay';
+import SubscriptionService from '../../services/SubscriptionService';
+import AuthService from '../../services/AuthService';
 import PreferenceVoteDisplay from '../../components/game/PreferenceVoteDisplay';
 import AnonymousVoteDisplay from '../../components/game/AnonymousVoteDisplay';
 import CharadesDisplay from '../../components/game/CharadesDisplay';
@@ -108,6 +112,8 @@ const CustomConfigIcon = ({ size }) => {
   );
 };
 
+const FREE_ROUND_LIMIT = 30;
+
 const GameScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const gameEngine = getGameEngine();
@@ -138,6 +144,11 @@ const GameScreen = ({ navigation, route }) => {
   const [canExtend, setCanExtend] = useState(false);
   const [selectedPlayerForQuestion, setSelectedPlayerForQuestion] = useState(null);
   const [selectedPairedPlayers, setSelectedPairedPlayers] = useState({ player1: null, player2: null });
+
+  const [entitled, setEntitled] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [paywallLoading, setPaywallLoading] = useState(false);
 
   // Estado local para manejar TODOS los jugadores (iniciales + agregados)
   const [allGamePlayers, setAllGamePlayers] = useState(() => {
@@ -370,6 +381,12 @@ const GameScreen = ({ navigation, route }) => {
   };
 
   const handleContinue = async () => {
+    if (isWeb && !entitled && currentRound >= FREE_ROUND_LIMIT) {
+      refreshEntitlement();
+      setShowPaywall(true);
+      return;
+    }
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (error) {
@@ -398,6 +415,12 @@ const GameScreen = ({ navigation, route }) => {
   };
 
   const handleSkipDynamic = async () => {
+    if (isWeb && !entitled && currentRound >= FREE_ROUND_LIMIT) {
+      refreshEntitlement();
+      setShowPaywall(true);
+      return;
+    }
+
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
@@ -421,6 +444,95 @@ const GameScreen = ({ navigation, route }) => {
         dispatch(updateGameEngineState(result.gameState));
       }
     }
+  };
+
+  const buildGameScreenState = () => ({
+    allGamePlayers,
+    selectedPlayerForQuestion,
+    selectedPairedPlayers,
+    skippedPairedDynamicIds: Array.from(skippedPairedDynamicIds.current),
+    lastProcessedQuestionId: lastProcessedQuestionId.current,
+  });
+
+  const refreshEntitlement = async () => {
+    if (!isWeb) return;
+    const session = await AuthService.getSession();
+    if (!isMountedRef.current) return;
+    setSignedIn(!!session);
+    if (!session) {
+      setEntitled(false);
+      return;
+    }
+    const ok = await SubscriptionService.hasActiveSubscription();
+    if (isMountedRef.current) setEntitled(ok);
+  };
+
+  useEffect(() => {
+    if (!isWeb) return;
+    refreshEntitlement();
+    const unsubscribe = AuthService.onAuthStateChange(() => {
+      refreshEntitlement();
+    });
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isWeb || !route.params?.resumePaywall) return;
+    const result = route.params?.checkoutResult;
+    let active = true;
+
+    const run = async () => {
+      const session = await AuthService.getSession();
+      if (!active) return;
+      setSignedIn(!!session);
+
+      if (result === 'success') {
+        for (let i = 0; i < 6 && active; i++) {
+          const ok = await SubscriptionService.hasActiveSubscription();
+          if (ok) {
+            if (active) {
+              setEntitled(true);
+              setShowPaywall(false);
+            }
+            return;
+          }
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+        if (active) setShowPaywall(true);
+      } else {
+        const ok = session ? await SubscriptionService.hasActiveSubscription() : false;
+        if (!active) return;
+        setEntitled(ok);
+        setShowPaywall(!ok);
+      }
+    };
+
+    run();
+    return () => { active = false; };
+  }, [route.params?.resumePaywall, route.params?.checkoutResult]);
+
+  const handlePaywallSelectPlan = async (plan) => {
+    setShowPaywall(false);
+    setPaywallLoading(true);
+    const ok = await SubscriptionService.startCheckout(plan, {
+      onBeforeRedirect: () => {
+        GameSnapshotService.saveSnapshot(
+          store.getState(),
+          getGameEngine().saveGameState(),
+          buildGameScreenState()
+        );
+      },
+    });
+    if (!ok && isMountedRef.current) {
+      setPaywallLoading(false);
+      setShowPaywall(true);
+    }
+  };
+
+  const handlePaywallClose = () => {
+    setShowPaywall(false);
   };
 
   const toggleMute = async () => {
@@ -1273,6 +1385,18 @@ const GameScreen = ({ navigation, route }) => {
           dispatch(removePairedChallengeParticipant(playerId));
         }}
       />
+
+      {isWeb && (
+        <>
+          <PaywallModal
+            visible={showPaywall}
+            loading={paywallLoading}
+            onSelectPlan={handlePaywallSelectPlan}
+            onClose={handlePaywallClose}
+          />
+          <LoadingOverlay visible={paywallLoading} />
+        </>
+      )}
     </Animated.View>
   );
 };

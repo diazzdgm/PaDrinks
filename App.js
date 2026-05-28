@@ -243,6 +243,22 @@ export default function App() {
 
   useEffect(() => {
     if (!isWeb || !fontsLoaded) return;
+
+    let checkoutResult = null;
+    try {
+      window.localStorage.removeItem('padrinks_pending_paywall_return');
+      const search = new URLSearchParams(window.location.search);
+      checkoutResult = search.get('checkout');
+    } catch (e) {}
+
+    if (checkoutResult && GameSnapshotService.hasValidSnapshot()) {
+      const redirectSnapshot = GameSnapshotService.loadSnapshot();
+      if (redirectSnapshot) {
+        autoResumeAfterRedirect(redirectSnapshot, checkoutResult);
+        return;
+      }
+    }
+
     if (!GameSnapshotService.hasValidSnapshot()) return;
 
     const snapshot = GameSnapshotService.loadSnapshot();
@@ -294,6 +310,39 @@ export default function App() {
         }],
       });
     }
+  };
+
+  const autoResumeAfterRedirect = (snapshot, checkoutResult) => {
+    store.dispatch(hydrateGameFromSnapshot(snapshot.redux.game));
+    store.dispatch(hydratePlayersFromSnapshot(snapshot.redux.players));
+    getGameEngine().loadGameState(snapshot.engine);
+
+    audioService.preloadSoundEffects();
+    audioService.initializeBackgroundMusic();
+
+    try {
+      window.history.replaceState({}, '', window.location.pathname);
+    } catch (e) {}
+
+    const params = {
+      isResume: true,
+      resumePaywall: true,
+      checkoutResult: checkoutResult || null,
+      gameScreenState: snapshot.gameScreen,
+      registeredPlayers: snapshot.gameScreen?.allGamePlayers?.length
+        ? snapshot.gameScreen.allGamePlayers
+        : snapshot.redux.players.playersList,
+      gameMode: snapshot.redux.game.gameSettings?.playMethod || 'single-device',
+    };
+
+    const tryReset = (attempt = 0) => {
+      if (navigationRef.isReady()) {
+        navigationRef.reset({ index: 0, routes: [{ name: 'GameScreen', params }] });
+      } else if (attempt < 60) {
+        setTimeout(() => tryReset(attempt + 1), 100);
+      }
+    };
+    tryReset();
   };
 
   useEffect(() => {
