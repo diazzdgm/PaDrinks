@@ -1,11 +1,15 @@
 {
-  "buildCommand": "npx expo export --platform web && cp public/privacy-policy.html dist/privacy-policy.html && cp public/manifest.json dist/manifest.json",
+  "buildCommand": "npx expo export --platform web && cp public/privacy-policy.html public/manifest.json public/robots.txt public/sitemap.xml public/og-image.png public/google4943435bda95089b.html dist/",
   "outputDirectory": "dist",
   "cleanUrls": true,
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/robots.txt", "destination": "/robots.txt" },
+    { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
+    { "source": "/og-image.png", "destination": "/og-image.png" },
+    { "source": "/google4943435bda95089b.html", "destination": "/google4943435bda95089b.html" },
+    { "source": "/((?!_vercel/).*)", "destination": "/" }
   ],
   "headers": [
     {
