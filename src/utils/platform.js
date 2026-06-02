@@ -16,6 +16,15 @@ export const Haptics = _Haptics || {
   NotificationFeedbackType: { Success: 'Success', Error: 'Error', Warning: 'Warning' },
 };
 
+export const trackEvent = (name, params = {}) => {
+  if (!isWeb) return;
+  try {
+    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+      window.gtag('event', name, params);
+    }
+  } catch (e) {}
+};
+
 const SANITIZE_REPLACEMENTS = [
   [/Nadie toma/g, 'Nadie recibe strike'],
   [/toman un shot/g, 'reciben un strike'],

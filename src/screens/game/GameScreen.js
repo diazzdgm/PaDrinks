@@ -11,7 +11,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import audioService from '../../services/AudioService';
-import { Haptics, isWeb } from '../../utils/platform';
+import { Haptics, isWeb, trackEvent } from '../../utils/platform';
 import { theme } from '../../styles/theme';
 import { useSafeAreaOffsets } from '../../hooks/useSafeAreaOffsets';
 import {
@@ -149,6 +149,7 @@ const GameScreen = ({ navigation, route }) => {
   const [signedIn, setSignedIn] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [paywallLoading, setPaywallLoading] = useState(false);
+  const paywallReachedTrackedRef = useRef(false);
 
   // Estado local para manejar TODOS los jugadores (iniciales + agregados)
   const [allGamePlayers, setAllGamePlayers] = useState(() => {
@@ -382,6 +383,10 @@ const GameScreen = ({ navigation, route }) => {
 
   const handleContinue = async () => {
     if (isWeb && !entitled && currentRound >= FREE_ROUND_LIMIT) {
+      if (!paywallReachedTrackedRef.current) {
+        paywallReachedTrackedRef.current = true;
+        trackEvent('paywall_reached', { round: currentRound });
+      }
       refreshEntitlement();
       setShowPaywall(true);
       return;
@@ -416,6 +421,10 @@ const GameScreen = ({ navigation, route }) => {
 
   const handleSkipDynamic = async () => {
     if (isWeb && !entitled && currentRound >= FREE_ROUND_LIMIT) {
+      if (!paywallReachedTrackedRef.current) {
+        paywallReachedTrackedRef.current = true;
+        trackEvent('paywall_reached', { round: currentRound });
+      }
       refreshEntitlement();
       setShowPaywall(true);
       return;
@@ -492,6 +501,19 @@ const GameScreen = ({ navigation, route }) => {
         for (let i = 0; i < 6 && active; i++) {
           const ok = await SubscriptionService.hasActiveSubscription();
           if (ok) {
+            try {
+              const pendingPlan = typeof window !== 'undefined' ? localStorage.getItem('padrinks_pending_plan') : null;
+              if (pendingPlan) {
+                const planValue = pendingPlan === 'annual' ? 299 : 39;
+                trackEvent('purchase', {
+                  currency: 'MXN',
+                  value: planValue,
+                  plan: pendingPlan,
+                  items: [{ item_id: pendingPlan, item_name: `PaDrinks Premium ${pendingPlan}` }],
+                });
+                localStorage.removeItem('padrinks_pending_plan');
+              }
+            } catch (e) {}
             if (active) {
               setEntitled(true);
               setShowPaywall(false);
@@ -516,6 +538,11 @@ const GameScreen = ({ navigation, route }) => {
   const handlePaywallSelectPlan = async (plan) => {
     setShowPaywall(false);
     setPaywallLoading(true);
+    const planValue = plan === 'annual' ? 299 : 39;
+    trackEvent('begin_checkout', { plan, value: planValue, currency: 'MXN' });
+    try {
+      if (typeof window !== 'undefined') localStorage.setItem('padrinks_pending_plan', plan);
+    } catch (e) {}
     const ok = await SubscriptionService.startCheckout(plan, {
       onBeforeRedirect: () => {
         GameSnapshotService.saveSnapshot(
