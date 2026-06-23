@@ -32,6 +32,8 @@ import {
   RESPONSIVE,
   getDeviceInfo
 } from '../../utils/responsive';
+import { openFullscreenOnboarding } from '../../utils/fullscreenOnboardingBus';
+import FullscreenIcon from '../../components/common/FullscreenIcon';
 import { getGameEngine } from '../../game/GameEngine';
 import GameSnapshotService from '../../services/GameSnapshotService';
 import { store } from '../../store';
@@ -136,7 +138,7 @@ const GameScreen = ({ navigation, route }) => {
   const { playersList } = useSelector(state => state.players);
 
   // Safe area offsets para iOS
-  const { rightOffset, topOffset } = useSafeAreaOffsets();
+  const { leftOffset, rightOffset, topOffset, bottomOffset } = useSafeAreaOffsets();
 
   // Local state
   const [isMuted, setIsMuted] = useState(audioService.isMusicMuted);
@@ -610,6 +612,11 @@ const GameScreen = ({ navigation, route }) => {
     ]).start();
 
     dispatch(setConfigModalOpen(true));
+  };
+
+  const handleFullscreenPress = () => {
+    playWinePopSound();
+    openFullscreenOnboarding();
   };
 
   const handleExtendGame = () => {
@@ -1209,6 +1216,27 @@ const GameScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       </Animated.View>
 
+      {/* Botón de Pantalla Completa (solo web) */}
+      {isWeb && (
+        <View
+          style={[
+            styles.fullscreenButton,
+            {
+              left: leftOffset,
+              bottom: bottomOffset,
+            },
+          ]}
+        >
+          <TouchableOpacity
+            onPress={handleFullscreenPress}
+            style={styles.iconButtonTouchable}
+            activeOpacity={0.8}
+          >
+            <FullscreenIcon size={scaleModerate(24, 0.3)} />
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Botón de Configuración */}
       <Animated.View
         style={[
@@ -1542,6 +1570,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: scaleByContent(4, 'spacing'),
     elevation: 6,
+    transform: [{ rotate: '0deg' }],
+    zIndex: 15,
+  },
+
+  fullscreenButton: {
+    position: 'absolute',
+    width: scaleByContent(40, 'interactive'),
+    height: scaleByContent(40, 'interactive'),
+    borderRadius: scaleBorder(22),
+    backgroundColor: '#FFFFFF',
+    borderWidth: scaleBorder(2),
+    borderColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: scaleByContent(2, 'spacing'), height: scaleByContent(2, 'spacing') },
+    shadowOpacity: 0.2,
+    shadowRadius: scaleByContent(2, 'spacing'),
+    elevation: 4,
     transform: [{ rotate: '0deg' }],
     zIndex: 15,
   },

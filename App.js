@@ -16,6 +16,7 @@ import ResumeGameModal from './src/components/web/ResumeGameModal';
 import { hydrateFromSnapshot as hydrateGameFromSnapshot } from './src/store/gameSlice';
 import { hydrateFromSnapshot as hydratePlayersFromSnapshot } from './src/store/playersSlice';
 import { getGameEngine } from './src/game/GameEngine';
+import { onOpenFullscreenOnboarding } from './src/utils/fullscreenOnboardingBus';
 
 let ScreenOrientation, NavigationBar;
 if (!isWeb) {
@@ -64,6 +65,12 @@ export default function App() {
   const browserInfo = useRef(isWeb ? getWebBrowserInfo() : {});
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const arrowPulseAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!isWeb) return;
+    const unsubscribe = onOpenFullscreenOnboarding(() => setShowFullscreenOnboarding(true));
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     if (!isWeb && ScreenOrientation) {

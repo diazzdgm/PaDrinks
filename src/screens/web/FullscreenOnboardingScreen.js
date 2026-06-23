@@ -217,6 +217,10 @@ export default function FullscreenOnboardingScreen({ onDismiss }) {
 
       {selectedOS === null ? (
         <Animated.View style={[styles.fullArea, { opacity: viewAOpacity }]} pointerEvents={selectedOS === null ? 'auto' : 'none'}>
+          <TouchableOpacity style={styles.backButton} onPress={onDismiss} activeOpacity={0.8}>
+            <Text style={styles.backButtonText}>← Atrás</Text>
+          </TouchableOpacity>
+
           <View style={[styles.bannerContainer, styles.bannerContainerA]}>
             <Text style={styles.bannerTitle}>{bannerTitleA}</Text>
           </View>
@@ -242,9 +246,11 @@ export default function FullscreenOnboardingScreen({ onDismiss }) {
             />
           </View>
 
-          <TouchableOpacity style={styles.skipLink} onPress={handleSkip} activeOpacity={0.7}>
-            <Text style={styles.skipLinkText}>Jugar con barra de navegación (funciona igual)</Text>
-          </TouchableOpacity>
+          <View style={styles.skipButtonWrapper}>
+            <TouchableOpacity style={styles.skipButton} onPress={handleSkip} activeOpacity={0.8}>
+              <Text style={styles.skipButtonText}>Jugar con Barra de Navegación</Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       ) : null}
 
@@ -289,9 +295,11 @@ export default function FullscreenOnboardingScreen({ onDismiss }) {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.skipLink} onPress={handleSkip} activeOpacity={0.7}>
-            <Text style={styles.skipLinkText}>Jugar con barra de navegación (funciona igual)</Text>
-          </TouchableOpacity>
+          <View style={styles.skipButtonWrapper}>
+            <TouchableOpacity style={styles.skipButton} onPress={handleSkip} activeOpacity={0.8}>
+              <Text style={styles.skipButtonText}>Jugar con Barra de Navegación</Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       ) : null}
     </Animated.View>
@@ -487,20 +495,41 @@ function createStyles({ isShortHeight, isTabletScreen, notebookLineSpacing, inli
       marginLeft: scaleByContent(-30, 'spacing'),
     },
 
-    skipLink: {
+    skipButtonWrapper: {
       position: 'absolute',
       bottom: scaleByContent(isShortHeight ? 8 : 14, 'spacing'),
       left: 0,
       right: 0,
       alignItems: 'center',
-      paddingVertical: scaleByContent(6, 'spacing'),
     },
 
-    skipLinkText: {
-      fontFamily: 'Kalam-Regular',
-      fontSize: scaleByContent(12, 'text'),
-      color: '#666666',
-      textDecorationLine: 'underline',
+    skipButton: {
+      backgroundColor: theme.colors.postItGreen,
+      borderWidth: scaleBorder(3),
+      borderColor: '#000000',
+      borderRadius: scaleBorder(15),
+      borderTopLeftRadius: scaleBorder(3),
+      paddingVertical: scaleByContent(isShortHeight ? 6 : 10, 'spacing'),
+      paddingHorizontal: scaleByContent(isShortHeight ? 18 : 28, 'spacing'),
+      minHeight: 44,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: scaleByContent(3, 'spacing'),
+        height: scaleByContent(3, 'spacing'),
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: scaleByContent(4, 'spacing'),
+      elevation: 4,
+      transform: [{ rotate: '0deg' }],
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+
+    skipButtonText: {
+      fontFamily: 'Kalam-Bold',
+      fontSize: scaleByContent(isShortHeight ? 13 : 15, 'text'),
+      color: '#000000',
+      textAlign: 'center',
       includeFontPadding: false,
     },
 

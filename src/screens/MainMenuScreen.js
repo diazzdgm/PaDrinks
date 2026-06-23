@@ -33,6 +33,8 @@ import {
   SCREEN_WIDTH,
   SCREEN_HEIGHT
 } from '../utils/responsive';
+import { openFullscreenOnboarding } from '../utils/fullscreenOnboardingBus';
+import FullscreenIcon from '../components/common/FullscreenIcon';
 import AuthService from '../services/AuthService';
 import SubscriptionService from '../services/SubscriptionService';
 import PaywallModal from '../components/web/PaywallModal';
@@ -145,6 +147,11 @@ const MainMenuScreen = ({ navigation }) => {
     audioService.playSoundEffect('wine');
     refreshAccount();
     setShowProfile(true);
+  };
+
+  const handleOpenFullscreen = () => {
+    audioService.playSoundEffect('wine');
+    openFullscreenOnboarding();
   };
 
   const handleCancelSubscription = async () => {
@@ -737,6 +744,28 @@ const MainMenuScreen = ({ navigation }) => {
         </View>
       )}
 
+      {Platform.OS === 'web' && (
+        <View
+          style={[
+            styles.fullscreenButton,
+            {
+              top: topOffset + scaleHeight(isSmallDevice() ? 10 : isTablet() ? 15 : 12),
+              right: rightOffset
+                + scaleModerate(isSmallDevice() ? 55 : isTablet() ? 60 : 70, 0.3) * 2
+                + scaleByContent(12, 'spacing') * 2,
+            },
+          ]}
+        >
+          <TouchableOpacity
+            onPress={handleOpenFullscreen}
+            style={styles.fullscreenButtonTouchable}
+            activeOpacity={0.8}
+          >
+            <FullscreenIcon size={scaleModerate(38, 0.3)} />
+          </TouchableOpacity>
+        </View>
+      )}
+
       {Platform.OS !== 'web' && (
       <View style={[
         styles.connectionIndicator,
@@ -1149,6 +1178,32 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '0deg' }],
     zIndex: 10,
     overflow: 'hidden',
+  },
+
+  fullscreenButton: {
+    position: 'absolute',
+    width: scaleModerate(isSmallDevice() ? 55 : isTablet() ? 60 : 70, 0.3),
+    height: scaleModerate(isSmallDevice() ? 55 : isTablet() ? 60 : 70, 0.3),
+    borderRadius: scaleModerate(isSmallDevice() ? 27.5 : isTablet() ? 30 : 35, 0.3),
+    backgroundColor: '#FFFFFF',
+    borderWidth: scaleBorder(3),
+    borderColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: scale(3), height: scale(3) },
+    shadowOpacity: 0.25,
+    shadowRadius: scale(6),
+    elevation: 6,
+    transform: [{ rotate: '0deg' }],
+    zIndex: 10,
+  },
+
+  fullscreenButtonTouchable: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   profileButtonTouchable: {
