@@ -2,7 +2,7 @@
   "id": "awkward_questions",
   "name": "Pregunta Incómoda",
   "type": "mention_challenge",
-  "instruction": "Contesta la pregunta, si no quieres shot",
+  "instruction": "Responde a la pregunta o tómate un shot",
   "minPlayers": 2,
   "questions": [
     {

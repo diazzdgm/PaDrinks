@@ -2,7 +2,7 @@
   "id": "anonymous_questions",
   "name": "Preguntas Anónimas",
   "type": "anonymous_vote",
-  "instruction": "Vota sin que nadie sepa, el Jugador mas votado toma shot",
+  "instruction": "Voten en secreto, el más votado toma shot",
   "minPlayers": 3,
   "questions": [
     {

@@ -2,7 +2,7 @@
   "id": "challenge_or_shot",
   "name": "Reto o Shot",
   "type": "mention_challenge",
-  "instruction": "Cumple el Reto o date un Shot",
+  "instruction": "Haz el reto o tómate un shot",
   "minPlayers": 2,
   "questions": [
     {

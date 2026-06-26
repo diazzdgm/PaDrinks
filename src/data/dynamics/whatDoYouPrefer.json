@@ -2,7 +2,7 @@
   "id": "whatDoYouPrefer",
   "name": "¿Qué prefieres?",
   "type": "preference_vote",
-  "instruction": "Los jugadores que voten por la opción menos votada toman shot",
+  "instruction": "Voten todos. La minoría toma shot",
   "minPlayers": 3,
   "questions": [
     {

@@ -2,7 +2,7 @@
   "id": "who_is_more_likely",
   "name": "¿Quién es más probable a...?",
   "type": "vote_selection",
-  "instruction": "Señalen a la persona a la cuenta de 3",
+  "instruction": "Señalen al jugador a la cuenta de 3",
   "minPlayers": 3,
   "questions": [
     {
@@ -31,7 +31,7 @@
     },
     {
       "id": "wiml_005",
-      "text": "¿Quién es más probable de extrañar a su ex?",
+      "text": "¿Quién es más probable de llamar a su ex?",
       "instruction": "¡Toma shot por llorón/a!",
       "emoji": "💔"
     },
@@ -43,7 +43,7 @@
     },
     {
       "id": "wiml_007",
-      "text": "¿Quién es más probable en llorar borracho/a?",
+      "text": "¿Quién es más probable a llorar borracho/a?",
       "instruction": "¡Toma shot de lágrimas!",
       "emoji": "😭"
     },
@@ -61,7 +61,7 @@
     },
     {
       "id": "wiml_010",
-      "text": "¿Quién es más probable en perder algo en la peda?",
+      "text": "¿Quién es más probable a perder algo en la peda?",
       "instruction": "¡Toma shot por distraído!",
       "emoji": "🔑"
     },
@@ -85,7 +85,7 @@
     },
     {
       "id": "wiml_014",
-      "text": "¿Quién es más probable a que no recuerde de nada al día siguiente?",
+      "text": "¿Quién es más probable a que no recuerde nada al día siguiente?",
       "instruction": "¡Toma shot por Alzheimer!",
       "emoji": "🤯"
     },
@@ -133,7 +133,7 @@
     },
     {
       "id": "wiml_022",
-      "text": "¿Quién es más probable a que se gaste toda su quincena en una fiesta?",
+      "text": "¿Quién es más probable a que se gaste toda su quincena en una peda?",
       "instruction": "¡Toma shot por generoso/a!",
       "emoji": "💵"
     },
@@ -217,7 +217,7 @@
     },
     {
       "id": "wiml_036",
-      "text": "¿Quién es más probable a enamorarse rápido?",
+      "text": "¿Quién es más probable a encularse rápido?",
       "instruction": "¡Toma shot por Romeo/Julieta exprés!",
       "emoji": "💘"
     },

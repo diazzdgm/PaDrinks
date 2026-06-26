@@ -2,12 +2,12 @@
   "id": "charades_dynamic",
   "name": "Charadas",
   "type": "paired_challenge",
-  "instruction": "Si no adivinan la palabra ambos toman shot",
+  "instruction": "Díganlo con Mímica",
   "minPlayers": 2,
   "questions": [
     {
       "id": "charades_001",
-      "text": "{player1} con gestos y caras logra que {player2} adivine la frase",
+      "text": "{player1} actúa con caras y gestos, {player2} adivina. Si fallan, ambos beben",
       "instruction": ".",
       "emoji": "🎭",
       "phrases": [

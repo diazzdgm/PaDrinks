@@ -2,7 +2,7 @@
   "id": "inever_never",
   "name": "Yo NUNCA NUNCA",
   "type": "vote_selection",
-  "instruction": "Yo NUNCA NUNCA, si lo haz hecho toma un shot/trago",
+  "instruction": "Yo NUNCA NUNCA, si lo has hecho, tómate un trago",
   "minPlayers": 3,
   "questions": [
     {

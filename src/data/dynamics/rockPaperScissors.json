@@ -2,12 +2,12 @@
   "id": "rock_paper_scissors",
   "name": "Piedra, Papel o Tijeras",
   "type": "paired_challenge",
-  "instruction": "!El jugador que gane puede repartir shot a quien sea!",
+  "instruction": "El jugador que gane, reparte shot a quien guste",
   "minPlayers": 2,
   "questions": [
     {
       "id": "rps_001",
-      "text": "{player1} juega contra {player2} Piedra Papel o Tijeras, el ganador reparte un shot a quien quiera",
+      "text": "{player1} vs {player2}: Piedra, papel o tijeras. Ganador reparte shot",
       "instruction": "ahora si, tocan los tijerazos",
       "emoji": "🪨📄✂️"
     }

@@ -2,7 +2,7 @@
   "id": "elimination_challenge",
   "name": "Eliminación",
   "type": "vote_selection",
-  "instruction": "Te toca cumplir",
+  "instruction": "Si cumples con lo de abajo, te toca shot",
   "minPlayers": 3,
   "questions": [
     {

@@ -2,12 +2,12 @@
   "id": "spin_bottle",
   "name": "Gira la Botella",
   "type": "paired_challenge",
-  "instruction": "Gira, gira la Botella",
+  "instruction": "Gira, gira y toma shot",
   "minPlayers": 3,
   "questions": [
     {
       "id": "sb_001",
-      "text": "Pon el celular en el centro de todos y gira",
+      "text": "Pon el celular al centro y gira la botella",
       "instruction": "El jugador al que apunte la boquilla toma un shot",
       "emoji": "🍾"
     }
