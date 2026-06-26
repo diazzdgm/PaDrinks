@@ -52,16 +52,7 @@ export default function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [resumeModalVisible, setResumeModalVisible] = useState(false);
   const [pendingSnapshot, setPendingSnapshot] = useState(null);
-  const [showFullscreenOnboarding, setShowFullscreenOnboarding] = useState(() => {
-    if (Platform.OS !== 'web') return false;
-    if (typeof window === 'undefined') return false;
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches
-                || window.matchMedia('(display-mode: fullscreen)').matches
-                || window.navigator.standalone === true;
-    if (isPWA) return false;
-    if (window.localStorage?.getItem('padrinks_skip_fullscreen_onboarding') === 'true') return false;
-    return true;
-  });
+  const [showFullscreenOnboarding, setShowFullscreenOnboarding] = useState(false);
   const browserInfo = useRef(isWeb ? getWebBrowserInfo() : {});
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const arrowPulseAnim = useRef(new Animated.Value(0)).current;

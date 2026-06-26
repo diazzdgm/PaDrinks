@@ -109,13 +109,6 @@ const SplashScreen = ({ navigation }) => {
   };
 
   const loadAndPlaySound = async () => {
-    if (isWeb && typeof window !== 'undefined') {
-      const isPWA = window.matchMedia('(display-mode: standalone)').matches
-        || window.matchMedia('(display-mode: fullscreen)').matches
-        || window.navigator.standalone === true;
-      const skipped = window.localStorage?.getItem('padrinks_skip_fullscreen_onboarding') === 'true';
-      if (!isPWA && !skipped) return;
-    }
     try {
       const soundObject = await audioService.createManagedSound('pouring');
       
